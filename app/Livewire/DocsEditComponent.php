@@ -3,22 +3,25 @@
 namespace App\Livewire;
 
 use App\Models\Docs;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class DocsEditComponent extends Component
 {
-
-    use WithPagination;
-    use WithFileUploads;
     use LivewireAlert;
+    use WithFileUploads;
+    use WithPagination;
+
     public $id;
 
-    public $title, $content, $iddocs;
+    public $title;
 
+    public $content;
+
+    public $iddocs;
 
     public function mount($id)
     {
@@ -50,12 +53,12 @@ class DocsEditComponent extends Component
             ]);
 
             // Delete the old content if it exists
-            if (!is_null($docs->content)) {
-                Storage::delete('tutorial-website/' . $docs->content);
+            if (! is_null($docs->content)) {
+                Storage::delete('tutorial-website/'.$docs->content);
             }
 
             // Generate new filename and store the updated content
-            $namaFile = 'docs_' . now()->format('YmdHis') . '.' . $this->content->extension();
+            $namaFile = 'docs_'.now()->format('YmdHis').'.'.$this->content->extension();
             $this->content->storeAs('tutorial-website', $namaFile);
 
             // Update content field
@@ -67,10 +70,9 @@ class DocsEditComponent extends Component
 
         // Alert success and redirect
         $this->alert('success', 'Dokumentasi Berhasil di Ubah');
+
         return redirect('/docs');
     }
-
-
 
     public function render()
     {

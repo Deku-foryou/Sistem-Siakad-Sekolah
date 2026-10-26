@@ -2,8 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Guru;
+use App\Models\Siswa;
 use App\Models\User;
+use App\Services\AkunService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
@@ -227,6 +231,40 @@ class UsersComponent extends Component
         $this->resetPage('pageLOV');
 
         $this->dispatch('close-modal-lov');
+    }
+
+    public function resetPasswordUser($id)
+    {
+        $user = User::find($id);
+        if (! $user) {
+            $this->alert('error', 'User tidak ditemukan');
+
+            return;
+        }
+
+        if ($user->level === 'guru') {
+            $guru = Guru::where('user_iduser', $user->id)->first();
+            if (! $guru) {
+                $this->alert('error', 'Data guru tidak ditemukan');
+
+                return;
+            }
+            AkunService::resetPassword($user, Carbon::parse($guru->tanggal_lahir));
+        } elseif ($user->level === 'siswa') {
+            $siswa = Siswa::where('user_iduser', $user->id)->first();
+            if (! $siswa) {
+                $this->alert('error', 'Data siswa tidak ditemukan');
+
+                return;
+            }
+            AkunService::resetPassword($user, Carbon::parse($siswa->tanggal_lahir));
+        } else {
+            $this->alert('error', 'Reset password hanya untuk guru/siswa');
+
+            return;
+        }
+
+        $this->alert('success', 'Password direset ke tanggal lahir (ddmmyyyy)');
     }
 
     public function render()

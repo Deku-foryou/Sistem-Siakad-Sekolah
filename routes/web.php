@@ -10,10 +10,15 @@ use App\Livewire\DocsComponent;
 use App\Livewire\DocsContentComponent;
 use App\Livewire\DocsCreateComponent;
 use App\Livewire\DocsEditComponent;
+use App\Livewire\GuruComponent;
 use App\Livewire\HomedocsComponent;
+use App\Livewire\KelasComponent;
+use App\Livewire\KelassiswaComponent;
+use App\Livewire\MapelComponent;
 use App\Livewire\RolecatComponent;
 use App\Livewire\RoleComponent;
 use App\Livewire\SemesterComponent;
+use App\Livewire\SiswaComponent;
 use App\Livewire\TahunajaranComponent;
 use App\Livewire\UsermenuComponent;
 use App\Livewire\UsersComponent;
@@ -64,22 +69,26 @@ Route::middleware([auth::class, 'force.password'])->group(
 
         // Non Spatie--------------------------------------------------------------------
 
-        // Mengambil semua data dari Appmenu
-        $appMenu = Usermenu::with(['appmenunew', 'user'])->get();
+        // Daftar url unik dari appmenunew (tanpa join usermenu/user)
+        $appMenuUrls = \App\Models\Appmenunew::query()
+            ->whereNotNull('url')
+            ->pluck('url')
+            ->unique()
+            ->values();
 
         // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
         // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester'];
+        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa'];
 
-        foreach ($appMenu as $datas) {
-            if (in_array($datas->appmenunew->url, $explicitUrls, true)) {
+        foreach ($appMenuUrls as $url) {
+            if (in_array($url, $explicitUrls, true)) {
                 continue;
             }
 
-            $componentClass = 'App\\Livewire\\'.ucfirst($datas->appmenunew->url).'Component';
+            $componentClass = 'App\\Livewire\\'.ucfirst($url).'Component';
 
             if (class_exists($componentClass)) {
-                Route::get($datas->appmenunew->url, $componentClass)->name($datas->appmenunew->url)->middleware('menu.access');
+                Route::get($url, $componentClass)->name($url)->middleware('menu.access');
             }
         }
 
@@ -92,6 +101,11 @@ Route::middleware([auth::class, 'force.password'])->group(
 
             Route::get('tahunajaran', TahunajaranComponent::class);
             Route::get('semester', SemesterComponent::class);
+            Route::get('guru', GuruComponent::class);
+            Route::get('siswa', SiswaComponent::class);
+            Route::get('mapel', MapelComponent::class);
+            Route::get('kelas', KelasComponent::class);
+            Route::get('kelassiswa', KelassiswaComponent::class);
         });
 
         Route::middleware(['check.level:superadmin'])->group(function () {

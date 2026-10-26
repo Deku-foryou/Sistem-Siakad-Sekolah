@@ -1,224 +1,220 @@
 <?php
+
 namespace App\Livewire;
 
-use Carbon\Carbon;
 use App\Models\Appmenucat;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
-use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Jantinnerezo\LivewireAlert\LivewireAlert;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class AppmenucatComponent extends Component
 {
+    use LivewireAlert;
+    use WithFileUploads;
+    use WithPagination;
 
-  use WithPagination;
-  use WithFileUploads;
-  use LivewireAlert;
+    public $idappmenucat;
 
-  public $idappmenucat, $appmenucat, $urut;
-  public $appmenucatName;
-  public $searchlov = '';
-  public $search = '';
-  public $tglstart = '';
-  public $tglend = '';
-  public $perPage = 10;
+    public $appmenucat;
 
-  public function updatingSearch()
-  {
-    $this->resetPage();
-  }
+    public $urut;
 
+    public $appmenucatName;
 
-  public function updatingSearchlov()
-  {
-    $this->resetPage();
-    $this->resetPage('pageLOV');
-  }
+    public $searchlov = '';
 
+    public $search = '';
 
-  public function updatingPerpage()
-  {
-    $this->resetPage();
-    $this->resetPage('pageLOV');
-  }
+    public $tglstart = '';
 
+    public $tglend = '';
 
-  public function storeAppmenucat()
-  {
-    $this->validate([
-      // 'idappmenucat' => 'required ',
-      'appmenucat' => 'required ',
-      'urut' => 'required|unique:appmenucat,urut|numeric',
-    ]);
+    public $perPage = 10;
 
-
-    $appmenucat = new Appmenucat();
-    // $appmenucat->idappmenucat = $this->idappmenucat;
-    $appmenucat->appmenucat = $this->appmenucat;
-    $appmenucat->urut = $this->urut;
-    $appmenucat->save();
-    $this->reset();
-
-    $this->resetPage('pageLOV');
-
-    $this->alert('success', 'New appmenucat has been added successfully');
-
-    $this->dispatch('close-appmenucat-modal');
-  }
-
-
-  public function close()
-  {
-    $this->reset();
-    $this->resetValidation();
-    $this->dispatch('close-appmenucat-modal');
-  }
-
-
-  public function editAppmenucat($idappmenucat)
-  {
-    $appmenucat = Appmenucat::where('idappmenucat', $idappmenucat)->first();
-
-    $this->idappmenucat = $appmenucat->idappmenucat;
-    $this->appmenucat = $appmenucat->appmenucat;
-    $this->urut = $appmenucat->urut;
-    // untuk edit jika menggunakan LOV  isi  tabelName LOV
-// $this->appmenucatName = $appmenucat ->nama_relasi_yang_di_jadikan_LOV; 
-
-    $this->dispatch('show-edit-appmenucat-modal');
-  }
-
-
-  public function updateAppmenucat()
-  {
-    $this->validate([
-      // 'idappmenucat' => 'required ',
-      'appmenucat' => 'required ',
-      //      'urut' => 'required ',
-    ]);
-    $appmenucat = Appmenucat::where('idappmenucat', $this->idappmenucat)->first();
-    $appmenucat->idappmenucat = $this->idappmenucat;
-    $appmenucat->appmenucat = $this->appmenucat;
-    $appmenucat->urut = $this->urut;
-    $appmenucat->save();
-
-    $this->reset();
-
-    $this->resetPage('pageLOV');
-
-    $this->alert('success', 'Update data appmenucat has been added successfully');
-
-    $this->dispatch('close-appmenucat-modal');
-  }
-
-
-  public function deleteConfirmationAppmenucat($idappmenucat)
-  {
-    $this->idappmenucat = $idappmenucat;
-    $this->dispatch('show-delete-confirmation-appmenucat-modal');
-  }
-
-
-  public function deleteAppmenucat()
-  {
-    $appmenucat = Appmenucat::where('idappmenucat', $this->idappmenucat)->first();
-
-
-    try {
-      $appmenucat->delete();
-      $this->alert('success', 'Data appmenucat Berhasil Di hapus');
-    } catch (\Throwable $th) {
-      //throw $th;
-      $this->alert('error', 'Terdapat Data yang terkait, Data Tidak Bisa di Hapus');
-
+    public function updatingSearch()
+    {
+        $this->resetPage();
     }
 
-
-
-    $this->dispatch('close-appmenucat-modal');
-    $this->idappmenucat = '';
-  }
-
-
-  public function exportToExcel()
-  {
-    $queryResult = Appmenucat::latest()
-      ->search($this->search)
-      ->paginate($this->perPage);
-    $data = [['idappmenucat', 'appmenucat', 'urut']];
-    foreach ($queryResult as $result) {
-      $data[] = [$result->idappmenucat, $result->appmenucat, $result->urut];
+    public function updatingSearchlov()
+    {
+        $this->resetPage();
+        $this->resetPage('pageLOV');
     }
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-    $sheet->fromArray($data, null, 'A1');
-    $writer = new Xlsx($spreadsheet);
-    $filename = 'exported-appmenucat-data.xlsx';
-    $writer->save($filename);
-    return response()->download($filename)->deleteFileAfterSend(true);
-  }
 
-
-  public function exportToPdf()
-  {
-    $headers = ['idappmenucat', 'appmenucat', 'urut'];
-    $queryResult = Appmenucat::latest()
-      ->search($this->search)
-      ->paginate($this->perPage);
-    $data = [];
-    foreach ($queryResult as $result) {
-      $data[] = [$result->idappmenucat, $result->appmenucat, $result->urut];
+    public function updatingPerpage()
+    {
+        $this->resetPage();
+        $this->resetPage('pageLOV');
     }
-    $pdf = PDF::loadView('layout.pdf_layout', compact('data', 'headers'));
-    $pdf->setPaper('A4', 'portrait');
-    return response()->streamDownload(function () use ($pdf) {
-      echo $pdf->stream();
-    }, 'Appmenucat.pdf');
-  }
 
+    public function storeAppmenucat()
+    {
+        $this->validate([
+            // 'idappmenucat' => 'required ',
+            'appmenucat' => 'required ',
+            'urut' => 'required|unique:appmenucat,urut|numeric',
+        ]);
 
-  public function appmenucatOption($id = null)
-  {
-    $result = Appmenucat::get();
-    $options = '';
-    foreach ($result as $row) {
-      $options .= '<option value=' . $row->idappmenucat . '';
-      if ($id == $row->idappmenucat) {
-        $options .= ' selected';
-      }
-      $options .= '>' . $row->appmenucat . '</option>';
+        $appmenucat = new Appmenucat;
+        // $appmenucat->idappmenucat = $this->idappmenucat;
+        $appmenucat->appmenucat = $this->appmenucat;
+        $appmenucat->urut = $this->urut;
+        $appmenucat->save();
+        $this->reset();
+
+        $this->resetPage('pageLOV');
+
+        $this->alert('success', 'New appmenucat has been added successfully');
+
+        $this->dispatch('close-appmenucat-modal');
     }
-    return $options;
-  }
 
+    public function close()
+    {
+        $this->reset();
+        $this->resetValidation();
+        $this->dispatch('close-appmenucat-modal');
+    }
 
-  public function appmenucatLOV($id)
-  {
-    $appmenucat = Appmenucat::where('idappmenucat', $id)->first();
-    // $this->nama_relasi = $appmenucat ->idappmenucat;  
-    $this->appmenucatName = $appmenucat->appmenucat;
-    $this->alert('success', 'Terpilih : ' . $appmenucat->appmenucat);
-    $this->resetPage('pageLOV');
+    public function editAppmenucat($idappmenucat)
+    {
+        $appmenucat = Appmenucat::where('idappmenucat', $idappmenucat)->first();
 
-    $this->dispatch('close-modal-lov');
-  }
+        $this->idappmenucat = $appmenucat->idappmenucat;
+        $this->appmenucat = $appmenucat->appmenucat;
+        $this->urut = $appmenucat->urut;
+        // untuk edit jika menggunakan LOV  isi  tabelName LOV
+        // $this->appmenucatName = $appmenucat ->nama_relasi_yang_di_jadikan_LOV;
 
+        $this->dispatch('show-edit-appmenucat-modal');
+    }
 
-  public function render()
-  {
+    public function updateAppmenucat()
+    {
+        $this->validate([
+            // 'idappmenucat' => 'required ',
+            'appmenucat' => 'required ',
+            //      'urut' => 'required ',
+        ]);
+        $appmenucat = Appmenucat::where('idappmenucat', $this->idappmenucat)->first();
+        $appmenucat->idappmenucat = $this->idappmenucat;
+        $appmenucat->appmenucat = $this->appmenucat;
+        $appmenucat->urut = $this->urut;
+        $appmenucat->save();
 
-    // aktifkan dan sesuaikan jika menggunakan LOV
-    //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');  
+        $this->reset();
 
-    $appmenucat = Appmenucat::latest()
-      ->search($this->search)
-      //->rangetanggal($this->tglstart, $this->tglend) //aktifkan kalau pake filter tanggal 
-      ->paginate($this->perPage);
-    return view('livewire.appmenucat-component', [
-      'appmenucats' => $appmenucat
-    ]);
-  }
+        $this->resetPage('pageLOV');
+
+        $this->alert('success', 'Update data appmenucat has been added successfully');
+
+        $this->dispatch('close-appmenucat-modal');
+    }
+
+    public function deleteConfirmationAppmenucat($idappmenucat)
+    {
+        $this->idappmenucat = $idappmenucat;
+        $this->dispatch('show-delete-confirmation-appmenucat-modal');
+    }
+
+    public function deleteAppmenucat()
+    {
+        $appmenucat = Appmenucat::where('idappmenucat', $this->idappmenucat)->first();
+
+        try {
+            $appmenucat->delete();
+            $this->alert('success', 'Data appmenucat Berhasil Di hapus');
+        } catch (\Throwable $th) {
+            // throw $th;
+            $this->alert('error', 'Terdapat Data yang terkait, Data Tidak Bisa di Hapus');
+
+        }
+
+        $this->dispatch('close-appmenucat-modal');
+        $this->idappmenucat = '';
+    }
+
+    public function exportToExcel()
+    {
+        $queryResult = Appmenucat::latest()
+            ->search($this->search)
+            ->paginate($this->perPage);
+        $data = [['idappmenucat', 'appmenucat', 'urut']];
+        foreach ($queryResult as $result) {
+            $data[] = [$result->idappmenucat, $result->appmenucat, $result->urut];
+        }
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->fromArray($data, null, 'A1');
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'exported-appmenucat-data.xlsx';
+        $writer->save($filename);
+
+        return response()->download($filename)->deleteFileAfterSend(true);
+    }
+
+    public function exportToPdf()
+    {
+        $headers = ['idappmenucat', 'appmenucat', 'urut'];
+        $queryResult = Appmenucat::latest()
+            ->search($this->search)
+            ->paginate($this->perPage);
+        $data = [];
+        foreach ($queryResult as $result) {
+            $data[] = [$result->idappmenucat, $result->appmenucat, $result->urut];
+        }
+        $pdf = PDF::loadView('layout.pdf_layout', compact('data', 'headers'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->stream();
+        }, 'Appmenucat.pdf');
+    }
+
+    public function appmenucatOption($id = null)
+    {
+        $result = Appmenucat::get();
+        $options = '';
+        foreach ($result as $row) {
+            $options .= '<option value='.$row->idappmenucat.'';
+            if ($id == $row->idappmenucat) {
+                $options .= ' selected';
+            }
+            $options .= '>'.$row->appmenucat.'</option>';
+        }
+
+        return $options;
+    }
+
+    public function appmenucatLOV($id)
+    {
+        $appmenucat = Appmenucat::where('idappmenucat', $id)->first();
+        // $this->nama_relasi = $appmenucat ->idappmenucat;
+        $this->appmenucatName = $appmenucat->appmenucat;
+        $this->alert('success', 'Terpilih : '.$appmenucat->appmenucat);
+        $this->resetPage('pageLOV');
+
+        $this->dispatch('close-modal-lov');
+    }
+
+    public function render()
+    {
+
+        // aktifkan dan sesuaikan jika menggunakan LOV
+        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
+
+        $appmenucat = Appmenucat::latest()
+            ->search($this->search)
+          // ->rangetanggal($this->tglstart, $this->tglend) //aktifkan kalau pake filter tanggal
+            ->paginate($this->perPage);
+
+        return view('livewire.appmenucat-component', [
+            'appmenucats' => $appmenucat,
+        ]);
+    }
 }

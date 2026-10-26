@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\LoginBlockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -39,6 +40,17 @@ class LoginController extends Controller
         ];
 
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            if (! LoginBlockService::cekBolehLogin($user)) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                RateLimiter::clear($key);
+
+                return redirect()->back()->with('error', 'Akun tidak dapat digunakan. Hubungi admin sekolah.');
+            }
+
             RateLimiter::clear($key);
             $request->session()->regenerate();
 

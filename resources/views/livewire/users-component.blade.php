@@ -99,6 +99,10 @@
                                                             class="fa-solid fa-person-circle-question"></i></i></a> --}}
                                                     <a class="btn btn-sm text-white bg-success"
                                                         href="/usermenu/{{ $datas->id }}"><i class="fa-solid fa-wrench"></i></a>
+                                                    @if(in_array($datas->level, ['guru','siswa']))
+                                                        <button class="btn btn-sm btn-info text-white"
+                                                            wire:click="resetPasswordUser('{{ $datas->id }}')"><i class="fa-solid fa-key"></i></button>
+                                                    @endif
                                                     <button class="btn btn-sm btn-warning text-dark"
                                                         wire:click="editUsers('{{ $datas->id }}')"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
@@ -195,7 +199,7 @@
                             <label for="username" class="col-12 col-lg-3 fw-bold text-lg-end">Username <span
                                     class="text-danger">*</span></label>
                             <div class="col-9">
-                                <input type="text" id="username" class="form-control" wire:model="username">
+                                <input type="text" id="username" class="form-control" wire:model="username" @if($level !== 'superadmin') readonly @endif>
                                 @error('username')
                                     <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
                                 @enderror
@@ -231,8 +235,6 @@
                                 <select name="level" class="form-select" wire:model="level">
                                     <option value="" selected>Pilih Akses Level Menu</option>
                                     <option value="superadmin">Superadmin</option>
-                                    <option value="guru">Guru</option>
-                                    <option value="siswa">Siswa</option>
                                 </select>
 
                                 @error('level')
@@ -318,7 +320,7 @@
                             <label for="username" class="col-12 col-lg-3 fw-bold text-lg-end">Username <span
                                     class="text-danger">*</span></label>
                             <div class="col-9">
-                                <input type="text" id="username" class="form-control" wire:model="username">
+                                <input type="text" id="username" class="form-control" wire:model="username" @if($level !== 'superadmin') readonly @endif>
                                 @error('username')
                                     <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
                                 @enderror
@@ -354,8 +356,6 @@
                                 <select name="level" class="form-select" wire:model="level">
                                     <option value="" selected>Pilih Akses Level Menu</option>
                                     <option value="superadmin">Superadmin</option>
-                                    <option value="guru">Guru</option>
-                                    <option value="siswa">Siswa</option>
                                 </select>
 
                                 @error('level')

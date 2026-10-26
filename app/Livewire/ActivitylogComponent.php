@@ -2,28 +2,29 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\DB;
 
 class ActivitylogComponent extends Component
 {
-    use WithPagination;
     use LivewireAlert;
+    use WithPagination;
 
     public $selectedUser;
+
     public $selectedAction;
 
     public $selectedMenu;
 
     public $tglstart;
+
     public $tglend;
 
     public $openRow = null;
 
     public $selectedBulan;
-
 
     public $dataBulan = [
         '01' => 'Januari',
@@ -37,17 +38,14 @@ class ActivitylogComponent extends Component
         '09' => 'September',
         '10' => 'Oktober',
         '11' => 'November',
-        '12' => 'Desember'
+        '12' => 'Desember',
     ];
-
-
 
     public function mount()
     {
         $this->tglstart = date('Y-m-d');
         $this->tglend = date('Y-m-d');
     }
-
 
     public function toggle($id)
     {
@@ -57,7 +55,6 @@ class ActivitylogComponent extends Component
             $this->openRow = $id;
         }
     }
-
 
     // membuat fitur hapus bedasarkan pilihan bulan (1 bulan sebelumnya, 2 bulan sebelumnya, 3 bulan sebelumnya)
 
@@ -71,8 +68,6 @@ class ActivitylogComponent extends Component
             $this->resetPage();
         }
     }
-
-
 
     public function render()
     {
@@ -102,7 +97,7 @@ class ActivitylogComponent extends Component
                 ->map(function ($item) {
                     return (object) [
                         'name' => class_basename($item->subject_type),
-                        'value' => $item->subject_type
+                        'value' => $item->subject_type,
                     ];
                 });
         });
@@ -119,7 +114,7 @@ class ActivitylogComponent extends Component
                 $query->where('activity_log.description', $this->selectedAction);
             })
             ->when($this->tglstart && $this->tglend, function ($query) {
-                $query->whereBetween('activity_log.created_at', [$this->tglstart . ' 00:00:00', $this->tglend . ' 23:59:59']);
+                $query->whereBetween('activity_log.created_at', [$this->tglstart.' 00:00:00', $this->tglend.' 23:59:59']);
             })
             ->when($this->selectedMenu, function ($query) {
                 $query->where('activity_log.subject_type', $this->selectedMenu);

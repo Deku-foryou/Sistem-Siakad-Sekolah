@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Rak;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RakSeeder extends Seeder
 {
@@ -16,7 +15,7 @@ class RakSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        for($i=101; $i< 1000; $i++){
+        for ($i = 101; $i < 1000; $i++) {
 
             $data = [
 

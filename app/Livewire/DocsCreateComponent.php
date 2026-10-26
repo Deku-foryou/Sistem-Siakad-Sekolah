@@ -3,21 +3,22 @@
 namespace App\Livewire;
 
 use App\Models\Docs;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\WithFileUploads;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class DocsCreateComponent extends Component
 {
-
-
-    use WithPagination;
-    use WithFileUploads;
     use LivewireAlert;
+    use WithFileUploads;
+    use WithPagination;
 
-    public $title, $content, $iddocs;
+    public $title;
 
+    public $content;
+
+    public $iddocs;
 
     public function storeDocs()
     {
@@ -27,19 +28,17 @@ class DocsCreateComponent extends Component
             'content' => 'required|file|mimes:pdf|max:10000',
         ]);
 
-
-        $docs = new Docs();
+        $docs = new Docs;
         $docs->title = $this->title;
         // $docs->content = $this->content;
 
         if ($this->content) {
-            $namaFile = 'docs' . now()->format('YmdHis') . '.' . $this->content->extension();
+            $namaFile = 'docs'.now()->format('YmdHis').'.'.$this->content->extension();
             $this->content->storeAs('tutorial-website', $namaFile);
             $docs->content = $namaFile;
         }
 
         $docs->save();
-
 
         $this->alert('success', 'Berhasil Menambahkan Dokumentasi');
 
@@ -49,8 +48,9 @@ class DocsCreateComponent extends Component
 
     public function close()
     {
-        $this->reset(['title', 'content',]);
+        $this->reset(['title', 'content']);
         $this->resetValidation();
+
         return redirect('/docs');
     }
 

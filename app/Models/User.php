@@ -63,4 +63,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Usermenu::class, 'user_iduser');
     }
+
+    public function guru()
+    {
+        return $this->hasOne(Guru::class, 'user_iduser', 'id');
+    }
+
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class, 'user_iduser', 'id');
+    }
 }

@@ -7,14 +7,12 @@ use Livewire\Component;
 
 class DocsContentComponent extends Component
 {
-
     public $id;
 
     public function mount($id)
     {
         $this->id = $id;
     }
-
 
     public function render()
     {
