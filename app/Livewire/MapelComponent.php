@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Mapel;
 use App\Services\MapelService;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -10,6 +11,7 @@ use Livewire\WithPagination;
 
 class MapelComponent extends Component
 {
+    use HandlesImport;
     use LivewireAlert;
     use WithPagination;
 

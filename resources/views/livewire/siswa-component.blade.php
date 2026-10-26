@@ -7,7 +7,11 @@ Data Siswa
         <div class="container-fluid px-0 p-3 rounded-top">
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Siswa</p></div>
-                <div><button class="btn btn-primary" wire:click="$dispatch('show-add-siswa-modal')"><i class="fa-solid fa-plus "></i></button></div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" wire:click="bukaImport('siswa')"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-outline-primary" wire:click="$dispatch('show-sync-siswa-modal')"><i class="fa-solid fa-arrows-rotate me-1"></i>Terapkan paket menu ke semua siswa</button>
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-siswa-modal')"><i class="fa-solid fa-plus "></i></button>
+                </div>
             </div>
         </div>
         <div class="card border-0 shadow-sm mb-4">
@@ -105,6 +109,19 @@ Data Siswa
             </div>
         </div>
     </div>
+    <div wire:ignore.self class="modal fade" id="syncSiswaModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="syncSiswaTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title" id="syncSiswaTitle">Terapkan paket menu Siswa</h5></div>
+                <div class="modal-body">Paket menu Siswa akan diterapkan ke semua akun siswa. Menu yang sudah ada, termasuk menu manual, tidak akan dihapus.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="sinkronkanPaket">Terapkan paket</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @include('livewire.partials.import-modal')
 </div>
 
 <script>
@@ -112,4 +129,6 @@ Data Siswa
     window.addEventListener('show-add-siswa-modal', event => { $('#addSiswaModal').modal('show'); });
     window.addEventListener('show-edit-siswa-modal', event => { $('#editSiswaModal').modal('show'); });
     window.addEventListener('show-delete-confirmation-siswa-modal', event => { $('#deleteSiswaModal').modal('show'); });
+    window.addEventListener('show-sync-siswa-modal', () => { bootstrap.Modal.getOrCreateInstance(document.getElementById('syncSiswaModal')).show(); });
+    window.addEventListener('close-sync-siswa-modal', () => { bootstrap.Modal.getOrCreateInstance(document.getElementById('syncSiswaModal')).hide(); });
 </script>

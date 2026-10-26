@@ -7,6 +7,9 @@ Penempatan Siswa
         <div class="container-fluid px-0 p-3 rounded-top">
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Penempatan Siswa</p></div>
+                <div>
+                    <button class="btn btn-success" wire:click="bukaImport('penempatan')"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                </div>
             </div>
         </div>
         <div class="card border-0 shadow-sm mb-4">
@@ -63,4 +66,5 @@ Penempatan Siswa
             </div>
         @endif
     </div>
+    @include('livewire.partials.import-modal')
 </div>

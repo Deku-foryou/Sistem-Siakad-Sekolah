@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Tahunajaran;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class KelasComponent extends Component
 {
+    use HandlesImport;
     use LivewireAlert;
     use WithPagination;
 

@@ -2,19 +2,20 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Guru;
 use App\Models\User;
 use App\Services\GuruService;
+use App\Services\PaketMenuService;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class GuruComponent extends Component
 {
+    use HandlesImport;
     use LivewireAlert;
-    use WithFileUploads;
     use WithPagination;
 
     public $idguru;
@@ -51,6 +52,24 @@ class GuruComponent extends Component
     public function updatingPerpage()
     {
         $this->resetPage();
+    }
+
+    public function sinkronkanPaket(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        $result = PaketMenuService::sinkronkanSemua('guru');
+        $this->dispatch('close-sync-guru-modal');
+        if ($result['paket_tidak_ada']) {
+            $this->alert('error', 'Paket menu Guru belum tersedia.');
+
+            return;
+        }
+
+        $this->alert(
+            'success',
+            $result['processed'].' user diproses, '.$result['added'].' baris menu ditambahkan.'
+        );
     }
 
     public function storeGuru()

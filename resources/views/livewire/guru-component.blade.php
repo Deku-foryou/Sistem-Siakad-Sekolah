@@ -9,7 +9,9 @@ Data Guru
                 <div class="mb-3 mb-lg-0">
                     <p class="p-0 m-0 h3 fw-bold ">Guru</p>
                 </div>
-                <div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" wire:click="bukaImport('guru')"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-outline-primary" wire:click="$dispatch('show-sync-guru-modal')"><i class="fa-solid fa-arrows-rotate me-1"></i>Terapkan paket menu ke semua guru</button>
                     <button class="btn btn-primary" wire:click="$dispatch('show-add-guru-modal')"><i class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
@@ -110,6 +112,19 @@ Data Guru
             </div>
         </div>
     </div>
+    <div wire:ignore.self class="modal fade" id="syncGuruModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="syncGuruTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title" id="syncGuruTitle">Terapkan paket menu Guru</h5></div>
+                <div class="modal-body">Paket menu Guru akan diterapkan ke semua akun guru. Menu yang sudah ada, termasuk menu manual, tidak akan dihapus.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="sinkronkanPaket">Terapkan paket</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @include('livewire.partials.import-modal')
 </div>
 
 <script>
@@ -121,4 +136,6 @@ Data Guru
     window.addEventListener('show-add-guru-modal', event => { $('#addGuruModal').modal('show'); });
     window.addEventListener('show-edit-guru-modal', event => { $('#editGuruModal').modal('show'); });
     window.addEventListener('show-delete-confirmation-guru-modal', event => { $('#deleteGuruModal').modal('show'); });
+    window.addEventListener('show-sync-guru-modal', () => { bootstrap.Modal.getOrCreateInstance(document.getElementById('syncGuruModal')).show(); });
+    window.addEventListener('close-sync-guru-modal', () => { bootstrap.Modal.getOrCreateInstance(document.getElementById('syncGuruModal')).hide(); });
 </script>

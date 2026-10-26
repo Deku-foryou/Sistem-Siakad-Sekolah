@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ImportDownloadController;
 use App\Http\Controllers\LoginController;
 use App\Livewire\AppmenucatComponent;
 use App\Livewire\AppmenunewComponent;
@@ -106,6 +107,12 @@ Route::middleware([auth::class, 'force.password'])->group(
             Route::get('mapel', MapelComponent::class);
             Route::get('kelas', KelasComponent::class);
             Route::get('kelassiswa', KelassiswaComponent::class);
+            Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
+                ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
+                ->name('import.template');
+            Route::get('import/gagal/{uuid}', [ImportDownloadController::class, 'gagal'])
+                ->where('uuid', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}')
+                ->name('import.gagal');
         });
 
         Route::middleware(['check.level:superadmin'])->group(function () {

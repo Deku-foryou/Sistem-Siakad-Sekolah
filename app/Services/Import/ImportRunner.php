@@ -8,6 +8,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
@@ -15,6 +16,8 @@ use Throwable;
 
 class ImportRunner
 {
+    private const TIME_LIMIT_SECONDS = 8;
+
     public function __construct(
         private readonly ImportFileReader $reader = new ImportFileReader,
         private readonly ?\Closure $importerResolver = null
@@ -32,9 +35,12 @@ class ImportRunner
         }
 
         try {
+            $ukuran = $this->ukurUkuranBagianAwal();
             $manifest = $this->reader->baca($path, $importer->jenis());
             $manifest['actor_id'] = $actor?->getKey() ?? Auth::id();
             $manifest['lock_owner'] = $lock->owner();
+            $manifest['rata_rata_hash_ms'] = $ukuran['rata_rata_hash_ms'];
+            $manifest['ukuran_bagian'] = $ukuran['ukuran_bagian'];
             $this->saveManifest($manifest);
 
             return $this->state($manifest);
@@ -44,12 +50,13 @@ class ImportRunner
         }
     }
 
-    public function proses(string $uuid, int $ukuranBagian): array
+    public function proses(string $uuid, ?int $ukuranBagian = null): array
     {
         $manifest = $this->manifest($uuid);
         if ($manifest['selesai']) {
             return $this->state($manifest);
         }
+        $ukuranBagian ??= (int) ($manifest['ukuran_bagian'] ?? 20);
         if ($ukuranBagian < 1 || $ukuranBagian > 100) {
             $exception = new InvalidArgumentException('Ukuran bagian harus antara 1 dan 100 baris.');
             $this->tandaiErrorDanLepas($manifest, $exception);
@@ -61,8 +68,13 @@ class ImportRunner
         try {
             $importer = $this->importer($manifest['jenis']);
             $end = min($manifest['offset'] + $ukuranBagian, $manifest['total']);
+            $partStartedAt = hrtime(true);
+            $processedInPart = 0;
 
-            while ($manifest['offset'] < $end) {
+            while (
+                $manifest['offset'] < $end
+                && ($processedInPart === 0 || (hrtime(true) - $partStartedAt) / 1_000_000_000 <= self::TIME_LIMIT_SECONDS)
+            ) {
                 $row = $manifest['rows'][$manifest['offset']];
                 try {
                     $result = DB::transaction(function () use ($importer, $row) {
@@ -109,6 +121,7 @@ class ImportRunner
                         ]);
                     }
                 }
+                $processedInPart++;
             }
 
             $manifest['selesai'] = $manifest['offset'] >= $manifest['total'];
@@ -141,6 +154,25 @@ class ImportRunner
         return $this->state($manifest);
     }
 
+    public function status(string $uuid): array
+    {
+        return $this->state($this->manifest($uuid));
+    }
+
+    public function aktif(string $uuid): bool
+    {
+        if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $uuid)) {
+            throw new InvalidArgumentException('UUID import tidak valid.');
+        }
+
+        $path = $this->reader->directory().DIRECTORY_SEPARATOR.$uuid.'.json';
+        if (! is_file($path)) {
+            return false;
+        }
+
+        return ! $this->manifest($uuid)['selesai'];
+    }
+
     public function bersihkanKadaluarsa(): int
     {
         $directory = $this->reader->directory();
@@ -156,6 +188,24 @@ class ImportRunner
         }
 
         return $deleted;
+    }
+
+    private function ukurUkuranBagianAwal(): array
+    {
+        $durations = [];
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $startedAt = hrtime(true);
+            Hash::make('import-benchmark');
+            $durations[] = (hrtime(true) - $startedAt) / 1_000_000;
+        }
+
+        $average = array_sum($durations) / count($durations);
+        $size = (int) floor(8_000 / max($average, 1));
+
+        return [
+            'rata_rata_hash_ms' => round($average, 2),
+            'ukuran_bagian' => max(5, min(50, $size)),
+        ];
     }
 
     private function lockProvider(): LockProvider
@@ -296,9 +346,12 @@ class ImportRunner
             'gagal' => $manifest['gagal'],
             'total' => $manifest['total'],
             'selesai' => (bool) $manifest['selesai'],
+            'dibatalkan' => (bool) ($manifest['dibatalkan'] ?? false),
             'peringatan' => $manifest['ringkasan_peringatan'] ?? array_keys($manifest['warnings'] ?? []),
             'jumlah_peringatan' => $manifest['warning_total'] ?? 0,
             'error' => $manifest['error'] ?? null,
+            'rata_rata_hash_ms' => $manifest['rata_rata_hash_ms'] ?? null,
+            'ukuran_bagian' => $manifest['ukuran_bagian'] ?? null,
         ];
     }
 }

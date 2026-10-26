@@ -2,19 +2,20 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Services\PaketMenuService;
 use App\Services\SiswaService;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class SiswaComponent extends Component
 {
+    use HandlesImport;
     use LivewireAlert;
-    use WithFileUploads;
     use WithPagination;
 
     public $idsiswa;
@@ -61,6 +62,24 @@ class SiswaComponent extends Component
     public function updatingPerpage()
     {
         $this->resetPage();
+    }
+
+    public function sinkronkanPaket(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        $result = PaketMenuService::sinkronkanSemua('siswa');
+        $this->dispatch('close-sync-siswa-modal');
+        if ($result['paket_tidak_ada']) {
+            $this->alert('error', 'Paket menu Siswa belum tersedia.');
+
+            return;
+        }
+
+        $this->alert(
+            'success',
+            $result['processed'].' user diproses, '.$result['added'].' baris menu ditambahkan.'
+        );
     }
 
     public function storeSiswa()

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Kelas;
 use App\Models\Kelassiswa;
 use App\Models\Siswa;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 
 class KelassiswaComponent extends Component
 {
+    use HandlesImport;
     use LivewireAlert;
     use WithPagination;
 

@@ -52,7 +52,7 @@ class GagalGenerator
             $sheet->setCellValueExplicit($rowCoordinate.$rowNumber, (string) $failure['baris_asli'], DataType::TYPE_STRING);
         }
 
-        $path = $directory.DIRECTORY_SEPARATOR.'gagal-'.$manifest['jenis'].'-'.now()->format('Ymd').'.xlsx';
+        $path = $directory.DIRECTORY_SEPARATOR.'gagal-'.$manifest['jenis'].'-'.$uuid.'.xlsx';
         (new Xlsx($spreadsheet))->save($path);
         $spreadsheet->disconnectWorksheets();
 
