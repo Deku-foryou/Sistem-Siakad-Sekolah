@@ -40,7 +40,7 @@ class MapelService
             return $result;
         }
 
-        DB::transaction(function () use ($kode, &$result) {
+        DB::transaction(function () use ($kode, $data, &$result) {
             // Create user (placeholder - typically handled separately, but service should be self-contained)
             // For mapel, we create the mapel record only
             $mapel = new Mapel;

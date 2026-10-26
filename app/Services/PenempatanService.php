@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Guru;
 use App\Models\Kelas;
-use App\Models\Penempatan;
+use App\Models\Kelassiswa;
 use App\Models\Siswa;
-use App\Models\TahunAjaran;
+use App\Models\Tahunajaran;
 use Illuminate\Support\Facades\DB;
 
 class PenempatanService
@@ -15,48 +14,50 @@ class PenempatanService
     {
         $result = ['success' => false, 'penempatan' => null, 'errors' => []];
 
-        // Validasi: siswa harus status 'aktif'
         if ($siswa->status !== 'aktif') {
             $result['errors']['siswa'] = 'Siswa tidak aktif, tidak dapat penempatan';
 
             return $result;
         }
 
-        // Validasi: tahun_ajaran kelas harus valid
-        $ta = TahunAjaran::find($kelas->tahun_ajaran_id);
-        if (! $ta) {
+        $tahunAjaran = Tahunajaran::find($kelas->tahunajaran_idtahunajaran);
+        if (! $tahunAjaran) {
             $result['errors']['tahun_ajaran'] = 'Tahun ajaran tidak valid';
 
             return $result;
         }
 
-        // Aturan: satu kelas induk per tahun ajaran per siswa
-        $existingInduk = Penempatan::where('siswa_id', $siswa->id)
-            ->where('kelas_id', $kelas->id)
-            ->where('jenis', 'induk')
-            ->exists();
-
-        if ($existingInduk) {
-            $result['errors']['siswa'] = 'Siswa sudah memiliki penempatan induk di kelas ini';
+        if (Kelassiswa::where('siswa_idsiswa', $siswa->idsiswa)
+            ->where('kelas_idkelas', $kelas->idkelas)
+            ->exists()) {
+            $result['errors']['siswa'] = 'Penempatan sudah terdaftar';
 
             return $result;
         }
 
-        // Aturan: untuk kelas induk, harus ada guru wali
         if ($kelas->jenis === 'induk') {
-            $guruWali = $kelas->guru_wali;
-            if (! $guruWali) {
-                $result['errors']['kelas'] = 'Kelas induk harus memiliki guru wali';
+            $hasInduk = Kelassiswa::where('siswa_idsiswa', $siswa->idsiswa)
+                ->whereHas('kelas', function ($query) use ($tahunAjaran) {
+                    $query->where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
+                        ->where('jenis', 'induk');
+                })
+                ->exists();
+            if ($hasInduk) {
+                $result['errors']['siswa'] = 'Siswa sudah memiliki kelas induk pada tahun ajaran ini';
+
+                return $result;
+            }
+            if (! $kelas->guru_idguru || ! $kelas->wali()->where('status', 'aktif')->exists()) {
+                $result['errors']['kelas'] = 'Kelas induk harus memiliki guru wali aktif';
 
                 return $result;
             }
         }
 
         DB::transaction(function () use ($siswa, $kelas, &$result) {
-            $penempatan = new Penempatan;
-            $penempatan->siswa_id = $siswa->id;
-            $penempatan->kelas_id = $kelas->id;
-            $penempatan->jenis = $kelas->jenis;
+            $penempatan = new Kelassiswa;
+            $penempatan->siswa_idsiswa = $siswa->idsiswa;
+            $penempatan->kelas_idkelas = $kelas->idkelas;
             $penempatan->save();
 
             $result['penempatan'] = $penempatan;

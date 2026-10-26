@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Guru;
 use App\Models\Kelas;
-use App\Models\TahunAjaran;
+use App\Models\Tahunajaran;
 use Illuminate\Support\Facades\DB;
 
 class KelasService
@@ -11,71 +12,67 @@ class KelasService
     public static function buat(array $data): array
     {
         $result = ['success' => false, 'kelas' => null, 'errors' => []];
+        $nama = trim((string) ($data['nama'] ?? ''));
+        $tahunAjaranNama = trim((string) ($data['tahun_ajaran'] ?? ''));
+        $tingkat = trim((string) ($data['tingkat'] ?? ''));
+        $jenis = trim((string) ($data['jenis'] ?? 'mapel_pilihan'));
+        $nipWali = trim((string) ($data['nip_wali'] ?? ''));
 
-        // Validate required fields
-        if (empty($data['nama'])) {
+        if ($nama === '') {
             $result['errors']['nama'] = 'Nama kelas wajib diisi';
         }
-        if (empty($data['tingkat'])) {
-            $result['errors']['tingkat'] = 'Tingkat wajib diisi';
+        if (! in_array($tingkat, ['10', '11', '12'], true)) {
+            $result['errors']['tingkat'] = 'Tingkat harus 10, 11, atau 12';
+        }
+        if (! in_array($jenis, ['induk', 'mapel_pilihan'], true)) {
+            $result['errors']['jenis'] = 'Jenis kelas harus induk atau mapel_pilihan';
         }
 
-        if (! empty($result['errors'])) {
-            return $result;
+        $tahunAjaran = $tahunAjaranNama === ''
+            ? null
+            : (ctype_digit($tahunAjaranNama)
+                ? Tahunajaran::find((int) $tahunAjaranNama)
+                : Tahunajaran::where('nama', $tahunAjaranNama)->first());
+        if (! $tahunAjaran) {
+            $result['errors']['tahun_ajaran'] = 'Tahun ajaran tidak ditemukan';
+        } elseif (Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
+            ->whereRaw('LOWER(nama) = ?', [mb_strtolower($nama, 'UTF-8')])
+            ->exists()) {
+            $result['errors']['nama'] = 'Kelas sudah terdaftar pada tahun ajaran ini';
         }
 
-        // Validate tahun_ajaran exists
-        if (! empty($data['tahun_ajaran'])) {
-            $ta = TahunAjaran::where('nama', $data['tahun_ajaran'])->first();
-            if (! $ta) {
-                $result['errors']['tahun_ajaran'] = 'Tahun ajaran tidak ditemukan';
-
-                return $result;
+        $guru = null;
+        if ($nipWali !== '' && $jenis !== 'induk') {
+            $result['errors']['nip_wali'] = 'NIP wali hanya boleh diisi untuk kelas induk';
+        } elseif ($nipWali !== '') {
+            $guru = Guru::where('nip', $nipWali)->first();
+            if (! $guru && ctype_digit($nipWali)) {
+                $guru = Guru::find((int) $nipWali);
             }
-        }
-
-        // Check for duplicate nama kelas + tahun_ajaran combination
-        $nama = trim($data['nama']);
-        $taId = $data['tahun_ajaran'] ?? null;
-
-        $query = Mapel::where('nama', $nama)->whereNotNull('tahun_ajaran_id');
-        if ($taId) {
-            $query->whereHas('tahunAjaran', function ($q) use ($taId) {
-                $q->where('id', $taId);
-            });
-        }
-
-        if ($query->exists()) {
-            $result['errors']['nama'] = 'Kelas dengan nama ini sudah terdaftar pada tahun ajaran yang sama';
-
-            return $result;
-        }
-
-        // Check wali kelas: guru harus ada dan aktif, hanya satu guru wali satu kelas induk per tahun ajaran
-        if (! empty($data['nip_wali']) && ! empty($data['jenis']) && $data['jenis'] === 'induk') {
-            $guru = \App\Models\Guru::where('nip', $data['nip_wali'])->first();
+            if ($guru && $guru->status !== 'aktif') {
+                $guru = null;
+            }
             if (! $guru) {
-                $result['errors']['nip_wali'] = 'Guru wali tidak ditemukan';
-            } elseif (! $guru->status_aktif) {
-                $result['errors']['nip_wali'] = 'Guru wali harus status aktif';
+                $result['errors']['nip_wali'] = 'Guru wali tidak ditemukan atau tidak aktif';
+            } elseif ($tahunAjaran && Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
+                ->where('jenis', 'induk')
+                ->where('guru_idguru', $guru->idguru)
+                ->exists()) {
+                $result['errors']['nip_wali'] = 'Guru wali sudah menjadi wali kelas induk pada tahun ajaran ini';
             }
         }
 
-        DB::transaction(function () use ($nama, $taId, &$result) {
+        if ($result['errors'] !== []) {
+            return $result;
+        }
+
+        DB::transaction(function () use ($nama, $tahunAjaran, $tingkat, $jenis, $guru, &$result) {
             $kelas = new Kelas;
             $kelas->nama = $nama;
-            $kelas->tingkat = $data['tingkat'] ?? 'X';
-            $kelas->jenis = $data['jenis'] ?? 'mapel_pilihan';
-            $kelas->tahun_ajaran_id = $taId ?? null;
-
-            if (! empty($data['nip_wali']) && ! empty($result['errors'] ?? [])) {
-                // Only set wali if valid
-                $guru = \App\Models\Guru::where('nip', $data['nip_wali'])->first();
-                if ($guru && $guru->status_aktif) {
-                    $kelas->guru_wali_id = $guru->id;
-                }
-            }
-
+            $kelas->tingkat = $tingkat;
+            $kelas->jenis = $jenis;
+            $kelas->tahunajaran_idtahunajaran = $tahunAjaran->idtahunajaran;
+            $kelas->guru_idguru = $guru?->idguru;
             $kelas->save();
 
             $result['kelas'] = $kelas;
