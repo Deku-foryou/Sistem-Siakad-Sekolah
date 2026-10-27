@@ -104,87 +104,102 @@ Data Siswa
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailSiswaTitle">Detail Siswa</h5>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body detail-modal">
                     @if ($detailSiswa)
-                        <div class="text-center mb-4">
-                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold mb-2" style="width: 64px; height: 64px; font-size: 20px;">
-                                {{ collect(preg_split('/\s+/', trim((string) $detailSiswa->nama)))->filter()->take(2)->map(fn ($bagian) => mb_strtoupper(mb_substr($bagian, 0, 1)))->implode('') ?: '-' }}
-                            </div>
-                            <h5 class="mb-0">{{ $detailSiswa->nama ?: '-' }}</h5>
-                            <div class="text-muted">{{ $detailSiswa->nisn ?: '-' }}</div>
-                        </div>
+                        @php
+                            $siswaStatus = match ($detailSiswa->status) {
+                                'aktif' => 'Aktif',
+                                'lulus' => 'Lulus',
+                                'pindah' => 'Pindah',
+                                'keluar' => 'Keluar',
+                                default => $detailSiswa->status ?: '-',
+                            };
+                            $biodataRows = [
+                                'NISN' => $detailSiswa->nisn ?: '-',
+                                'NIS' => $detailSiswa->nis ?: '-',
+                                'Jenis Kelamin' => $detailSiswa->jenis_kelamin === 'L' ? 'Laki-laki' : ($detailSiswa->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                                'Tempat Lahir' => $detailSiswa->tempat_lahir ?: '-',
+                                'Tanggal Lahir' => $detailSiswa->tanggal_lahir ? $detailSiswa->tanggal_lahir->locale('id')->translatedFormat('d F Y') : '-',
+                                'Agama' => $detailSiswa->agama ? mb_convert_case($detailSiswa->agama, MB_CASE_TITLE, 'UTF-8') : '-',
+                                'Alamat' => $detailSiswa->alamat ?: '-',
+                                'Nama Ayah' => $detailSiswa->nama_ayah ?: '-',
+                                'Nama Ibu' => $detailSiswa->nama_ibu ?: '-',
+                                'Telepon Ortu' => $detailSiswa->telepon_ortu ?: '-',
+                                'Tahun Masuk' => $detailSiswa->tahun_masuk ?: '-',
+                                'Status' => $siswaStatus,
+                            ];
+                            $akunRows = [
+                                'Username' => $detailSiswa->user?->username ?: '-',
+                                'Status Akun' => $detailSiswa->user ? 'Terdaftar' : '-',
+                            ];
+                            if (! $tahunAjaranAktif) {
+                                $kelasAktifRows = ['Informasi' => 'Belum ada tahun ajaran aktif'];
+                            } elseif (! $kelasIndukAktif && $kelasPilihanAktif->isEmpty()) {
+                                $kelasAktifRows = ['Informasi' => 'Belum ditempatkan di kelas'];
+                            } else {
+                                $kelasAktifRows = [
+                                    'Kelas Induk' => $kelasIndukAktif
+                                        ? $kelasIndukAktif->nama.' ('.$kelasIndukAktif->tingkat.') · Wali: '.($kelasIndukAktif->wali?->nama ?: '-')
+                                        : '-',
+                                    'Mapel Pilihan' => $kelasPilihanAktif->isNotEmpty()
+                                        ? $kelasPilihanAktif->map(fn ($kelasPilihan) => $kelasPilihan->nama.' ('.$kelasPilihan->tingkat.')')->all()
+                                        : '-',
+                                ];
+                            }
+                        @endphp
+
+                        @include('livewire.partials.detail-header', [
+                            'name' => $detailSiswa->nama,
+                            'numberLabel' => 'NISN',
+                            'number' => $detailSiswa->nisn,
+                            'status' => $detailSiswa->status,
+                        ])
 
                         <div class="row g-3">
                             <div class="col-12 col-lg-6">
-                                <h6 class="fw-bold">Biodata</h6>
-                                <dl class="row mb-0">
-                                    <dt class="col-5">NISN</dt><dd class="col-7">{{ $detailSiswa->nisn ?: '-' }}</dd>
-                                    <dt class="col-5">NIS</dt><dd class="col-7">{{ $detailSiswa->nis ?: '-' }}</dd>
-                                    <dt class="col-5">Jenis Kelamin</dt><dd class="col-7">{{ $detailSiswa->jenis_kelamin === 'L' ? 'Laki-laki' : ($detailSiswa->jenis_kelamin === 'P' ? 'Perempuan' : '-') }}</dd>
-                                    <dt class="col-5">Tempat Lahir</dt><dd class="col-7">{{ $detailSiswa->tempat_lahir ?: '-' }}</dd>
-                                    <dt class="col-5">Tanggal Lahir</dt><dd class="col-7">{{ $detailSiswa->tanggal_lahir ? $detailSiswa->tanggal_lahir->locale('id')->translatedFormat('d F Y') : '-' }}</dd>
-                                    <dt class="col-5">Agama</dt><dd class="col-7">{{ $detailSiswa->agama ?: '-' }}</dd>
-                                    <dt class="col-5">Alamat</dt><dd class="col-7">{{ $detailSiswa->alamat ?: '-' }}</dd>
-                                    <dt class="col-5">Nama Ayah</dt><dd class="col-7">{{ $detailSiswa->nama_ayah ?: '-' }}</dd>
-                                    <dt class="col-5">Nama Ibu</dt><dd class="col-7">{{ $detailSiswa->nama_ibu ?: '-' }}</dd>
-                                    <dt class="col-5">Telepon Ortu</dt><dd class="col-7">{{ $detailSiswa->telepon_ortu ?: '-' }}</dd>
-                                    <dt class="col-5">Tahun Masuk</dt><dd class="col-7">{{ $detailSiswa->tahun_masuk ?: '-' }}</dd>
-                                    <dt class="col-5">Status</dt><dd class="col-7">{{ $detailSiswa->status ?: '-' }}</dd>
-                                </dl>
+                                @include('livewire.partials.detail-card', ['title' => 'Biodata', 'rows' => $biodataRows])
                             </div>
-                            <div class="col-12 col-lg-6">
-                                <h6 class="fw-bold">Akun</h6>
-                                <dl class="row mb-3">
-                                    <dt class="col-5">Username</dt><dd class="col-7">{{ $detailSiswa->user?->username ?: '-' }}</dd>
-                                    <dt class="col-5">Status Akun</dt><dd class="col-7">{{ $detailSiswa->user ? ($detailSiswa->user->wajib_ganti_password ? 'Belum ganti password' : 'Sudah diganti') : '-' }}</dd>
-                                </dl>
-
-                                <h6 class="fw-bold">Kelas Tahun Ajaran Aktif</h6>
-                                @if (! $tahunAjaranAktif)
-                                    <p class="text-muted mb-3">Belum ada tahun ajaran aktif</p>
-                                @elseif (! $kelasIndukAktif && $kelasPilihanAktif->isEmpty())
-                                    <p class="text-muted mb-3">Belum ditempatkan di kelas</p>
-                                @else
-                                    <dl class="row mb-3">
-                                        <dt class="col-5">Kelas Induk</dt>
-                                        <dd class="col-7">
-                                            {{ $kelasIndukAktif ? $kelasIndukAktif->nama.' ('.$kelasIndukAktif->tingkat.')' : '-' }}
-                                            @if ($kelasIndukAktif)
-                                                <div class="small text-muted">Wali: {{ $kelasIndukAktif->wali?->nama ?: '-' }}</div>
-                                            @endif
-                                        </dd>
-                                        <dt class="col-5">Mapel Pilihan</dt>
-                                        <dd class="col-7">
-                                            @forelse ($kelasPilihanAktif as $kelasPilihan)
-                                                <div>{{ $kelasPilihan->nama }} ({{ $kelasPilihan->tingkat }})</div>
-                                            @empty
-                                                -
-                                            @endforelse
-                                        </dd>
-                                    </dl>
-                                @endif
-
-                                <h6 class="fw-bold">Riwayat Kelas</h6>
-                                @if ($riwayatKelas->isEmpty())
-                                    <p class="text-muted mb-0">Belum ditempatkan di kelas</p>
-                                @else
-                                    <ul class="list-group list-group-flush">
-                                        @foreach ($riwayatKelas as $penempatan)
-                                            <li class="list-group-item px-0">
-                                                <div class="d-flex justify-content-between gap-2">
-                                                    <span>{{ $penempatan->kelas?->nama ?: '-' }} · {{ $penempatan->kelas?->jenis === 'induk' ? 'Induk' : ($penempatan->kelas?->jenis === 'mapel_pilihan' ? 'Mapel pilihan' : '-') }}</span>
-                                                    @if ($tahunAjaranAktif && (int) $penempatan->kelas?->tahunajaran_idtahunajaran === (int) $tahunAjaranAktif->idtahunajaran)
-                                                        <span class="badge bg-primary">Aktif</span>
-                                                    @endif
-                                                </div>
-                                                <div class="small text-muted">
-                                                    Tahun Ajaran: {{ $penempatan->kelas?->tahunajaran?->nama ?: '-' }}
-                                                    · Wali: {{ $penempatan->kelas?->wali?->nama ?: '-' }}
-                                                </div>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
+                            <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+                                @include('livewire.partials.detail-card', ['title' => 'Akun', 'rows' => $akunRows])
+                                @include('livewire.partials.detail-card', ['title' => 'Kelas Tahun Ajaran Aktif', 'rows' => $kelasAktifRows])
+                            </div>
+                            <div class="col-12">
+                                <section class="detail-card">
+                                    <h6 class="detail-card-title mb-0">Riwayat Kelas</h6>
+                                    <div class="p-2">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-borderless detail-history-table mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Tahun Ajaran</th>
+                                                        <th scope="col">Kelas</th>
+                                                        <th scope="col">Jenis</th>
+                                                        <th scope="col">Wali</th>
+                                                        <th scope="col">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($riwayatKelas as $penempatan)
+                                                        @php
+                                                            $kelasRiwayat = $penempatan->kelas;
+                                                            $riwayatAktif = $tahunAjaranAktif
+                                                                && (int) $kelasRiwayat?->tahunajaran_idtahunajaran === (int) $tahunAjaranAktif->idtahunajaran;
+                                                        @endphp
+                                                        <tr>
+                                                            <td>{{ $kelasRiwayat?->tahunajaran?->nama ?: '-' }}</td>
+                                                            <td>{{ $kelasRiwayat?->nama ? $kelasRiwayat->nama.' ('.$kelasRiwayat->tingkat.')' : '-' }}</td>
+                                                            <td>{{ $kelasRiwayat?->jenis === 'induk' ? 'Induk' : ($kelasRiwayat?->jenis === 'mapel_pilihan' ? 'Mapel pilihan' : '-') }}</td>
+                                                            <td>{{ $kelasRiwayat?->wali?->nama ?: '-' }}</td>
+                                                            <td>@if ($riwayatAktif)<span class="badge bg-success">Aktif</span>@endif</td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr><td colspan="5">Belum ada riwayat</td></tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
                             </div>
                         </div>
                     @else

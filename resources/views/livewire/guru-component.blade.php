@@ -106,55 +106,57 @@ Data Guru
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailGuruTitle">Detail Guru</h5>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body detail-modal">
                     @if ($detailGuru)
-                        <div class="text-center mb-4">
-                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold mb-2" style="width: 64px; height: 64px; font-size: 20px;">
-                                {{ collect(preg_split('/\s+/', trim((string) $detailGuru->nama)))->filter()->take(2)->map(fn ($bagian) => mb_strtoupper(mb_substr($bagian, 0, 1)))->implode('') ?: '-' }}
-                            </div>
-                            <h5 class="mb-0">{{ $detailGuru->nama ?: '-' }}</h5>
-                            <div class="text-muted">{{ $detailGuru->nip ?: '-' }}</div>
-                        </div>
+                        @php
+                            $guruStatus = match ($detailGuru->status) {
+                                'aktif' => 'Aktif',
+                                'nonaktif' => 'Nonaktif',
+                                default => $detailGuru->status ?: '-',
+                            };
+                            $biodataRows = [
+                                'NIP' => $detailGuru->nip ?: '-',
+                                'Nama' => $detailGuru->nama ?: '-',
+                                'Jenis Kelamin' => $detailGuru->jenis_kelamin === 'L' ? 'Laki-laki' : ($detailGuru->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
+                                'Tempat Lahir' => $detailGuru->tempat_lahir ?: '-',
+                                'Tanggal Lahir' => $detailGuru->tanggal_lahir ? $detailGuru->tanggal_lahir->locale('id')->translatedFormat('d F Y') : '-',
+                                'Telepon' => $detailGuru->telepon ?: '-',
+                                'Alamat' => $detailGuru->alamat ?: '-',
+                                'Status' => $guruStatus,
+                            ];
+                            $akunRows = [
+                                'Username' => $detailGuru->user?->username ?: '-',
+                                'Status Akun' => $detailGuru->user ? 'Terdaftar' : '-',
+                            ];
+                            $waliRows = $detailGuru->kelas->isEmpty()
+                                ? ['Informasi' => 'Tidak menjadi wali kelas']
+                                : $detailGuru->kelas->mapWithKeys(fn ($kelasWali) => [
+                                    ($kelasWali->tahunajaran?->nama ?: '-').' · '.($kelasWali->nama ?: '-')
+                                        .($tahunAjaranAktif && (int) $kelasWali->tahunajaran_idtahunajaran === (int) $tahunAjaranAktif->idtahunajaran ? ' · Aktif' : '')
+                                        => '('.($kelasWali->tingkat ?: '-').') · Wali: '.($detailGuru->nama ?: '-'),
+                                ])->all();
+                        @endphp
+
+                        @include('livewire.partials.detail-header', [
+                            'name' => $detailGuru->nama,
+                            'numberLabel' => 'NIP',
+                            'number' => $detailGuru->nip,
+                            'status' => $detailGuru->status,
+                        ])
 
                         <div class="row g-3">
                             <div class="col-12 col-lg-6">
-                                <h6 class="fw-bold">Biodata</h6>
-                                <dl class="row mb-0">
-                                    <dt class="col-5">NIP</dt><dd class="col-7">{{ $detailGuru->nip ?: '-' }}</dd>
-                                    <dt class="col-5">Nama</dt><dd class="col-7">{{ $detailGuru->nama ?: '-' }}</dd>
-                                    <dt class="col-5">Jenis Kelamin</dt><dd class="col-7">{{ $detailGuru->jenis_kelamin === 'L' ? 'Laki-laki' : ($detailGuru->jenis_kelamin === 'P' ? 'Perempuan' : '-') }}</dd>
-                                    <dt class="col-5">Tempat Lahir</dt><dd class="col-7">{{ $detailGuru->tempat_lahir ?: '-' }}</dd>
-                                    <dt class="col-5">Tanggal Lahir</dt><dd class="col-7">{{ $detailGuru->tanggal_lahir ? $detailGuru->tanggal_lahir->locale('id')->translatedFormat('d F Y') : '-' }}</dd>
-                                    <dt class="col-5">Telepon</dt><dd class="col-7">{{ $detailGuru->telepon ?: '-' }}</dd>
-                                    <dt class="col-5">Alamat</dt><dd class="col-7">{{ $detailGuru->alamat ?: '-' }}</dd>
-                                    <dt class="col-5">Status</dt><dd class="col-7">{{ $detailGuru->status ?: '-' }}</dd>
-                                </dl>
+                                @include('livewire.partials.detail-card', ['title' => 'Biodata', 'rows' => $biodataRows])
                             </div>
-                            <div class="col-12 col-lg-6">
-                                <h6 class="fw-bold">Akun</h6>
-                                <dl class="row mb-3">
-                                    <dt class="col-5">Username</dt><dd class="col-7">{{ $detailGuru->user?->username ?: '-' }}</dd>
-                                    <dt class="col-5">Status Akun</dt><dd class="col-7">{{ $detailGuru->user ? ($detailGuru->user->wajib_ganti_password ? 'Belum ganti password' : 'Sudah diganti') : '-' }}</dd>
-                                </dl>
-
-                                <h6 class="fw-bold">Wali Kelas</h6>
-                                @if ($detailGuru->kelas->isEmpty())
-                                    <p class="text-muted">Tidak menjadi wali kelas</p>
-                                @else
-                                    <ul class="list-group list-group-flush mb-3">
-                                        @foreach ($detailGuru->kelas as $kelasWali)
-                                            <li class="list-group-item px-0 d-flex justify-content-between gap-2">
-                                                <span>{{ $kelasWali->nama ?: '-' }} ({{ $kelasWali->tingkat ?: '-' }}) · {{ $kelasWali->tahunajaran?->nama ?: '-' }}</span>
-                                                @if ($tahunAjaranAktif && (int) $kelasWali->tahunajaran_idtahunajaran === (int) $tahunAjaranAktif->idtahunajaran)
-                                                    <span class="badge bg-primary">Aktif</span>
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-
-                                <h6 class="fw-bold">Mengajar</h6>
-                                <p class="text-muted mb-0">Segera tersedia</p>
+                            <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+                                @include('livewire.partials.detail-card', ['title' => 'Akun', 'rows' => $akunRows])
+                                @include('livewire.partials.detail-card', ['title' => 'Wali Kelas', 'rows' => $waliRows])
+                            </div>
+                            <div class="col-12">
+                                @include('livewire.partials.detail-card', [
+                                    'title' => 'Mengajar',
+                                    'rows' => ['Keterangan' => 'Segera tersedia'],
+                                ])
                             </div>
                         </div>
                     @else
