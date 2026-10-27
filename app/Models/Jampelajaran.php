@@ -10,7 +10,7 @@ class Jampelajaran extends Model
 
     protected $primaryKey = 'idjampelajaran';
 
-    protected $fillable = ['polajam_idpolajam', 'jenis', 'jam_ke', 'mulai', 'selesai'];
+    protected $fillable = ['polajam_idpolajam', 'jenis', 'jam_ke', 'mulai', 'selesai', 'keterangan'];
 
     public function pola()
     {

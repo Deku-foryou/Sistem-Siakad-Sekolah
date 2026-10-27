@@ -19,10 +19,10 @@ class JadwalMenuSeeder extends Seeder
                 ['urut' => -2]
             );
             $menus = [
-                ['label' => 'Pola Jam', 'url' => 'polajam', 'icon' => 'fa-regular fa-clock'],
-                ['label' => 'Jam Pelajaran', 'url' => 'jampelajaran', 'icon' => 'fa-solid fa-clock'],
-                ['label' => 'Pengampu', 'url' => 'pengampu', 'icon' => 'fa-solid fa-chalkboard-user'],
-                ['label' => 'Jadwal', 'url' => 'jadwal', 'icon' => 'fa-regular fa-calendar-days'],
+                ['label' => 'Pola Jam', 'url' => 'polajam', 'icon' => 'fa-solid fa-clock'],
+                ['label' => 'Jam Pelajaran', 'url' => 'jampelajaran', 'icon' => 'fa-solid fa-hourglass-half'],
+                ['label' => 'Pengampu', 'url' => 'pengampu', 'icon' => 'fa-solid fa-clipboard-user'],
+                ['label' => 'Jadwal', 'url' => 'jadwal', 'icon' => 'fa-solid fa-calendar-days'],
             ];
             $menuIds = [];
 

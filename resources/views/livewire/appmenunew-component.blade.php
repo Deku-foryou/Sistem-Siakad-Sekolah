@@ -97,8 +97,15 @@ Data Kelola Menu
                                         </td>
                                         {{-- <td>{{ $datas->idappmenunew }}</td> --}}
                                         <td class="text-center">
-                                            <img src="{{ asset('asset_offline/icon/' . $datas->icon) }}"
-                                                class="icon_page">
+                                            @php($menuIcon = trim((string) $datas->icon))
+                                            @if (str_starts_with($menuIcon, 'fa-') || str_starts_with($menuIcon, 'fa '))
+                                                <i class="{{ $menuIcon }} icon_page" aria-hidden="true"></i>
+                                            @elseif (str_ends_with(strtolower($menuIcon), '.svg'))
+                                                <img src="{{ asset('asset_offline/icon/' . $menuIcon) }}" class="icon_page"
+                                                    alt="">
+                                            @else
+                                                <i class="fa-regular fa-folder-open icon_page" aria-hidden="true"></i>
+                                            @endif
                                         </td>
                                         <td>{{ $datas->appmenunew }}</td>
                                         <td>{{ $datas->url }}</td>
@@ -218,19 +225,19 @@ Data Kelola Menu
 
 
                         <div class="form-group row mb-3">
-                            <label for="icon" class="col-12 col-lg-3 fw-bold text-lg-end mb-2 mb-lg-0 label">Icon</label>
+                            <label for="icon" class="col-12 col-lg-3 fw-bold text-lg-end mb-2 mb-lg-0 label">Icon (Font Awesome, opsional)</label>
                             <div class="col-12 col-lg-9">
 
 
                                 <div class="d-flex justify-content-between align-items-center gap-1">
                                     <input type="text" id="icon" class="form-control" wire:model="icon"
-                                        placeholder="Contoh : <i class=fa-regular .....">
+                                        placeholder="Contoh: fa-solid fa-book">
                                     <button type="button" class="btn btn-primary" id="btniconModalLovAdd">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </button>
                                 </div>
 
-                                {{-- <span class="text-danger">*Code copy dari Font Awesome.</span> --}}
+                                <span class="text-muted">Untuk ikon SVG, gunakan tombol pilih ikon.</span>
                                 @error('icon')
                                 <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
                                 @enderror
@@ -357,19 +364,19 @@ Data Kelola Menu
                         </div>
 
                         <div class="form-group row mb-3">
-                            <label for="icon" class="col-12 col-lg-3 fw-bold text-lg-end mb-2 mb-lg-0 label">Icon</label>
+                            <label for="icon" class="col-12 col-lg-3 fw-bold text-lg-end mb-2 mb-lg-0 label">Icon (Font Awesome, opsional)</label>
                             <div class="col-12 col-lg-9">
 
 
                                 <div class="d-flex justify-content-between align-items-center gap-1">
                                     <input type="text" id="icon" class="form-control" wire:model="icon"
-                                        placeholder="Contoh : <i class=fa-regular .....">
+                                        placeholder="Contoh: fa-solid fa-book">
                                     <button type="button" class="btn btn-primary" id="btniconModalLovEdit">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </button>
                                 </div>
 
-                                {{-- <span class="text-danger">*Code copy dari Font Awesome.</span> --}}
+                                <span class="text-muted">Untuk ikon SVG, gunakan tombol pilih ikon.</span>
                                 @error('icon')
                                 <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
                                 @enderror

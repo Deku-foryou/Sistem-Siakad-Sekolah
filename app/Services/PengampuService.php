@@ -7,6 +7,7 @@ use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Pengampu;
 use App\Models\Semester;
+use App\Support\Hari;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -60,13 +61,18 @@ class PengampuService
                             ->on('jadwal_lain.jam_ke', '=', 'jadwal_milik.jam_ke');
                     })
                     ->join('pengampu as pengampu_lain', 'pengampu_lain.idpengampu', '=', 'jadwal_lain.pengampu_idpengampu')
+                    ->join('kelas as kelas_lain', 'kelas_lain.idkelas', '=', 'pengampu_lain.kelas_idkelas')
                     ->where('jadwal_milik.pengampu_idpengampu', $row->idpengampu)
                     ->where('jadwal_lain.pengampu_idpengampu', '!=', $row->idpengampu)
                     ->where('pengampu_lain.semester_idsemester', $semesterId)
                     ->where('pengampu_lain.guru_idguru', $guruId)
-                    ->exists();
+                    ->select('jadwal_lain.hari', 'jadwal_lain.jam_ke', 'kelas_lain.nama as nama_kelas')
+                    ->first();
                 if ($conflict) {
-                    throw new DomainException('Guru sudah memiliki jadwal pada hari dan jam yang sama.');
+                    throw new DomainException(
+                        'Guru sudah memiliki jadwal pada '.Hari::nama((int) $conflict->hari)
+                        .' jam ke-'.$conflict->jam_ke.' untuk kelas '.$conflict->nama_kelas.'.'
+                    );
                 }
             }
 

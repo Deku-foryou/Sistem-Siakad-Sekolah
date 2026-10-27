@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Jadwal;
-use App\Models\Jampelajaran;
 use App\Models\Polajam;
 use App\Models\Polajamhari;
+use App\Support\Hari;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -39,24 +39,12 @@ class PolajamService
             $pola->nama = $nama;
             $pola->save();
 
-            $jamPelajaran = Jampelajaran::where('polajam_idpolajam', $pola->idpolajam)
-                ->where('jenis', 'pelajaran')
-                ->pluck('jam_ke')
-                ->map(fn ($value) => (int) $value)
-                ->all();
-
             foreach ($hari as $nomorHari) {
                 $mapping = Polajamhari::where('hari', $nomorHari)->lockForUpdate()->first();
                 if ($mapping && (int) $mapping->polajam_idpolajam !== (int) $pola->idpolajam) {
-                    $invalid = Jadwal::query()
-                        ->where('hari', $nomorHari)
-                        ->whereNotIn('jam_ke', $jamPelajaran)
-                        ->exists();
-                    if ($invalid) {
-                        throw new DomainException('Pemetaan hari tidak dapat diubah karena masih ada jadwal di luar jam pola baru.');
-                    }
-                    $mapping->polajam_idpolajam = $pola->idpolajam;
-                    $mapping->save();
+                    throw new DomainException(
+                        'Hari '.Hari::nama($nomorHari).' sudah dipetakan ke pola lain.'
+                    );
                 } elseif (! $mapping) {
                     Polajamhari::create([
                         'polajam_idpolajam' => $pola->idpolajam,
@@ -89,12 +77,12 @@ class PolajamService
             }
             $mappings = $pola->hari()->lockForUpdate()->get();
             $periods = $pola->jamPelajaran()->lockForUpdate()->get();
-            $days = $mappings->pluck('hari')->all();
-            if ($days !== [] && Jadwal::whereIn('hari', $days)->exists()) {
-                throw new DomainException('Pola tidak dapat dihapus karena hari tersebut sudah memiliki jadwal.');
+            if ($mappings->isNotEmpty()) {
+                throw new DomainException('Pola tidak dapat dihapus karena masih dipakai oleh pemetaan hari.');
             }
-            $mappings->each->delete();
-            $periods->each->delete();
+            if ($periods->isNotEmpty()) {
+                throw new DomainException('Pola tidak dapat dihapus karena masih memiliki jam pelajaran.');
+            }
             $pola->delete();
         });
     }

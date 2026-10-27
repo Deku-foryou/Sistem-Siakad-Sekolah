@@ -18,8 +18,8 @@ class AkademikMenuSeeder extends Seeder
         );
 
         $menus = [
-            ['appmenunew' => 'Tahun Ajaran', 'url' => 'tahunajaran', 'urut' => 1],
-            ['appmenunew' => 'Semester', 'url' => 'semester', 'urut' => 2],
+            ['appmenunew' => 'Tahun Ajaran', 'url' => 'tahunajaran', 'icon' => 'fa-solid fa-calendar-check', 'urut' => 1],
+            ['appmenunew' => 'Semester', 'url' => 'semester', 'icon' => 'fa-solid fa-layer-group', 'urut' => 2],
         ];
 
         foreach ($menus as $m) {
@@ -27,7 +27,7 @@ class AkademikMenuSeeder extends Seeder
                 ['url' => $m['url']],
                 [
                     'appmenunew' => $m['appmenunew'],
-                    'icon' => null,
+                    'icon' => $m['icon'],
                     'urut' => $m['urut'],
                     'appmenucat_idappmenucat' => $cat->idappmenucat,
                 ]

@@ -18,11 +18,11 @@ class DataIndukMenuSeeder extends Seeder
         );
 
         $menus = [
-            ['appmenunew' => 'Guru', 'url' => 'guru', 'urut' => 1],
-            ['appmenunew' => 'Siswa', 'url' => 'siswa', 'urut' => 2],
-            ['appmenunew' => 'Mapel', 'url' => 'mapel', 'urut' => 3],
-            ['appmenunew' => 'Kelas', 'url' => 'kelas', 'urut' => 4],
-            ['appmenunew' => 'Penempatan Siswa', 'url' => 'kelassiswa', 'urut' => 5],
+            ['appmenunew' => 'Guru', 'url' => 'guru', 'icon' => 'fa-solid fa-person-chalkboard', 'urut' => 1],
+            ['appmenunew' => 'Siswa', 'url' => 'siswa', 'icon' => 'fa-solid fa-user-graduate', 'urut' => 2],
+            ['appmenunew' => 'Mapel', 'url' => 'mapel', 'icon' => 'fa-solid fa-book', 'urut' => 3],
+            ['appmenunew' => 'Kelas', 'url' => 'kelas', 'icon' => 'fa-solid fa-school', 'urut' => 4],
+            ['appmenunew' => 'Penempatan Siswa', 'url' => 'kelassiswa', 'icon' => 'fa-solid fa-users', 'urut' => 5],
         ];
 
         foreach ($menus as $m) {
@@ -30,7 +30,7 @@ class DataIndukMenuSeeder extends Seeder
                 ['url' => $m['url']],
                 [
                     'appmenunew' => $m['appmenunew'],
-                    'icon' => null,
+                    'icon' => $m['icon'],
                     'urut' => $m['urut'],
                     'appmenucat_idappmenucat' => $cat->idappmenucat,
                 ]

@@ -17,9 +17,10 @@ class JampelajaranService
         string $jenis,
         mixed $jamKe,
         string $mulai,
-        string $selesai
+        string $selesai,
+        ?string $keterangan = null
     ): Jampelajaran {
-        return DB::transaction(function () use ($id, $polaId, $jenis, $jamKe, $mulai, $selesai) {
+        return DB::transaction(function () use ($id, $polaId, $jenis, $jamKe, $mulai, $selesai, $keterangan) {
             if (! in_array($jenis, ['pelajaran', 'istirahat'], true)) {
                 throw new DomainException('Jenis jam harus pelajaran atau istirahat.');
             }
@@ -30,6 +31,10 @@ class JampelajaranService
             $selesai = self::normalisasiWaktu($selesai);
             if ($mulai >= $selesai) {
                 throw new DomainException('Jam selesai harus setelah jam mulai.');
+            }
+            $keterangan = trim((string) $keterangan);
+            if (mb_strlen($keterangan) > 100) {
+                throw new DomainException('Keterangan maksimal 100 karakter.');
             }
 
             if ($jenis === 'pelajaran') {
@@ -50,8 +55,8 @@ class JampelajaranService
                 && ((int) $row->polajam_idpolajam !== $polaId
                     || $row->jenis !== $jenis
                     || (int) $row->jam_ke !== (int) $jamKe)
-                && self::dipakai($row)) {
-                throw new DomainException('Nomor jam tidak dapat diubah karena sudah dipakai jadwal.');
+                && ($jumlahJadwal = self::jumlahJadwal($row)) > 0) {
+                throw new DomainException('Nomor jam tidak dapat diubah karena sudah dipakai oleh '.$jumlahJadwal.' jadwal.');
             }
 
             $duplicate = Jampelajaran::where('polajam_idpolajam', $polaId)
@@ -77,6 +82,7 @@ class JampelajaranService
             $row->jam_ke = $jamKe;
             $row->mulai = $mulai;
             $row->selesai = $selesai;
+            $row->keterangan = $keterangan !== '' ? $keterangan : null;
             $row->save();
 
             return $row;
@@ -90,22 +96,23 @@ class JampelajaranService
             if (! $row) {
                 throw new DomainException('Baris jam tidak ditemukan.');
             }
-            if (self::dipakai($row)) {
-                throw new DomainException('Jam tidak dapat dihapus karena sudah dipakai jadwal.');
+            $jumlahJadwal = self::jumlahJadwal($row);
+            if ($jumlahJadwal > 0) {
+                throw new DomainException('Jam tidak dapat dihapus karena sudah dipakai oleh '.$jumlahJadwal.' jadwal.');
             }
             $row->delete();
         });
     }
 
-    private static function dipakai(Jampelajaran $row): bool
+    private static function jumlahJadwal(Jampelajaran $row): int
     {
         if ($row->jenis !== 'pelajaran' || $row->jam_ke === null) {
-            return false;
+            return 0;
         }
 
         $days = Polajamhari::where('polajam_idpolajam', $row->polajam_idpolajam)->pluck('hari');
 
-        return Jadwal::whereIn('hari', $days)->where('jam_ke', $row->jam_ke)->exists();
+        return Jadwal::whereIn('hari', $days)->where('jam_ke', $row->jam_ke)->count();
     }
 
     private static function normalisasiWaktu(string $value): string

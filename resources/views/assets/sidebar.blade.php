@@ -47,6 +47,17 @@
         flex: 1;
         min-height: 0;
     }
+
+    .icon_sidebar_fa {
+        display: inline-flex;
+        flex: 0 0 16px;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 17px;
+        font-size: 17px;
+        line-height: 17px;
+    }
 </style>
 
 <div class="sidebar sidebar-fixed bg-white border-end" id="sidebar" style="border-right: 1px solid #f3f4f6;">
@@ -112,14 +123,12 @@
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is($datas->appmenunew->url) ? 'active' : '' }}"
                                     href="/{{ $datas->appmenunew->url }}">
-                                    @if ($datas->appmenunew->icon)
-                                        @if(str_contains($datas->appmenunew->icon, '<i'))
-                                            <span class="me-3"
-                                                style="display:inline-flex; width:16px; justify-content:center;">{!! $datas->appmenunew->icon !!}</span>
-                                        @else
-                                            <img src="{{ asset('asset_offline/icon/' . $datas->appmenunew->icon) }}" class="icon_sidebar me-3"
-                                                style="max-width: 16px;">
-                                        @endif
+                                    @php($menuIcon = trim((string) $datas->appmenunew->icon))
+                                    @if (str_starts_with($menuIcon, 'fa-') || str_starts_with($menuIcon, 'fa '))
+                                        <i class="{{ $menuIcon }} icon_sidebar_fa me-3" aria-hidden="true"></i>
+                                    @elseif (str_ends_with(strtolower($menuIcon), '.svg'))
+                                        <img src="{{ asset('asset_offline/icon/' . $menuIcon) }}" class="icon_sidebar me-3"
+                                            style="max-width: 16px;">
                                     @else
                                         <i class="fa-regular fa-folder-open me-3"></i>
                                     @endif

@@ -15,15 +15,15 @@
             </select>
         </div></div>
         <div class="table-responsive"><table class="table table-bordered table-striped">
-            <thead><tr><th>Urutan/Waktu</th><th>Jenis</th><th>Jam Ke</th><th>Mulai</th><th>Selesai</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Urutan/Waktu</th><th>Jenis</th><th>Jam Ke</th><th>Mulai</th><th>Selesai</th><th>Keterangan</th><th>Aksi</th></tr></thead>
             <tbody>
             @forelse ($rows as $row)
                 <tr><td>{{ $loop->iteration }}</td><td>{{ ucfirst($row->jenis) }}</td><td>{{ $row->jam_ke ?? '-' }}</td>
-                    <td>{{ substr($row->mulai, 0, 5) }}</td><td>{{ substr($row->selesai, 0, 5) }}</td>
+                    <td>{{ substr($row->mulai, 0, 5) }}</td><td>{{ substr($row->selesai, 0, 5) }}</td><td>{{ $row->keterangan ?? '-' }}</td>
                     <td class="text-nowrap"><button class="btn btn-sm btn-warning" wire:click="edit({{ $row->idjampelajaran }})"><i class="fa-regular fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-danger" wire:click="deleteConfirmation({{ $row->idjampelajaran }})"><i class="fa-solid fa-trash-can"></i></button></td></tr>
             @empty
-                <tr><td colspan="6" class="text-center">Belum ada jam pada pola ini.</td></tr>
+                <tr><td colspan="7" class="text-center">Belum ada jam pada pola ini.</td></tr>
             @endforelse
             </tbody>
         </table></div>
@@ -35,6 +35,7 @@
             @if ($jenis === 'pelajaran')<label>Jam Ke</label><input type="number" min="1" class="form-control mb-2" wire:model="jam_ke">@endif
             <label>Mulai</label><input type="time" class="form-control mb-2" wire:model="mulai">
             <label>Selesai</label><input type="time" class="form-control" wire:model="selesai">
+            <label class="mt-2">Keterangan</label><input type="text" maxlength="100" class="form-control" wire:model="keterangan">
         </div><div class="modal-footer"><button class="btn btn-primary">Simpan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button></div></form>
     </div></div></div>
     <div wire:ignore.self class="modal fade" id="editJamPelajaranModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
@@ -44,6 +45,7 @@
             @if ($jenis === 'pelajaran')<label>Jam Ke</label><input type="number" min="1" class="form-control mb-2" wire:model="jam_ke">@endif
             <label>Mulai</label><input type="time" class="form-control mb-2" wire:model="mulai">
             <label>Selesai</label><input type="time" class="form-control" wire:model="selesai">
+            <label class="mt-2">Keterangan</label><input type="text" maxlength="100" class="form-control" wire:model="keterangan">
         </div><div class="modal-footer"><button class="btn btn-primary">Simpan Perubahan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button></div></form>
     </div></div></div>
     <div wire:ignore.self class="modal fade" id="deleteJamPelajaranModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">

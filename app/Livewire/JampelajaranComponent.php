@@ -31,6 +31,8 @@ class JampelajaranComponent extends Component
 
     public $selesai = '';
 
+    public $keterangan = '';
+
     public function mount(): void
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
@@ -60,6 +62,7 @@ class JampelajaranComponent extends Component
         abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->idjampelajaran = null;
         $this->jenis = 'pelajaran';
+        $this->keterangan = '';
         $this->setDefaultTimes();
         $this->dispatch('show-add-jampelajaran-modal');
     }
@@ -80,6 +83,7 @@ class JampelajaranComponent extends Component
         $this->jam_ke = $row->jam_ke ?? '';
         $this->mulai = substr($row->mulai, 0, 5);
         $this->selesai = substr($row->selesai, 0, 5);
+        $this->keterangan = $row->keterangan ?? '';
         $this->dispatch('show-edit-jampelajaran-modal');
     }
 
@@ -111,7 +115,7 @@ class JampelajaranComponent extends Component
     public function close(): void
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
-        $this->reset(['idjampelajaran', 'jenis', 'jam_ke', 'mulai', 'selesai']);
+        $this->reset(['idjampelajaran', 'jenis', 'jam_ke', 'mulai', 'selesai', 'keterangan']);
         $this->jenis = 'pelajaran';
         $this->resetValidation();
         $this->dispatch('close-jampelajaran-modal');
@@ -141,7 +145,8 @@ class JampelajaranComponent extends Component
                 (string) $this->jenis,
                 $this->jam_ke,
                 (string) $this->mulai,
-                (string) $this->selesai
+                (string) $this->selesai,
+                (string) $this->keterangan
             );
             $this->alert('success', $id ? 'Jam berhasil diperbarui.' : 'Jam berhasil ditambahkan.');
             $this->close();
@@ -158,11 +163,11 @@ class JampelajaranComponent extends Component
         $last = Jampelajaran::where('polajam_idpolajam', $this->polajam_idpolajam)
             ->orderByDesc('selesai')
             ->first();
-        $this->mulai = $last ? substr($last->selesai, 0, 5) : '07:00';
         $nextJam = (int) Jampelajaran::where('polajam_idpolajam', $this->polajam_idpolajam)
             ->where('jenis', 'pelajaran')
             ->max('jam_ke') + 1;
         $this->jam_ke = (string) $nextJam;
-        $this->selesai = date('H:i', strtotime($this->mulai.' +45 minutes'));
+        $this->mulai = $last ? substr($last->selesai, 0, 5) : '';
+        $this->selesai = $last ? date('H:i', strtotime($this->mulai.' +45 minutes')) : '';
     }
 }

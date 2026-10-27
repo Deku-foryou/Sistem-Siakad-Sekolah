@@ -88,8 +88,12 @@ class JadwalService
                 $hari,
                 $jamKe
             );
-            if ($studentConflicts !== []) {
-                throw new DomainException('Siswa bentrok: '.implode(', ', array_slice($studentConflicts, 0, 5)).'.');
+            if ($studentConflicts['count'] > 0) {
+                $names = implode(', ', array_slice($studentConflicts['names'], 0, 5));
+                $suffix = $studentConflicts['count'] > 5 ? ', dan lainnya' : '';
+                throw new DomainException(
+                    'Siswa bentrok: '.$studentConflicts['count'].' siswa ('.$names.$suffix.').'
+                );
             }
 
             if ($current) {
@@ -129,7 +133,7 @@ class JadwalService
 
     private static function siswaBentrok(int $tahunajaranId, int $semesterId, int $kelasId, int $hari, int $jamKe): array
     {
-        return DB::table('kelassiswa as anggota_aktif')
+        $siswa = DB::table('kelassiswa as anggota_aktif')
             ->join('kelassiswa as anggota_lain', 'anggota_lain.siswa_idsiswa', '=', 'anggota_aktif.siswa_idsiswa')
             ->join('kelas as kelas_lain', 'kelas_lain.idkelas', '=', 'anggota_lain.kelas_idkelas')
             ->join('pengampu as pengampu_lain', 'pengampu_lain.kelas_idkelas', '=', 'kelas_lain.idkelas')
@@ -144,9 +148,12 @@ class JadwalService
             ->select('siswa.idsiswa', 'siswa.nama')
             ->distinct()
             ->orderBy('siswa.nama')
-            ->limit(20)
             ->get()
-            ->pluck('nama')
-            ->all();
+            ->pluck('nama');
+
+        return [
+            'count' => $siswa->count(),
+            'names' => $siswa->all(),
+        ];
     }
 }
