@@ -13,9 +13,13 @@ use App\Livewire\DocsCreateComponent;
 use App\Livewire\DocsEditComponent;
 use App\Livewire\GuruComponent;
 use App\Livewire\HomedocsComponent;
+use App\Livewire\JadwalComponent;
+use App\Livewire\JampelajaranComponent;
 use App\Livewire\KelasComponent;
 use App\Livewire\KelassiswaComponent;
 use App\Livewire\MapelComponent;
+use App\Livewire\PengampuComponent;
+use App\Livewire\PolajamComponent;
 use App\Livewire\RolecatComponent;
 use App\Livewire\RoleComponent;
 use App\Livewire\SemesterComponent;
@@ -51,7 +55,7 @@ Route::get('refresh-captcha', function () {
     return response()->json(['captcha' => captcha_src('flat')]);
 });
 
-Route::middleware([auth::class, 'force.password'])->group(
+Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
     function () {
 
         Route::get('/setting', [AuthController::class, 'index']);
@@ -79,7 +83,7 @@ Route::middleware([auth::class, 'force.password'])->group(
 
         // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
         // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa'];
+        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal'];
 
         foreach ($appMenuUrls as $url) {
             if (in_array($url, $explicitUrls, true)) {
@@ -107,6 +111,10 @@ Route::middleware([auth::class, 'force.password'])->group(
             Route::get('mapel', MapelComponent::class);
             Route::get('kelas', KelasComponent::class);
             Route::get('kelassiswa', KelassiswaComponent::class);
+            Route::get('polajam', PolajamComponent::class)->name('polajam');
+            Route::get('jampelajaran', JampelajaranComponent::class)->name('jampelajaran');
+            Route::get('pengampu', PengampuComponent::class)->name('pengampu');
+            Route::get('jadwal', JadwalComponent::class)->name('jadwal');
             Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
                 ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
                 ->name('import.template');

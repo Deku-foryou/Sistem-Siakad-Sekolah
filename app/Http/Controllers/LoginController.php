@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\LoginBlockService;
+use App\Support\BerandaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -54,7 +55,7 @@ class LoginController extends Controller
             RateLimiter::clear($key);
             $request->session()->regenerate();
 
-            return redirect()->intended('dashboard');
+            return redirect()->to(BerandaUrl::untuk($user));
         }
 
         RateLimiter::hit($key, 60);

@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'menu.access' => \App\Http\Middleware\MenuAccessMiddleware::class,
         'check.level' => \App\Http\Middleware\CheckUserLevel::class,
         'force.password' => \App\Http\Middleware\ForcePasswordChange::class,
+        'cek.akun' => \App\Http\Middleware\CekAkunAktif::class,
     ];
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\BerandaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -59,6 +60,7 @@ class AuthController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $passwordChanged = false;
 
         $user->name = $request->name;
         // username read-only: tidak diubah dari form
@@ -88,11 +90,14 @@ class AuthController extends Controller
             // Hash and save the new password
             $user->password = Hash::make($request->password);
             $user->wajib_ganti_password = false;
+            $passwordChanged = true;
         }
 
         $user->save();
 
-        return redirect('/setting')->with('success', 'Data Berhasil Diperbarui');
+        $redirect = $passwordChanged ? BerandaUrl::untuk($user) : '/setting';
+
+        return redirect($redirect)->with('success', 'Data Berhasil Diperbarui');
     }
 
     /**
