@@ -19,13 +19,13 @@ class KelasService
         $nipWali = trim((string) ($data['nip_wali'] ?? ''));
 
         if ($nama === '') {
-            $result['errors']['nama'] = 'Nama kelas wajib diisi';
+            $result['errors']['nama'] = 'Nama Kelas wajib diisi';
         }
         if (! in_array($tingkat, ['10', '11', '12'], true)) {
             $result['errors']['tingkat'] = 'Tingkat harus 10, 11, atau 12';
         }
         if (! in_array($jenis, ['induk', 'mapel_pilihan'], true)) {
-            $result['errors']['jenis'] = 'Jenis kelas harus induk atau mapel_pilihan';
+            $result['errors']['jenis'] = 'Jenis Kelas harus Induk atau Mapel pilihan';
         }
 
         $tahunAjaran = $tahunAjaranNama === ''
@@ -43,7 +43,7 @@ class KelasService
 
         $guru = null;
         if ($nipWali !== '' && $jenis !== 'induk') {
-            $result['errors']['nip_wali'] = 'NIP wali hanya boleh diisi untuk kelas induk';
+            $result['errors']['nip_wali'] = 'Wali hanya boleh diisi untuk kelas Induk';
         } elseif ($nipWali !== '') {
             $guru = Guru::where('nip', $nipWali)->first();
             if (! $guru && ctype_digit($nipWali)) {
@@ -53,12 +53,12 @@ class KelasService
                 $guru = null;
             }
             if (! $guru) {
-                $result['errors']['nip_wali'] = 'Guru wali tidak ditemukan atau tidak aktif';
+                $result['errors']['nip_wali'] = 'Wali tidak ditemukan atau tidak aktif';
             } elseif ($tahunAjaran && Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
                 ->where('jenis', 'induk')
                 ->where('guru_idguru', $guru->idguru)
                 ->exists()) {
-                $result['errors']['nip_wali'] = 'Guru wali sudah menjadi wali kelas induk pada tahun ajaran ini';
+                $result['errors']['nip_wali'] = 'Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini';
             }
         }
 

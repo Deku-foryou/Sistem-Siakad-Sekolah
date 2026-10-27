@@ -35,6 +35,18 @@
         margin-top: 1.5rem;
         padding-left: 20px;
     }
+
+    .padding_sidebar {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .sidebar-menu {
+        flex: 1;
+        min-height: 0;
+    }
 </style>
 
 <div class="sidebar sidebar-fixed bg-white border-end" id="sidebar" style="border-right: 1px solid #f3f4f6;">
@@ -49,6 +61,7 @@
             </div>
         </div>
 
+        <div class="sidebar-menu" data-simplebar>
         <ul class="sidebar-nav p-0 mt-3" data-coreui="navigation">
             <li class="nav-title">Main</li>
 
@@ -118,5 +131,6 @@
                 @endif
             @endforeach
         </ul>
+        </div>
     </div>
 </div>

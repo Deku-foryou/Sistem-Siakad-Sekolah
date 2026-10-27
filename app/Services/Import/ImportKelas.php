@@ -44,24 +44,24 @@ class ImportKelas extends ImportBase
 
         $jenis = mb_strtolower($this->wajibTeks($values, 'jenis'), 'UTF-8');
         if (! in_array($jenis, ['induk', 'mapel_pilihan'], true)) {
-            throw new InvalidArgumentException('Jenis kelas harus induk atau mapel_pilihan.');
+            throw new InvalidArgumentException('Jenis Kelas harus Induk atau Mapel pilihan.');
         }
 
         $wali = $this->teksOpsional($values, 'nip_wali');
         if ($jenis !== 'induk' && $wali !== null) {
-            throw new InvalidArgumentException('NIP wali hanya boleh diisi untuk kelas induk.');
+            throw new InvalidArgumentException('Wali hanya boleh diisi untuk kelas Induk.');
         }
         $guru = null;
         if ($jenis === 'induk' && $wali !== null) {
             $guru = Guru::where('nip', $this->normalisasiNip($wali))->where('status', 'aktif')->first();
             if (! $guru) {
-                throw new InvalidArgumentException('Guru wali tidak ditemukan atau tidak aktif.');
+                throw new InvalidArgumentException('Wali tidak ditemukan atau tidak aktif.');
             }
             if (Kelas::where('tahunajaran_idtahunajaran', $tahun->idtahunajaran)
                 ->where('jenis', 'induk')
                 ->where('guru_idguru', $guru->idguru)
                 ->exists()) {
-                throw new InvalidArgumentException('Guru wali sudah menjadi wali kelas induk pada tahun ajaran ini.');
+                throw new InvalidArgumentException('Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini.');
             }
         }
 

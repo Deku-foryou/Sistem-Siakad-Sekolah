@@ -43,12 +43,12 @@ class PenempatanService
                 })
                 ->exists();
             if ($hasInduk) {
-                $result['errors']['siswa'] = 'Siswa sudah memiliki kelas induk pada tahun ajaran ini';
+                $result['errors']['siswa'] = 'Siswa sudah memiliki kelas Induk pada Tahun Ajaran ini';
 
                 return $result;
             }
             if (! $kelas->guru_idguru || ! $kelas->wali()->where('status', 'aktif')->exists()) {
-                $result['errors']['kelas'] = 'Kelas induk harus memiliki guru wali aktif';
+                $result['errors']['kelas'] = 'Kelas Induk harus memiliki Wali yang aktif';
 
                 return $result;
             }

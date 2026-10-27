@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\HandlesImport;
 use App\Models\Siswa;
+use App\Models\Tahunajaran;
 use App\Models\User;
 use App\Services\PaketMenuService;
 use App\Services\SiswaService;
@@ -19,6 +20,8 @@ class SiswaComponent extends Component
     use WithPagination;
 
     public $idsiswa;
+
+    public $detailId;
 
     public $user_iduser;
 
@@ -62,6 +65,20 @@ class SiswaComponent extends Component
     public function updatingPerpage()
     {
         $this->resetPage();
+    }
+
+    public function detailSiswa($id): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        $this->detailId = (int) $id;
+        $this->dispatch('show-detail-siswa-modal');
+    }
+
+    public function tutupDetailSiswa(): void
+    {
+        $this->detailId = null;
+        $this->dispatch('close-detail-siswa-modal');
     }
 
     public function sinkronkanPaket(): void
@@ -231,8 +248,66 @@ class SiswaComponent extends Component
             ->search($this->search)
             ->paginate($this->perPage);
 
+        $detailSiswa = null;
+        $tahunAjaranAktif = null;
+        $kelasIndukAktif = null;
+        $kelasPilihanAktif = collect();
+        $riwayatKelas = collect();
+
+        if ($this->detailId && auth()->user()?->level === 'superadmin') {
+            $tahunAjaranAktif = Tahunajaran::query()
+                ->select(['idtahunajaran', 'nama'])
+                ->where('aktif', true)
+                ->first();
+
+            $detailSiswa = Siswa::query()
+                ->select([
+                    'idsiswa', 'user_iduser', 'nisn', 'nis', 'nama', 'jenis_kelamin',
+                    'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'nama_ayah',
+                    'nama_ibu', 'telepon_ortu', 'tahun_masuk', 'status',
+                ])
+                ->with([
+                    'user:id,username,wajib_ganti_password',
+                    'kelassiswa' => fn ($query) => $query
+                        ->select(['idkelassiswa', 'siswa_idsiswa', 'kelas_idkelas'])
+                        ->orderByDesc('idkelassiswa'),
+                    'kelassiswa.kelas' => fn ($query) => $query
+                        ->select([
+                            'idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat',
+                            'jenis', 'guru_idguru',
+                        ]),
+                    'kelassiswa.kelas.tahunajaran:idtahunajaran,nama',
+                    'kelassiswa.kelas.wali:idguru,nama',
+                ])
+                ->find($this->detailId);
+
+            if ($detailSiswa) {
+                $riwayatKelas = $detailSiswa->kelassiswa
+                    ->sortByDesc(fn ($penempatan) => $penempatan->kelas?->tahunajaran?->nama ?? '')
+                    ->values();
+
+                if ($tahunAjaranAktif) {
+                    $kelasTahunAktif = $detailSiswa->kelassiswa->filter(
+                        fn ($penempatan) => (int) $penempatan->kelas?->tahunajaran_idtahunajaran === (int) $tahunAjaranAktif->idtahunajaran
+                    );
+                    $kelasIndukAktif = $kelasTahunAktif->first(
+                        fn ($penempatan) => $penempatan->kelas?->jenis === 'induk'
+                    )?->kelas;
+                    $kelasPilihanAktif = $kelasTahunAktif
+                        ->filter(fn ($penempatan) => $penempatan->kelas?->jenis === 'mapel_pilihan')
+                        ->map(fn ($penempatan) => $penempatan->kelas)
+                        ->values();
+                }
+            }
+        }
+
         return view('livewire.siswa-component', [
             'siswas' => $siswa,
+            'detailSiswa' => $detailSiswa,
+            'tahunAjaranAktif' => $tahunAjaranAktif,
+            'kelasIndukAktif' => $kelasIndukAktif,
+            'kelasPilihanAktif' => $kelasPilihanAktif,
+            'riwayatKelas' => $riwayatKelas,
         ]);
     }
 }

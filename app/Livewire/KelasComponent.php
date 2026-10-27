@@ -120,7 +120,7 @@ class KelasComponent extends Component
         }
 
         if ($this->guru_idguru && $this->jenis !== 'induk') {
-            $this->alert('error', 'Wali kelas hanya untuk kelas induk');
+            $this->alert('error', 'Wali hanya untuk kelas Induk');
 
             return;
         }
@@ -132,7 +132,7 @@ class KelasComponent extends Component
                 ->where('idkelas', '!=', $this->idkelas)
                 ->exists();
             if ($exists) {
-                $this->alert('error', 'Guru sudah menjadi wali kelas lain di tahun ajaran ini');
+                $this->alert('error', 'Guru sudah menjadi Wali kelas lain di Tahun Ajaran ini');
 
                 return;
             }

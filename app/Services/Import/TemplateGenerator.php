@@ -71,9 +71,9 @@ class TemplateGenerator
             'telepon', 'telepon_ortu' => 'Teks; spasi dan tanda hubung dihapus.',
             'tahun_ajaran' => 'Harus sama dengan nama tahun ajaran yang terdaftar.',
             'tingkat' => '10, 11, atau 12.',
-            'jenis' => 'induk atau mapel_pilihan.',
-            'nip_wali' => 'Opsional hanya untuk kelas induk; guru harus aktif.',
-            'nama_kelas' => 'Nama kelas yang sudah terdaftar pada tahun ajaran yang dipilih.',
+            'jenis' => 'Induk (induk) atau Mapel pilihan (mapel_pilihan).',
+            'nip_wali' => 'Opsional untuk Wali kelas Induk; guru harus aktif.',
+            'nama_kelas' => 'Nama Kelas yang sudah terdaftar pada tahun ajaran yang dipilih.',
             'kelompok' => 'wajib atau pilihan.',
             default => 'Teks; kolom wajib diisi kecuali disebut opsional.',
         };

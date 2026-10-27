@@ -32,14 +32,14 @@ Data Kelas
         </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
-                <thead><tr><th>Tahun Ajaran</th><th>Nama</th><th>Tingkat</th><th>Jenis</th><th>Wali</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>Tahun Ajaran</th><th>Nama Kelas</th><th>Tingkat</th><th>Jenis Kelas</th><th>Wali</th><th>Aksi</th></tr></thead>
                 <tbody>
                     @foreach ($kelases as $k)
                         <tr>
                             <td>{{ $k->tahunajaran->nama ?? '-' }}</td>
                             <td>{{ $k->nama }}</td>
                             <td>{{ $k->tingkat }}</td>
-                            <td>{{ $k->jenis }}</td>
+                            <td>{{ $k->jenis === 'induk' ? 'Induk' : 'Mapel pilihan' }}</td>
                             <td>{{ $k->wali->nama ?? '-' }}</td>
                             <td>
                                 <button class="btn btn-sm btn-warning" wire:click="editKelas({{ $k->idkelas }})"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -65,10 +65,10 @@ Data Kelas
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
+                        <div class="mb-2"><label>Nama Kelas</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-                        <div class="mb-2"><label>Jenis</label><select class="form-select" wire:model="jenis"><option value="induk">induk</option><option value="mapel_pilihan">mapel_pilihan</option></select></div>
-                        <div class="mb-2"><label>Wali Kelas (hanya induk)</label>
+                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
+                        <div class="mb-2"><label>Wali (hanya kelas induk)</label>
                             <select class="form-select" wire:model="guru_idguru">
                                 <option value="">-</option>
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
@@ -96,10 +96,10 @@ Data Kelas
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
+                        <div class="mb-2"><label>Nama Kelas</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-                        <div class="mb-2"><label>Jenis</label><select class="form-select" wire:model="jenis"><option value="induk">induk</option><option value="mapel_pilihan">mapel_pilihan</option></select></div>
-                        <div class="mb-2"><label>Wali Kelas</label>
+                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
+                        <div class="mb-2"><label>Wali (hanya kelas induk)</label>
                             <select class="form-select" wire:model="guru_idguru">
                                 <option value="">-</option>
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach

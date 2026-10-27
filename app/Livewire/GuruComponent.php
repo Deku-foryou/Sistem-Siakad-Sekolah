@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\HandlesImport;
 use App\Models\Guru;
+use App\Models\Tahunajaran;
 use App\Models\User;
 use App\Services\GuruService;
 use App\Services\PaketMenuService;
@@ -19,6 +20,8 @@ class GuruComponent extends Component
     use WithPagination;
 
     public $idguru;
+
+    public $detailId;
 
     public $user_iduser;
 
@@ -52,6 +55,20 @@ class GuruComponent extends Component
     public function updatingPerpage()
     {
         $this->resetPage();
+    }
+
+    public function detailGuru($id): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        $this->detailId = (int) $id;
+        $this->dispatch('show-detail-guru-modal');
+    }
+
+    public function tutupDetailGuru(): void
+    {
+        $this->detailId = null;
+        $this->dispatch('close-detail-guru-modal');
     }
 
     public function sinkronkanPaket(): void
@@ -206,8 +223,38 @@ class GuruComponent extends Component
             ->search($this->search)
             ->paginate($this->perPage);
 
+        $detailGuru = null;
+        $tahunAjaranAktif = null;
+
+        if ($this->detailId && auth()->user()?->level === 'superadmin') {
+            $tahunAjaranAktif = Tahunajaran::query()
+                ->select(['idtahunajaran', 'nama'])
+                ->where('aktif', true)
+                ->first();
+
+            $detailGuru = Guru::query()
+                ->select([
+                    'idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin',
+                    'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'status',
+                ])
+                ->with([
+                    'user:id,username,wajib_ganti_password',
+                    'kelas' => fn ($query) => $query
+                        ->select([
+                            'idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat',
+                            'jenis', 'guru_idguru',
+                        ])
+                        ->where('jenis', 'induk')
+                        ->orderByDesc('tahunajaran_idtahunajaran'),
+                    'kelas.tahunajaran:idtahunajaran,nama',
+                ])
+                ->find($this->detailId);
+        }
+
         return view('livewire.guru-component', [
             'gurus' => $guru,
+            'detailGuru' => $detailGuru,
+            'tahunAjaranAktif' => $tahunAjaranAktif,
         ]);
     }
 }
