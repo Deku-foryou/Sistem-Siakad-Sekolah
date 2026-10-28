@@ -29,6 +29,8 @@ class KelasComponent extends Component
 
     public $guru_idguru;
 
+    public $jurusan_id;
+
     public $filterTahunajaran;
 
     public $search = '';
@@ -64,6 +66,7 @@ class KelasComponent extends Component
             'nama' => 'required',
             'tingkat' => 'required|in:10,11,12',
             'jenis' => 'required|in:induk,mapel_pilihan',
+            'jurusan_id' => 'nullable|exists:jurusan,idjurusan',
         ]);
 
         $data = [
@@ -72,6 +75,7 @@ class KelasComponent extends Component
             'jenis' => $this->jenis,
             'tahun_ajaran' => $this->tahunajaran_idtahunajaran,
             'nip_wali' => $this->guru_idguru,
+            'jurusan_id' => $this->jurusan_id,
         ];
 
         $result = KelasService::buat($data);
@@ -82,7 +86,7 @@ class KelasComponent extends Component
             return;
         }
 
-        $this->reset(['idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat', 'jenis', 'guru_idguru']);
+        $this->reset(['idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat', 'jenis', 'guru_idguru', 'jurusan_id']);
         $this->alert('success', 'Kelas berhasil ditambahkan');
         $this->dispatch('close-kelas-modal');
     }
@@ -103,6 +107,7 @@ class KelasComponent extends Component
         $this->tingkat = $kelas->tingkat;
         $this->jenis = $kelas->jenis;
         $this->guru_idguru = $kelas->guru_idguru;
+        $this->jurusan_id = $kelas->jurusan_id;
         $this->dispatch('show-edit-kelas-modal');
     }
 
@@ -113,6 +118,7 @@ class KelasComponent extends Component
             'nama' => 'required',
             'tingkat' => 'required|in:10,11,12',
             'jenis' => 'required|in:induk,mapel_pilihan',
+            'jurusan_id' => 'nullable|exists:jurusan,idjurusan',
         ]);
 
         if ($this->jenis !== 'induk') {
@@ -144,9 +150,10 @@ class KelasComponent extends Component
         $kelas->tingkat = $this->tingkat;
         $kelas->jenis = $this->jenis;
         $kelas->guru_idguru = $this->guru_idguru;
+        $kelas->jurusan_id = $this->jurusan_id;
         $kelas->save();
 
-        $this->reset(['idkelas', 'nama', 'guru_idguru']);
+        $this->reset(['idkelas', 'nama', 'guru_idguru', 'jurusan_id']);
         $this->alert('success', 'Kelas berhasil diperbarui');
         $this->dispatch('close-kelas-modal');
     }
@@ -189,11 +196,13 @@ class KelasComponent extends Component
 
         $tahunajarans = Tahunajaran::orderBy('nama')->get();
         $gurus = Guru::where('status', 'aktif')->orderBy('nama')->get();
+        $jurusan = Jurusan::where('aktif', true)->orderBy('nama')->get();
 
         return view('livewire.kelas-component', [
             'kelases' => $kelas,
             'tahunajarans' => $tahunajarans,
             'gurus' => $gurus,
+            'jurusan' => $jurusan,
         ]);
     }
 }

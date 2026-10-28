@@ -5,6 +5,7 @@
         <h3 class="fw-bold">Pola Jam</h3>
         <button class="btn btn-primary" wire:click="$dispatch('show-add-polajam-modal')"><i class="fa-solid fa-plus"></i></button>
     </div>
+    <div class="alert alert-info">Jam per hari diatur di menu Jam Pelajaran. Halaman ini untuk pengaturan lanjutan.</div>
     <div class="card border-0 shadow-sm mb-3"><div class="card-body">
         <input class="form-control" placeholder="Cari pola..." wire:model.live.debounce.300ms="search">
     </div></div>
@@ -17,7 +18,7 @@
                 <td>{{ $pola->hari->pluck('hari')->map(fn ($day) => $hariOptions[$day] ?? '-')->join(', ') }}</td>
                 <td>{{ $pola->jamPelajaran->where('jenis', 'pelajaran')->count() }}</td>
                 <td class="text-nowrap">
-                    <a class="btn btn-sm btn-outline-primary" href="{{ url('/jampelajaran') }}?pola={{ $pola->idpolajam }}">Atur Jam</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url('/jampelajaran') }}?hari={{ $pola->hari->first()?->hari ?? 1 }}">Atur Jam</a>
                     <button class="btn btn-sm btn-warning" wire:click="edit({{ $pola->idpolajam }})"><i class="fa-regular fa-pen-to-square"></i></button>
                     <button class="btn btn-sm btn-danger" wire:click="deleteConfirmation({{ $pola->idpolajam }})"><i class="fa-solid fa-trash-can"></i></button>
                 </td>

@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Pengampu;
 use App\Models\Polajamhari;
+use App\Models\Publikasijadwal;
 use App\Models\Semester;
 use App\Services\JadwalService;
 use App\Support\Hari;
@@ -132,6 +133,28 @@ class JadwalComponent extends Component
         }
     }
 
+    public function publikasikan(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+        try {
+            JadwalService::publikasikan((int) $this->filterSemester, (int) $this->filterKelas);
+            $this->alert('success', 'Jadwal berhasil dipublikasikan.');
+        } catch (DomainException $exception) {
+            $this->alert('error', $exception->getMessage());
+        }
+    }
+
+    public function tarikPublikasi(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+        try {
+            JadwalService::tarikPublikasi((int) $this->filterSemester, (int) $this->filterKelas);
+            $this->alert('success', 'Publikasi jadwal ditarik.');
+        } catch (DomainException $exception) {
+            $this->alert('error', $exception->getMessage());
+        }
+    }
+
     public function close(): void
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
@@ -186,8 +209,24 @@ class JadwalComponent extends Component
                 ->first()
             : null;
 
+        $publikasiAktif = ($this->filterSemester && $this->filterKelas)
+            ? Publikasijadwal::where('semester_idsemester', $this->filterSemester)
+                ->where('kelas_idkelas', $this->filterKelas)
+                ->where('status', 'published')
+                ->orderByDesc('idpublikasijadwal')
+                ->first()
+            : null;
+        $publikasiTerakhir = ($this->filterSemester && $this->filterKelas)
+            ? Publikasijadwal::where('semester_idsemester', $this->filterSemester)
+                ->where('kelas_idkelas', $this->filterKelas)
+                ->orderByDesc('idpublikasijadwal')
+                ->first()
+            : null;
+
         return view('livewire.jadwal-component', [
             'semesters' => $semesters,
+            'publikasiAktif' => $publikasiAktif,
+            'publikasiTerakhir' => $publikasiTerakhir,
             'kelasOptions' => $kelas,
             'mappings' => $mappings,
             'periods' => $periods,

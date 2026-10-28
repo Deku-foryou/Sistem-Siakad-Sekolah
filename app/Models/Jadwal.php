@@ -10,7 +10,7 @@ class Jadwal extends Model
 
     protected $primaryKey = 'idjadwal';
 
-    protected $fillable = ['pengampu_idpengampu', 'hari', 'jam_ke'];
+    protected $fillable = ['pengampu_idpengampu', 'hari', 'jam_ke', 'status'];
 
     public function pengampu()
     {

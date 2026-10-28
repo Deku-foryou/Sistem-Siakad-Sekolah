@@ -2,8 +2,26 @@
 
 <div class="container-fluid mb-5 px-4" style="margin-top:20px">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <div><h3 class="fw-bold mb-1">Jadwal Pelajaran</h3><span class="text-muted">Pilih sel untuk menambah atau mengganti pengampu.</span></div>
+        <div><h3 class="fw-bold mb-1">Jadwal Pelajaran</h3><span class="text-muted">Pilih sel untuk menambah atau mengganti mapel dan guru.</span></div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" wire:click="publikasikan">Publikasikan</button>
+            <button class="btn btn-warning" wire:click="tarikPublikasi">Tarik Publikasi</button>
+        </div>
     </div>
+    @if ($publikasiAktif)
+        <div class="alert alert-success">
+            DIPUBLIKASIKAN | Nomor: {{ $publikasiAktif->nomor }} | Tanggal: {{ $publikasiAktif->published_at }}
+            <a class="btn btn-sm btn-primary" href="{{ url('/bukti-publikasi/'.$publikasiAktif->idpublikasijadwal) }}">Lihat Bukti</a>
+        </div>
+    @else
+        <div class="alert alert-warning">DRAFT</div>
+        @if ($publikasiTerakhir && $publikasiTerakhir->status === 'withdrawn')
+            <div class="alert alert-secondary">
+                Publikasi sebelumnya ({{ $publikasiTerakhir->nomor }}) telah ditarik pada {{ $publikasiTerakhir->withdrawn_at }}.
+                <a class="btn btn-sm btn-outline-primary" href="{{ url('/bukti-publikasi/'.$publikasiTerakhir->idpublikasijadwal) }}">Lihat Bukti</a>
+            </div>
+        @endif
+    @endif
     <div class="card border-0 shadow-sm mb-3"><div class="card-body row g-2">
         <div class="col-md-6"><label class="form-label">Semester</label><select class="form-select" wire:model.live="filterSemester">
             <option value="">Pilih semester</option>@foreach ($semesters as $semester)
@@ -17,7 +35,7 @@
     @if (! $filterSemester)
         <div class="alert alert-info">Belum ada semester. Buat tahun ajaran dan semester terlebih dahulu.</div>
     @elseif ($periods === [] || $mappings->isEmpty())
-        <div class="alert alert-info">Belum ada pola jam atau jam pelajaran yang dapat ditampilkan. <a href="{{ url('/polajam') }}">Atur pola jam</a> dan <a href="{{ url('/jampelajaran') }}">jam pelajaran</a>.</div>
+        <div class="alert alert-info">Belum ada pola jam atau jam pelajaran yang dapat ditampilkan. Atur dulu jam pelajaran per hari di menu Jam Pelajaran. <a href="{{ url("/jampelajaran") }}">Jam Pelajaran</a>.</div>
     @elseif (! $filterKelas)
         <div class="alert alert-info">Belum ada kelas pada tahun ajaran semester ini.</div>
     @else

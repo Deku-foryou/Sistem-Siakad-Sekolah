@@ -14,6 +14,7 @@ use App\Livewire\DocsEditComponent;
 use App\Livewire\GuruComponent;
 use App\Livewire\HomedocsComponent;
 use App\Livewire\JadwalComponent;
+use App\Livewire\BuktiPublikasiComponent;
 use App\Livewire\JampelajaranComponent;
 use App\Livewire\KelasComponent;
 use App\Livewire\KelassiswaComponent;
@@ -83,7 +84,7 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
 
         // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
         // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal'];
+        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal', 'jurusan'];
 
         foreach ($appMenuUrls as $url) {
             if (in_array($url, $explicitUrls, true)) {
@@ -115,6 +116,8 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
             Route::get('jampelajaran', JampelajaranComponent::class)->name('jampelajaran');
             Route::get('pengampu', PengampuComponent::class)->name('pengampu');
             Route::get('jadwal', JadwalComponent::class)->name('jadwal');
+        Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
+            Route::get('bukti-publikasi/{id}', BuktiPublikasiComponent::class)->name('bukti-publikasi');
             Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
                 ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
                 ->name('import.template');

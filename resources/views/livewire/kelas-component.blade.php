@@ -74,6 +74,12 @@ Data Kelas
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
                             </select>
                         </div>
+                        <div class="mb-2"><label>Jurusan</label>
+                            <select class="form-select" wire:model="jurusan_id">
+                                <option value="">-</option>
+                                @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
+                            </select>
+                        </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
@@ -82,7 +88,6 @@ Data Kelas
                 </div>
             </div>
         </div>
-    </div>
 
     <div wire:ignore.self class="modal fade" id="editKelasModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
         <div class="modal-dialog" role="document">
@@ -103,6 +108,12 @@ Data Kelas
                             <select class="form-select" wire:model="guru_idguru">
                                 <option value="">-</option>
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="mb-2"><label>Jurusan</label>
+                            <select class="form-select" wire:model="jurusan_id">
+                                <option value="">-</option>
+                                @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
                             </select>
                         </div>
                         <div class="modal-footer">

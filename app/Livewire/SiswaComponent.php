@@ -41,9 +41,25 @@ class SiswaComponent extends Component
 
     public $alamat;
 
+    public $telepon_siswa;
+
+    public $email;
+
+    public $nik;
+
+    public $asal_sekolah;
+
     public $nama_ayah;
 
+    public $telepon_ayah;
+
     public $nama_ibu;
+
+    public $telepon_ibu;
+
+    public $nama_wali;
+
+    public $telepon_wali;
 
     public $telepon_ortu;
 
@@ -103,6 +119,8 @@ class SiswaComponent extends Component
     {
         $this->validate([
             'nisn' => 'required|digits:10|unique:siswa,nisn|unique:users,username',
+            'nik' => 'nullable|digits:16|unique:siswa,nik',
+            'email' => 'nullable|email',
             'nama' => 'required',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
@@ -112,14 +130,22 @@ class SiswaComponent extends Component
         $data = [
             'nisn' => $this->nisn,
             'nis' => $this->nis,
+            'nik' => $this->nik,
             'nama' => $this->nama,
             'jenis_kelamin' => $this->jenis_kelamin,
             'tempat_lahir' => $this->tempat_lahir,
             'tanggal_lahir' => $this->tanggal_lahir,
             'agama' => $this->agama,
             'alamat' => $this->alamat,
+            'telepon_siswa' => $this->telepon_siswa,
+            'email' => $this->email,
+            'asal_sekolah' => $this->asal_sekolah,
             'nama_ayah' => $this->nama_ayah,
+            'telepon_ayah' => $this->telepon_ayah,
             'nama_ibu' => $this->nama_ibu,
+            'telepon_ibu' => $this->telepon_ibu,
+            'nama_wali' => $this->nama_wali,
+            'telepon_wali' => $this->telepon_wali,
             'telepon_ortu' => $this->telepon_ortu,
             'tahun_masuk' => $this->tahun_masuk,
             'foto' => $this->foto,
@@ -135,7 +161,7 @@ class SiswaComponent extends Component
         }
 
         // Result already contains user, siswa, and paket menu applied within transaction
-        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'nama_ayah', 'nama_ibu', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
+        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nik', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'telepon_siswa', 'email', 'asal_sekolah', 'nama_ayah', 'telepon_ayah', 'nama_ibu', 'telepon_ibu', 'nama_wali', 'telepon_wali', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Siswa berhasil ditambahkan');
@@ -144,7 +170,7 @@ class SiswaComponent extends Component
 
     public function close()
     {
-        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'nama_ayah', 'nama_ibu', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
+        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nik', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'telepon_siswa', 'email', 'asal_sekolah', 'nama_ayah', 'telepon_ayah', 'nama_ibu', 'telepon_ibu', 'nama_wali', 'telepon_wali', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->resetValidation();
@@ -158,14 +184,22 @@ class SiswaComponent extends Component
         $this->user_iduser = $siswa->user_iduser;
         $this->nisn = $siswa->nisn;
         $this->nis = $siswa->nis;
+        $this->nik = $siswa->nik;
         $this->nama = $siswa->nama;
         $this->jenis_kelamin = $siswa->jenis_kelamin;
         $this->tempat_lahir = $siswa->tempat_lahir;
         $this->tanggal_lahir = optional($siswa->tanggal_lahir)->format('Y-m-d');
         $this->agama = $siswa->agama;
         $this->alamat = $siswa->alamat;
+        $this->telepon_siswa = $siswa->telepon_siswa;
+        $this->email = $siswa->email;
+        $this->asal_sekolah = $siswa->asal_sekolah;
         $this->nama_ayah = $siswa->nama_ayah;
+        $this->telepon_ayah = $siswa->telepon_ayah;
         $this->nama_ibu = $siswa->nama_ibu;
+        $this->telepon_ibu = $siswa->telepon_ibu;
+        $this->nama_wali = $siswa->nama_wali;
+        $this->telepon_wali = $siswa->telepon_wali;
         $this->telepon_ortu = $siswa->telepon_ortu;
         $this->tahun_masuk = $siswa->tahun_masuk;
         $this->foto = $siswa->foto;
@@ -177,6 +211,8 @@ class SiswaComponent extends Component
     {
         $this->validate([
             'nisn' => 'required|digits:10|unique:siswa,nisn,'.$this->idsiswa.',idsiswa|unique:users,username,'.$this->user_iduser.',id',
+            'nik' => 'nullable|digits:16|unique:siswa,nik,'.$this->idsiswa.',idsiswa',
+            'email' => 'nullable|email',
             'nama' => 'required',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
@@ -187,14 +223,22 @@ class SiswaComponent extends Component
             $siswa = Siswa::where('idsiswa', $this->idsiswa)->first();
             $siswa->nisn = $this->nisn;
             $siswa->nis = $this->nis;
+            $siswa->nik = $this->nik;
             $siswa->nama = $this->nama;
             $siswa->jenis_kelamin = $this->jenis_kelamin;
             $siswa->tempat_lahir = $this->tempat_lahir;
             $siswa->tanggal_lahir = $this->tanggal_lahir;
             $siswa->agama = $this->agama;
             $siswa->alamat = $this->alamat;
+            $siswa->telepon_siswa = $this->telepon_siswa;
+            $siswa->email = $this->email;
+            $siswa->asal_sekolah = $this->asal_sekolah;
             $siswa->nama_ayah = $this->nama_ayah;
+            $siswa->telepon_ayah = $this->telepon_ayah;
             $siswa->nama_ibu = $this->nama_ibu;
+            $siswa->telepon_ibu = $this->telepon_ibu;
+            $siswa->nama_wali = $this->nama_wali;
+            $siswa->telepon_wali = $this->telepon_wali;
             $siswa->telepon_ortu = $this->telepon_ortu;
             $siswa->tahun_masuk = $this->tahun_masuk;
             $siswa->foto = $this->foto;
@@ -207,7 +251,7 @@ class SiswaComponent extends Component
             $user->save();
         });
 
-        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'nama_ayah', 'nama_ibu', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
+        $this->reset(['idsiswa', 'user_iduser', 'nisn', 'nis', 'nik', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'telepon_siswa', 'email', 'asal_sekolah', 'nama_ayah', 'telepon_ayah', 'nama_ibu', 'telepon_ibu', 'nama_wali', 'telepon_wali', 'telepon_ortu', 'tahun_masuk', 'foto', 'status']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Siswa berhasil diperbarui');
@@ -262,9 +306,10 @@ class SiswaComponent extends Component
 
             $detailSiswa = Siswa::query()
                 ->select([
-                    'idsiswa', 'user_iduser', 'nisn', 'nis', 'nama', 'jenis_kelamin',
-                    'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'nama_ayah',
-                    'nama_ibu', 'telepon_ortu', 'tahun_masuk', 'status',
+                    'idsiswa', 'user_iduser', 'nisn', 'nis', 'nik', 'nama', 'jenis_kelamin',
+                    'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'telepon_siswa',
+                    'email', 'asal_sekolah', 'nama_ayah', 'telepon_ayah', 'nama_ibu',
+                    'telepon_ibu', 'nama_wali', 'telepon_wali', 'telepon_ortu', 'tahun_masuk', 'status',
                 ])
                 ->with([
                     'user:id,username,wajib_ganti_password',

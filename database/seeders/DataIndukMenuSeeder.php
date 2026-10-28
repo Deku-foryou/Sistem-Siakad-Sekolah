@@ -23,6 +23,7 @@ class DataIndukMenuSeeder extends Seeder
             ['appmenunew' => 'Mapel', 'url' => 'mapel', 'icon' => 'fa-solid fa-book', 'urut' => 3],
             ['appmenunew' => 'Kelas', 'url' => 'kelas', 'icon' => 'fa-solid fa-school', 'urut' => 4],
             ['appmenunew' => 'Penempatan Siswa', 'url' => 'kelassiswa', 'icon' => 'fa-solid fa-users', 'urut' => 5],
+            ['appmenunew' => 'Jurusan', 'url' => 'jurusan', 'icon' => 'fa-solid fa-school', 'urut' => 6],
         ];
 
         foreach ($menus as $m) {

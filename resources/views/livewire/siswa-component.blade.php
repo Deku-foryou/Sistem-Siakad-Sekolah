@@ -48,16 +48,24 @@ Data Siswa
                     <form wire:submit.prevent="storeSiswa">
                         <div class="mb-2"><label>NISN</label><input class="form-control" wire:model="nisn">@error('nisn')<span class="text-danger">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>NIS</label><input class="form-control" wire:model="nis"></div>
+                        <div class="mb-2"><label>NIK</label><input class="form-control" wire:model="nik"></div>
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select></div>
                         <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir"></div>
                         <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir">@error('tanggal_lahir')<span class="text-danger">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Agama</label><input class="form-control" wire:model="agama"></div>
                         <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea></div>
+                        <div class="mb-2"><label>Telepon Siswa</label><input class="form-control" wire:model="telepon_siswa"></div>
+                        <div class="mb-2"><label>Email Siswa</label><input type="email" class="form-control" wire:model="email"></div>
                         <div class="mb-2"><label>Nama Ayah</label><input class="form-control" wire:model="nama_ayah"></div>
                         <div class="mb-2"><label>Nama Ibu</label><input class="form-control" wire:model="nama_ibu"></div>
                         <div class="mb-2"><label>Telepon Ortu</label><input class="form-control" wire:model="telepon_ortu"></div>
+                        <div class="mb-2"><label>Telepon Ayah</label><input class="form-control" wire:model="telepon_ayah"></div>
+                        <div class="mb-2"><label>Telepon Ibu</label><input class="form-control" wire:model="telepon_ibu"></div>
+                        <div class="mb-2"><label>Nama Wali</label><input class="form-control" wire:model="nama_wali"></div>
+                        <div class="mb-2"><label>Telepon Wali</label><input class="form-control" wire:model="telepon_wali"></div>
                         <div class="mb-2"><label>Tahun Masuk</label><input class="form-control" wire:model="tahun_masuk"></div>
+                        <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
@@ -77,16 +85,24 @@ Data Siswa
                     <form wire:submit.prevent="updateSiswa">
                         <div class="mb-2"><label>NISN</label><input class="form-control" wire:model="nisn"></div>
                         <div class="mb-2"><label>NIS</label><input class="form-control" wire:model="nis"></div>
+                        <div class="mb-2"><label>NIK</label><input class="form-control" wire:model="nik"></div>
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select></div>
                         <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir"></div>
                         <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir"></div>
                         <div class="mb-2"><label>Agama</label><input class="form-control" wire:model="agama"></div>
                         <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea></div>
+                        <div class="mb-2"><label>Telepon Siswa</label><input class="form-control" wire:model="telepon_siswa"></div>
+                        <div class="mb-2"><label>Email Siswa</label><input type="email" class="form-control" wire:model="email"></div>
                         <div class="mb-2"><label>Nama Ayah</label><input class="form-control" wire:model="nama_ayah"></div>
                         <div class="mb-2"><label>Nama Ibu</label><input class="form-control" wire:model="nama_ibu"></div>
                         <div class="mb-2"><label>Telepon Ortu</label><input class="form-control" wire:model="telepon_ortu"></div>
+                        <div class="mb-2"><label>Telepon Ayah</label><input class="form-control" wire:model="telepon_ayah"></div>
+                        <div class="mb-2"><label>Telepon Ibu</label><input class="form-control" wire:model="telepon_ibu"></div>
+                        <div class="mb-2"><label>Nama Wali</label><input class="form-control" wire:model="nama_wali"></div>
+                        <div class="mb-2"><label>Telepon Wali</label><input class="form-control" wire:model="telepon_wali"></div>
                         <div class="mb-2"><label>Tahun Masuk</label><input class="form-control" wire:model="tahun_masuk"></div>
+                        <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
@@ -122,6 +138,14 @@ Data Siswa
                                 'Tanggal Lahir' => $detailSiswa->tanggal_lahir ? $detailSiswa->tanggal_lahir->locale('id')->translatedFormat('d F Y') : '-',
                                 'Agama' => $detailSiswa->agama ? mb_convert_case($detailSiswa->agama, MB_CASE_TITLE, 'UTF-8') : '-',
                                 'Alamat' => $detailSiswa->alamat ?: '-',
+                                'NIK' => $detailSiswa->nik ?: '-',
+                                'Telepon Siswa' => $detailSiswa->telepon_siswa ?: '-',
+                                'Email Siswa' => $detailSiswa->email ?: '-',
+                                'Asal Sekolah' => $detailSiswa->asal_sekolah ?: '-',
+                                'Telepon Ayah' => $detailSiswa->telepon_ayah ?: '-',
+                                'Telepon Ibu' => $detailSiswa->telepon_ibu ?: '-',
+                                'Nama Wali' => $detailSiswa->nama_wali ?: '-',
+                                'Telepon Wali' => $detailSiswa->telepon_wali ?: '-',
                                 'Nama Ayah' => $detailSiswa->nama_ayah ?: '-',
                                 'Nama Ibu' => $detailSiswa->nama_ibu ?: '-',
                                 'Telepon Ortu' => $detailSiswa->telepon_ortu ?: '-',
@@ -138,9 +162,12 @@ Data Siswa
                                 $kelasAktifRows = ['Informasi' => 'Belum ditempatkan di kelas'];
                             } else {
                                 $kelasAktifRows = [
-                                    'Kelas Induk' => $kelasIndukAktif
-                                        ? $kelasIndukAktif->nama.' ('.$kelasIndukAktif->tingkat.') · Wali: '.($kelasIndukAktif->wali?->nama ?: '-')
-                                        : '-',
+                                    'Tahun Ajaran' => $tahunAjaranAktif->nama ?: '-',
+                                    'Tingkat' => $kelasIndukAktif?->tingkat ?: '-',
+                                    'Jurusan' => $kelasIndukAktif?->jurusan?->nama ?: '-',
+                                    'Rombel' => '-',
+                                    'Nama Kelas' => $kelasIndukAktif?->nama ?: '-',
+                                    'Wali Kelas' => $kelasIndukAktif?->wali?->nama ?: '-',
                                     'Mapel Pilihan' => $kelasPilihanAktif->isNotEmpty()
                                         ? $kelasPilihanAktif->map(fn ($kelasPilihan) => $kelasPilihan->nama.' ('.$kelasPilihan->tingkat.')')->all()
                                         : '-',

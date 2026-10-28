@@ -7,6 +7,7 @@ use App\Models\Jampelajaran;
 use App\Models\Pengampu;
 use App\Models\Polajam;
 use App\Models\Polajamhari;
+use App\Models\Publikasijadwal;
 use App\Models\Semester;
 use App\Support\Hari;
 use DomainException;
@@ -69,6 +70,9 @@ class JadwalService
                 $current->loadMissing('pengampu.mapel', 'pengampu.guru');
                 throw new DomainException('Kelas bentrok dengan '.$current->pengampu->mapel->nama.' oleh '.$current->pengampu->guru->nama.'.');
             }
+            if ($current && $current->status === 'published') {
+                throw new DomainException('Jadwal sudah dipublikasikan, tarik publikasi terlebih dahulu.');
+            }
             if ($replaceJadwalId !== null && (! $current || (int) $current->idjadwal !== $replaceJadwalId)) {
                 throw new DomainException('Jadwal yang akan diganti sudah berubah. Muat ulang grid.');
             }
@@ -107,6 +111,7 @@ class JadwalService
                 'pengampu_idpengampu' => $pengampu->idpengampu,
                 'hari' => $hari,
                 'jam_ke' => $jamKe,
+                'status' => 'draft',
             ]);
         });
     }
@@ -177,7 +182,83 @@ class JadwalService
             if (! $jadwal) {
                 throw new DomainException('Jadwal tidak ditemukan.');
             }
+            if ($jadwal->status === 'published') {
+                throw new DomainException('Jadwal sudah dipublikasikan, tarik publikasi terlebih dahulu.');
+            }
             $jadwal->delete();
+        });
+    }
+
+    public static function publikasikan(int $semesterId, int $kelasId): void
+    {
+        DB::transaction(function () use ($semesterId, $kelasId) {
+            $jadwals = Jadwal::with('pengampu')
+                ->whereHas('pengampu', fn ($q) => $q->where('semester_idsemester', $semesterId)->where('kelas_idkelas', $kelasId))
+                ->lockForUpdate()
+                ->get();
+
+            // teacher conflicts
+            $groups = $jadwals->groupBy(fn (Jadwal $j) => $j->hari.'|'.$j->jam_ke);
+            foreach ($groups as $key => $group) {
+                $gurus = $group->pluck('pengampu.guru_idguru')->unique();
+                if ($gurus->count() < $group->count()) {
+                    throw new DomainException('Terdapat bentrok guru pada slot '.$key.'.');
+                }
+            }
+            // student conflicts
+            foreach ($jadwals as $j) {
+                $p = $j->pengampu;
+                $semester = Semester::query()->find($p->semester_idsemester);
+                $res = self::siswaBentrok((int) $semester->tahunajaran_idtahunajaran, (int) $semester->idsemester, (int) $p->kelas_idkelas, (int) $j->hari, (int) $j->jam_ke);
+                if ($res['count'] > 0) {
+                    throw new DomainException('Terdapat siswa bentrok pada slot '.$j->hari.'|'.$j->jam_ke.'.');
+                }
+            }
+
+            $snapshot = $jadwals->map(function (Jadwal $j) {
+                return [
+                    'hari' => (int) $j->hari,
+                    'jam_ke' => (int) $j->jam_ke,
+                    'mapel' => $j->pengampu->mapel->nama ?? null,
+                    'guru' => $j->pengampu->guru->nama ?? null,
+                ];
+            })->values()->all();
+
+            Jadwal::whereHas('pengampu', fn ($q) => $q->where('semester_idsemester', $semesterId)->where('kelas_idkelas', $kelasId))
+                ->update(['status' => 'published']);
+
+            $versi = (int) Publikasijadwal::where('semester_idsemester', $semesterId)->where('kelas_idkelas', $kelasId)->max('versi') + 1;
+            $nomor = 'PUB-'.now()->format('YmdHis').'-'.$versi;
+
+            Publikasijadwal::create([
+                'nomor' => $nomor,
+                'semester_idsemester' => $semesterId,
+                'kelas_idkelas' => $kelasId,
+                'versi' => $versi,
+                'status' => 'published',
+                'published_at' => now(),
+                'published_by' => auth()->id(),
+                'snapshot' => $snapshot,
+            ]);
+        });
+    }
+
+    public static function tarikPublikasi(int $semesterId, int $kelasId): void
+    {
+        DB::transaction(function () use ($semesterId, $kelasId) {
+            Jadwal::whereHas('pengampu', fn ($q) => $q->where('semester_idsemester', $semesterId)->where('kelas_idkelas', $kelasId))
+                ->update(['status' => 'draft']);
+
+            $latest = Publikasijadwal::where('semester_idsemester', $semesterId)
+                ->where('kelas_idkelas', $kelasId)
+                ->where('status', 'published')
+                ->orderByDesc('idpublikasijadwal')
+                ->first();
+            if ($latest) {
+                $latest->status = 'withdrawn';
+                $latest->withdrawn_at = now();
+                $latest->save();
+            }
         });
     }
 

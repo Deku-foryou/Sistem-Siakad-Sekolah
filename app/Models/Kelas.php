@@ -20,6 +20,7 @@ class Kelas extends Model
         'tingkat',
         'jenis',
         'guru_idguru',
+        'jurusan_id',
     ];
 
     public function scopeSearch($query, $value)
@@ -33,6 +34,11 @@ class Kelas extends Model
     public function tahunajaran()
     {
         return $this->belongsTo(Tahunajaran::class, 'tahunajaran_idtahunajaran', 'idtahunajaran');
+    }
+
+    public function jurusan()
+    {
+        return $this->belongsTo(Jurusan::class, 'jurusan_id', 'idjurusan');
     }
 
     public function wali()
