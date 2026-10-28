@@ -26,9 +26,9 @@ use App\Livewire\RoleComponent;
 use App\Livewire\SemesterComponent;
 use App\Livewire\SiswaComponent;
 use App\Livewire\TahunajaranComponent;
-use App\Livewire\UsermenuComponent;
 use App\Livewire\UsersComponent;
-use App\Models\Usermenu;
+use App\Models\Appmenunew;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
 use Mews\Captcha\Facades\Captcha;
 
@@ -40,8 +40,21 @@ use Mews\Captcha\Facades\Captcha;
 | Here is where you can register web routes for your application. These
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "web" middleware group. Make something great!
-|
 */
+
+// Ambil daftar URL appmenunew - hanya jika tabel sudah ada (hindari error di migrate:fresh)
+$appMenuUrls = [];
+if (Schema::hasTable('appmenunew')) {
+    $appMenuUrls = Appmenunew::query()
+        ->whereNotNull('url')
+        ->pluck('url')
+        ->unique()
+        ->values();
+}
+
+// URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
+// oleh loop dinamis, agar proteksi check.level tidak terlewati.
+$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal', 'jurusan'];
 
 Route::get('/', function () {
     return view('login');
@@ -57,7 +70,7 @@ Route::get('refresh-captcha', function () {
 });
 
 Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
-    function () {
+    function () use ($appMenuUrls, $explicitUrls) {
 
         Route::get('/setting', [AuthController::class, 'index']);
         Route::post('/profil/{id}', [AuthController::class, 'update'])->name('profil.edit');
@@ -67,6 +80,7 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
         Route::get('welcome-docs', HomedocsComponent::class);
 
         Route::get('docscat', DocscatComponent::class);
+
         Route::get('docs', DocsComponent::class);
 
         Route::get('docs-create', DocsCreateComponent::class);
@@ -76,16 +90,6 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
         // Non Spatie--------------------------------------------------------------------
 
         // Daftar url unik dari appmenunew (tanpa join usermenu/user)
-        $appMenuUrls = \App\Models\Appmenunew::query()
-            ->whereNotNull('url')
-            ->pluck('url')
-            ->unique()
-            ->values();
-
-        // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
-        // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-        $explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal', 'jurusan'];
-
         foreach ($appMenuUrls as $url) {
             if (in_array($url, $explicitUrls, true)) {
                 continue;
@@ -98,39 +102,43 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
             }
         }
 
-        Route::middleware(['check.level:superadmin'])->group(function () {
-            Route::get('appmenunew', AppmenunewComponent::class);
-            Route::get('appmenucat', AppmenucatComponent::class);
+        // Superadmin only routes
+        Route::middleware(['check.level:superadmin'])->group(
+            function () {
+                Route::get('appmenunew', AppmenunewComponent::class);
+                Route::get('appmenucat', AppmenucatComponent::class);
 
-            Route::get('rolecat', RolecatComponent::class);
-            Route::get('role/{id}', RoleComponent::class);
+                Route::get('rolecat', RolecatComponent::class);
+                Route::get('role/{id}', RoleComponent::class);
 
-            Route::get('tahunajaran', TahunajaranComponent::class);
-            Route::get('semester', SemesterComponent::class);
-            Route::get('guru', GuruComponent::class);
-            Route::get('siswa', SiswaComponent::class);
-            Route::get('mapel', MapelComponent::class);
-            Route::get('kelas', KelasComponent::class);
-            Route::get('kelassiswa', KelassiswaComponent::class);
-            Route::get('polajam', PolajamComponent::class)->name('polajam');
-            Route::get('jampelajaran', JampelajaranComponent::class)->name('jampelajaran');
-            Route::get('pengampu', PengampuComponent::class)->name('pengampu');
-            Route::get('jadwal', JadwalComponent::class)->name('jadwal');
-        Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
-            Route::get('bukti-publikasi/{id}', BuktiPublikasiComponent::class)->name('bukti-publikasi');
-            Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
-                ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
-                ->name('import.template');
-            Route::get('import/gagal/{uuid}', [ImportDownloadController::class, 'gagal'])
-                ->where('uuid', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}')
-                ->name('import.gagal');
-        });
+                Route::get('tahunajaran', TahunajaranComponent::class);
+                Route::get('semester', SemesterComponent::class);
+                Route::get('guru', GuruComponent::class);
+                Route::get('siswa', SiswaComponent::class);
+                Route::get('mapel', MapelComponent::class);
+                Route::get('kelas', KelasComponent::class);
+                Route::get('kelassiswa', KelassiswaComponent::class);
+                Route::get('polajam', PolajamComponent::class)->name('polajam');
+                Route::get('jampelajaran', JampelajaranComponent::class)->name('jampelajaran');
+                Route::get('pengampu', PengampuComponent::class)->name('pengampu');
+                Route::get('jadwal', JadwalComponent::class)->name('jadwal');
+Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
+                Route::get('bukti-publikasi/{id}', BuktiPublikasiComponent::class)->name('bukti-publikasi');
+                Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
+                    ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
+                    ->name('import.template');
+                Route::get('import/gagal/{uuid}', [ImportDownloadController::class, 'gagal'])
+                    ->where('uuid', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}')
+                    ->name('import.gagal');
+            }
+        );
 
-        Route::middleware(['check.level:superadmin'])->group(function () {
-            Route::get('users', UsersComponent::class);
-            Route::get('usermenu/{id}', UsermenuComponent::class)->name('usermenu');
-
-        });
+        Route::middleware(['check.level:superadmin'])->group(
+            function () {
+                Route::get('users', UsersComponent::class);
+                Route::get('usermenu/{id}', App\Livewire\UsermenuComponent::class)->name('usermenu');
+            }
+        );
 
         // Non Spatie ---------------------------------------------------------------------
     }

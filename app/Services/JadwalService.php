@@ -29,7 +29,8 @@ class JadwalService
             if (! $pengampu) {
                 throw new DomainException('Pengampu tidak ditemukan.');
             }
-            $semester = Semester::query()->lockForUpdate()->find($pengampu->semester_idsemester);
+            $semester = Semester::query()->
+                lockForUpdate()->find($pengampu->semester_idsemester);
             if (! $semester) {
                 throw new DomainException('Semester pengampu tidak ditemukan.');
             }
@@ -38,7 +39,8 @@ class JadwalService
             if (! $polaId) {
                 throw new DomainException(Hari::nama($hari).' belum dipetakan ke pola jam.');
             }
-            Polajam::query()->lockForUpdate()->findOrFail($polaId);
+            Polajam::query()->
+                lockForUpdate()->findOrFail($polaId);
             $polaHari = Polajamhari::where('hari', $hari)
                 ->where('polajam_idpolajam', $polaId)
                 ->lockForUpdate()
@@ -177,8 +179,10 @@ class JadwalService
                 throw new DomainException('Jadwal tidak ditemukan.');
             }
             $pengampu = $current->pengampu;
-            Semester::query()->lockForUpdate()->findOrFail($pengampu->semester_idsemester);
-            $jadwal = Jadwal::query()->lockForUpdate()->find($jadwalId);
+            Semester::query()->
+                lockForUpdate()->findOrFail($pengampu->semester_idsemester);
+            $jadwal = Jadwal::query()->
+                lockForUpdate()->find($jadwalId);
             if (! $jadwal) {
                 throw new DomainException('Jadwal tidak ditemukan.');
             }
@@ -197,7 +201,7 @@ class JadwalService
                 ->lockForUpdate()
                 ->get();
 
-            // teacher conflicts
+            // Teacher conflicts - check using hari|jam_ke grouping
             $groups = $jadwals->groupBy(fn (Jadwal $j) => $j->hari.'|'.$j->jam_ke);
             foreach ($groups as $key => $group) {
                 $gurus = $group->pluck('pengampu.guru_idguru')->unique();
@@ -205,10 +209,11 @@ class JadwalService
                     throw new DomainException('Terdapat bentrok guru pada slot '.$key.'.');
                 }
             }
-            // student conflicts
+            // Student conflicts - check using hari|jam_ke
             foreach ($jadwals as $j) {
                 $p = $j->pengampu;
-                $semester = Semester::query()->find($p->semester_idsemester);
+                $semester = Semester::query()->
+                    find($p->semester_idsemester);
                 $res = self::siswaBentrok((int) $semester->tahunajaran_idtahunajaran, (int) $semester->idsemester, (int) $p->kelas_idkelas, (int) $j->hari, (int) $j->jam_ke);
                 if ($res['count'] > 0) {
                     throw new DomainException('Terdapat siswa bentrok pada slot '.$j->hari.'|'.$j->jam_ke.'.');
@@ -264,6 +269,10 @@ class JadwalService
 
     private static function siswaBentrok(int $tahunajaranId, int $semesterId, int $kelasId, int $hari, int $jamKe): array
     {
+        // Cek konflik berdasarkan hari dan jam_ke (spesifik untuk pola jam global)
+        // Sistem pola jam global berarti setiap hari memiliki satu mapping ke waktu yang tetap
+        // Jadi pembandingan hari + jam_ke sudah cukup untuk mendeteksi konflik siswa
+
         $siswa = DB::table('kelassiswa as anggota_aktif')
             ->join('kelassiswa as anggota_lain', 'anggota_lain.siswa_idsiswa', '=', 'anggota_aktif.siswa_idsiswa')
             ->join('kelas as kelas_lain', 'kelas_lain.idkelas', '=', 'anggota_lain.kelas_idkelas')

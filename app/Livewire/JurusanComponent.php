@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Jurusan;
-use Illuminate\Support\Rule;
+use Illuminate\Validation\Rule;
 use App\Livewire\Concerns\HandlesImport;
 use App\Livewire\Concerns\HandlesImport as HandleImportTrait;
 use Jantinnerezo\LivewireAlert\LivewireAlert;

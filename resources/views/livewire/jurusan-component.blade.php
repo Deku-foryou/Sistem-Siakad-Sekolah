@@ -50,15 +50,29 @@ Data Jurusan
                 <div class="modal-header"><h5 class="modal-title">Tambah Jurusan</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="storeJurusan">
-                        <div class="mb-2"><label>Kode</label><input class="form-control" wire:model="kode"></div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
-                        <div class="mb-2"><label>Deskripsi</label><textarea class="form-control" wire:model="deskripsi"></textarea></div>
+                        <div class="mb-2"><label>Kode</label>
+                            <input class="form-control" wire:model="kode">
+                            @error('kode')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
+                        <div class="mb-2"><label>Nama</label>
+                            <input class="form-control" wire:model="nama">
+                            @error('nama')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
+                        <div class="mb-2"><label>Deskripsi</label>
+                            <textarea class="form-control" wire:model="deskripsi"></textarea>
+                            @error('deskripsi')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
                         <div class="mb-2"><label>Status Aktif</label>
                             <select class="form-select" wire:model="aktif">
                                 <option value="true">Aktif</option>
                                 <option value="false">Nonaktif</option>
                             </select>
-                        </div>
+                            @error('aktif')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
@@ -75,15 +89,29 @@ Data Jurusan
                 <div class="modal-header"><h5 class="modal-title">Edit Jurusan</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updateJurusan">
-                        <div class="mb-2"><label>Kode</label><input class="form-control" wire:model="kode"></div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
-                        <div class="mb-2"><label>Deskripsi</label><textarea class="form-control" wire:model="deskripsi"></textarea></div>
+                        <div class="mb-2"><label>Kode</label>
+                            <input class="form-control" wire:model="kode">
+                            @error('kode')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
+                        <div class="mb-2"><label>Nama</label>
+                            <input class="form-control" wire:model="nama">
+                            @error('nama')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
+                        <div class="mb-2"><label>Deskripsi</label>
+                            <textarea class="form-control" wire:model="deskripsi"></textarea>
+                            @error('deskripsi')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
                         <div class="mb-2"><label>Status Aktif</label>
                             <select class="form-select" wire:model="aktif">
                                 <option value="true">Aktif</option>
                                 <option value="false">Nonaktif</option>
                             </select>
-                        </div>
+                            @error('aktif')
+                                <span class="text-danger small">{{ $message }}</span>
+                            @enderror</div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
@@ -96,13 +124,11 @@ Data Jurusan
 
     <div wire:ignore.self class="modal fade" id="deleteJurusanModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
-                <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
-                <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteJurusan()">Ya</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
-                </div>
+            <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
+            <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" wire:click="deleteJurusan()">Ya</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
             </div>
         </div>
     </div>
