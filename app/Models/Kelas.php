@@ -19,6 +19,7 @@ class Kelas extends Model
         'nama',
         'tingkat',
         'jenis',
+        'rombel',
         'guru_idguru',
         'jurusan_id',
     ];

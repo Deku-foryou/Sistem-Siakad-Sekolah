@@ -65,20 +65,24 @@ Data Kelas
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="mb-2"><label>Nama Kelas</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
                         <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
-                        <div class="mb-2"><label>Wali (hanya kelas induk)</label>
-                            <select class="form-select" wire:model="guru_idguru">
-                                <option value="">-</option>
-                                @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
-                            </select>
-                        </div>
                         <div class="mb-2"><label>Jurusan</label>
                             <select class="form-select" wire:model="jurusan_id">
                                 <option value="">-</option>
                                 @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
                             </select>
+                        </div>
+                        <div class="mb-2"><label>Nomor Rombel</label>
+                            <select class="form-select" wire:model="rombel">
+                                @for ($i = 1; $i <= 20; $i++)
+                                    <option value="{{ $i }}">{{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Nama Kelas (Preview)</label>
+                            <input type="text" class="form-control" readonly wire:model.defer="previewNama" value="{{ old('previewNama') }}">
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
@@ -88,6 +92,7 @@ Data Kelas
                 </div>
             </div>
         </div>
+    </div>
 
     <div wire:ignore.self class="modal fade" id="editKelasModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
         <div class="modal-dialog" role="document">
@@ -101,7 +106,6 @@ Data Kelas
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="mb-2"><label>Nama Kelas</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
                         <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
                         <div class="mb-2"><label>Wali (hanya kelas induk)</label>
@@ -116,6 +120,17 @@ Data Kelas
                                 @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
                             </select>
                         </div>
+                        <div class="mb-2"><label>Nomor Rombel</label>
+                            <select class="form-select" wire:model="rombel">
+                                @for ($i = 1; $i <= 20; $i++)
+                                    <option value="{{ $i }}">{{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Nama Kelas (Preview)</label>
+                            <input type="text" class="form-control" readonly wire:model.defer="previewNama" value="{{ old('previewNama') }}">
+                        </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
@@ -128,13 +143,11 @@ Data Kelas
 
     <div wire:ignore.self class="modal fade" id="deleteKelasModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
-                <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
-                <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteKelas()">Ya</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
-                </div>
+            <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
+            <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" wire:click="deleteKelas()">Ya</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
             </div>
         </div>
     </div>

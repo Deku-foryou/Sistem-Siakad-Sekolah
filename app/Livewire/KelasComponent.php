@@ -32,17 +32,22 @@ class KelasComponent extends Component
 
     public $jurusan_id;
 
+    public $rombel;
+
     public $filterTahunajaran;
 
     public $search = '';
 
     public $perPage = 10;
 
+    public $previewNama = '';
+
     public function mount()
     {
         $aktif = Tahunajaran::aktif();
         $this->filterTahunajaran = $aktif?->idtahunajaran;
         $this->tahunajaran_idtahunajaran = $aktif?->idtahunajaran;
+        $this->updatePreview();
     }
 
     public function updatingSearch()
@@ -58,25 +63,59 @@ class KelasComponent extends Component
     public function updatedFilterTahunajaran()
     {
         $this->resetPage();
+        $this->updatePreview();
+    }
+
+    public function updatedTingkat()
+    {
+        $this->updatePreview();
+    }
+
+    public function updatedJurusanId()
+    {
+        $this->updatePreview();
+    }
+
+    public function updatedRombel()
+    {
+        $this->updatePreview();
+    }
+
+    public function updatePreview()
+    {
+        $this->previewNama = '';
+        if ($this->tingkat && $this->jurusan_id) {
+            $tingkatLabels = [
+                '10' => 'X',
+                '11' => 'XI',
+                '12' => 'XII',
+            ];
+            $tingkatLabel = $tingkatLabels[$this->tingkat] ?? 'X';
+
+            $jurusan = \App\Models\Jurusan::where('idjurusan', $this->jurusan_id)->first();
+            $jurusanName = $jurusan ? ' ' . $jurusan->nama : '';
+
+            $this->previewNama = $tingkatLabel . $jurusanName . ' ' . $this->rombel;
+        }
     }
 
     public function storeKelas()
     {
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
-            'nama' => 'required',
             'tingkat' => 'required|in:10,11,12',
             'jenis' => 'required|in:induk,mapel_pilihan',
             'jurusan_id' => 'nullable|exists:jurusan,idjurusan',
+            'rombel' => 'required|integer|min:1',
         ]);
 
         $data = [
+            'tahunajaran_idtahunajaran' => $this->tahunajaran_idtahunajaran,
             'nama' => $this->nama,
             'tingkat' => $this->tingkat,
             'jenis' => $this->jenis,
-            'tahun_ajaran' => $this->tahunajaran_idtahunajaran,
-            'nip_wali' => $this->guru_idguru,
             'jurusan_id' => $this->jurusan_id,
+            'rombel' => $this->rombel,
         ];
 
         $result = KelasService::buat($data);
@@ -87,14 +126,14 @@ class KelasComponent extends Component
             return;
         }
 
-        $this->reset(['idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat', 'jenis', 'guru_idguru', 'jurusan_id']);
+        $this->reset(['idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat', 'jenis', 'guru_idguru', 'jurusan_id', 'rombel', 'previewNama']);
         $this->alert('success', 'Kelas berhasil ditambahkan');
         $this->dispatch('close-kelas-modal');
     }
 
     public function close()
     {
-        $this->reset(['idkelas', 'nama', 'guru_idguru']);
+        $this->reset(['idkelas', 'nama', 'guru_idguru', 'jurusan_id', 'rombel', 'previewNama']);
         $this->resetValidation();
         $this->dispatch('close-kelas-modal');
     }
@@ -109,6 +148,7 @@ class KelasComponent extends Component
         $this->jenis = $kelas->jenis;
         $this->guru_idguru = $kelas->guru_idguru;
         $this->jurusan_id = $kelas->jurusan_id;
+        $this->rombel = $kelas->rombel ?? 1;
         $this->dispatch('show-edit-kelas-modal');
     }
 
@@ -116,10 +156,10 @@ class KelasComponent extends Component
     {
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
-            'nama' => 'required',
             'tingkat' => 'required|in:10,11,12',
             'jenis' => 'required|in:induk,mapel_pilihan',
             'jurusan_id' => 'nullable|exists:jurusan,idjurusan',
+            'rombel' => 'required|integer|min:1',
         ]);
 
         if ($this->jenis !== 'induk') {
@@ -152,9 +192,10 @@ class KelasComponent extends Component
         $kelas->jenis = $this->jenis;
         $kelas->guru_idguru = $this->guru_idguru;
         $kelas->jurusan_id = $this->jurusan_id;
+        $kelas->rombel = $this->rombel;
         $kelas->save();
 
-        $this->reset(['idkelas', 'nama', 'guru_idguru', 'jurusan_id']);
+        $this->reset(['idkelas', 'nama', 'guru_idguru', 'jurusan_id', 'rombel', 'previewNama']);
         $this->alert('success', 'Kelas berhasil diperbarui');
         $this->dispatch('close-kelas-modal');
     }
