@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\HandlesImport;
 use App\Models\Guru;
+use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Tahunajaran;
 use App\Services\KelasService;

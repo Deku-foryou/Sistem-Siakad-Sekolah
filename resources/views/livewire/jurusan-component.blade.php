@@ -17,14 +17,6 @@ Data Jurusan
             <div class="card-body p-3">
                 <div class="row g-2">
                     <div class="col-md-4">
-                        <select class="form-select" wire:model.live="filterTahunajaran">
-                            <option value="">Semua Tahun Ajaran</option>
-                            @foreach ($tahunajarans as $t)
-                                <option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
                         <input type="text" class="form-control" placeholder="Cari..." wire:model.live.debounce.300ms="search">
                     </div>
                 </div>
