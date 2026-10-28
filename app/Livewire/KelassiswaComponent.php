@@ -86,7 +86,8 @@ class KelassiswaComponent extends Component
     {
         $row = Kelassiswa::find($idkelassiswa);
         if ($row) {
-            $row->delete();
+            $row->status = 'pindah';
+            $row->save();
             $this->alert('success', 'Siswa dikeluarkan dari kelas');
         }
     }

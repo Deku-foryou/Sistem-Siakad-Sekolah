@@ -64,6 +64,26 @@ Penempatan Siswa
                 </table>
                 @if ($members) {{ $members->links() }} @endif
             </div>
+        @elseif ($tahunajaran_id && !$kelas_id)
+            <!-- Tahun Ajaran dipilih, butuh kelas -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <h6>Pilih Kelas</h6>
+                    <p class="text-muted small">Silakan pilih kelas dari daftar bawah untuk melihat dan menempatkan siswa.</p>
+                    <select class="form-select mb-3" wire:model.live="kelas_id">
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach ($kelasList as $k)<option value="{{ $k->idkelas }}">{{ $k->nama }} ({{ $k->tingkat }})</option>@endforeach
+                    </select>
+                </div>
+            </div>
+        @else
+            <!-- Belum ada TA atau kelas terpilih -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <h6>Penempatan Siswa</h6>
+                    <p class="text-muted small">Silakan pilih Tahun Ajaran di atas untuk memulai penempatan siswa.</p>
+                </div>
+            </div>
         @endif
     </div>
     @include('livewire.partials.import-modal')

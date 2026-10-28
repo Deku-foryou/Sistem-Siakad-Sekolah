@@ -17,6 +17,7 @@ class Kelassiswa extends Model
         'idkelassiswa',
         'kelas_idkelas',
         'siswa_idsiswa',
+        'status',
     ];
 
     public function scopeSearch($query, $value)
