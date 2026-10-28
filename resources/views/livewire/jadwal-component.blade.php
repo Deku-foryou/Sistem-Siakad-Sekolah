@@ -23,7 +23,7 @@
     @else
         <div class="table-responsive"><table class="table table-bordered align-middle text-center">
             <thead class="table-success"><tr><th>Jam</th>
-                @foreach ($hariOptions as $day => $namaHari)
+                @foreach ($gridHariOptions as $day => $namaHari)
                     <th>{{ $namaHari }}
                         @php($mapping = $mappings->get($day))
                         @if ($mapping)
@@ -37,7 +37,7 @@
             <tbody>
             @foreach ($periods as $period)
                 <tr><th class="text-nowrap">Ke-{{ $period['jam_ke'] }}</th>
-                    @foreach ($hariOptions as $day => $namaHari)
+                    @foreach ($gridHariOptions as $day => $namaHari)
                         @php($mapping = $mappings->get($day))
                         @php($hasPeriod = $mapping && $mapping->pola->jamPelajaran->contains(fn ($item) => $item->jenis === 'pelajaran' && (int) $item->jam_ke === $period['jam_ke']))
                         @php($cell = $jadwals->get($day.'|'.$period['jam_ke']))
@@ -67,16 +67,38 @@
         <div class="modal-header"><h5 class="modal-title">{{ $idjadwal ? 'Ubah Jadwal' : 'Tambah Jadwal' }}</h5></div>
         <div class="modal-body">
             <p class="mb-2"><strong>{{ $hariOptions[$hari] ?? '-' }} · Jam ke-{{ $jam_ke }}</strong></p>
-            <label class="form-label">Pengampu</label><select class="form-select" wire:model="pengampu_idpengampu">
-                <option value="">Pilih mata pelajaran dan guru</option>
-                @foreach ($pengampus as $pengampu)
-                    <option value="{{ $pengampu->idpengampu }}">{{ $pengampu->mapel->nama }} · {{ $pengampu->guru->nama }}</option>
-                @endforeach
-            </select>
+            @if ($mapels->isEmpty())
+                <div class="alert alert-info">Belum ada mapel. <a href="{{ url('/mapel') }}">Kelola Mapel</a>.</div>
+            @else
+                <label class="form-label">Mapel</label>
+                <select class="form-select mb-3" wire:model.live="mapelId">
+                    <option value="">Pilih mapel</option>
+                    @foreach ($mapels as $mapel)
+                        <option value="{{ $mapel->idmapel }}">{{ $mapel->nama }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @if ($activeGurus->isEmpty())
+                <div class="alert alert-info">Belum ada guru aktif. <a href="{{ url('/guru') }}">Kelola Guru</a>.</div>
+            @else
+                <label class="form-label">Guru</label>
+                <select class="form-select" wire:model="guruId" @disabled($selectedPengampu !== null)>
+                    <option value="">Pilih guru</option>
+                    @if ($selectedPengampu && ! $activeGurus->contains('idguru', $selectedPengampu->guru_idguru))
+                        <option value="{{ $selectedPengampu->guru_idguru }}">{{ $selectedPengampu->guru->nama }}</option>
+                    @endif
+                    @foreach ($activeGurus as $guru)
+                        <option value="{{ $guru->idguru }}">{{ $guru->nama }}</option>
+                    @endforeach
+                </select>
+                @if ($selectedPengampu)
+                    <small class="text-muted">Pengampu terdaftar</small>
+                @endif
+            @endif
         </div>
         <div class="modal-footer">
             @if ($idjadwal)<button class="btn btn-danger me-auto" wire:click="hapus" wire:confirm="Hapus jadwal ini?">Hapus Jadwal</button>@endif
-            <button class="btn btn-primary" wire:click="simpan">Simpan</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
+            <button class="btn btn-primary" wire:click="simpan" @disabled($mapels->isEmpty() || $activeGurus->isEmpty() || ! $mapelId || ! $guruId)>Simpan</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
         </div>
     </div></div></div>
 </div>

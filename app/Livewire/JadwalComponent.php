@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Guru;
 use App\Models\Jadwal;
 use App\Models\Kelas;
+use App\Models\Mapel;
 use App\Models\Pengampu;
 use App\Models\Polajamhari;
 use App\Models\Semester;
@@ -29,7 +31,9 @@ class JadwalComponent extends Component
 
     public $jam_ke = '';
 
-    public $pengampu_idpengampu = '';
+    public $mapelId = '';
+
+    public $guruId = '';
 
     public $idjadwal = '';
 
@@ -51,26 +55,48 @@ class JadwalComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->filterKelas = '';
+        $this->mapelId = '';
+        $this->guruId = '';
+    }
+
+    public function updatedFilterKelas(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+        $this->mapelId = '';
+        $this->guruId = '';
+    }
+
+    public function updatedMapelId(): void
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+        $pengampu = $this->mapelId && $this->filterSemester && $this->filterKelas
+            ? Pengampu::where('semester_idsemester', $this->filterSemester)
+                ->where('kelas_idkelas', $this->filterKelas)
+                ->where('mapel_idmapel', $this->mapelId)
+                ->first()
+            : null;
+        $this->guruId = $pengampu ? (string) $pengampu->guru_idguru : '';
     }
 
     public function bukaSlot(int $hari, int $jamKe): void
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
         if (! array_key_exists($hari, Hari::NAMA)) {
-            throw new DomainException('Hari harus Senin sampai Jumat.');
+            throw new DomainException('Hari harus Senin sampai Minggu.');
         }
         $this->hari = $hari;
         $this->jam_ke = $jamKe;
-        $this->idjadwal = Jadwal::query()
+        $jadwal = Jadwal::query()
+            ->with('pengampu')
             ->where('hari', $hari)
             ->where('jam_ke', $jamKe)
             ->whereHas('pengampu', fn ($q) => $q
                 ->where('semester_idsemester', $this->filterSemester)
                 ->where('kelas_idkelas', $this->filterKelas))
-            ->value('idjadwal') ?? '';
-        $this->pengampu_idpengampu = $this->idjadwal
-            ? (string) Jadwal::findOrFail($this->idjadwal)->pengampu_idpengampu
-            : '';
+            ->first();
+        $this->idjadwal = $jadwal?->idjadwal ?? '';
+        $this->mapelId = $jadwal ? (string) $jadwal->pengampu->mapel_idmapel : '';
+        $this->guruId = $jadwal ? (string) $jadwal->pengampu->guru_idguru : '';
         $this->dispatch('show-jadwal-modal');
     }
 
@@ -78,8 +104,11 @@ class JadwalComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
         try {
-            JadwalService::simpan(
-                (int) $this->pengampu_idpengampu,
+            JadwalService::simpanDenganMapel(
+                (int) $this->filterSemester,
+                (int) $this->filterKelas,
+                (int) $this->mapelId,
+                (int) $this->guruId,
                 (int) $this->hari,
                 (int) $this->jam_ke,
                 $this->idjadwal ? (int) $this->idjadwal : null
@@ -106,7 +135,7 @@ class JadwalComponent extends Component
     public function close(): void
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
-        $this->reset(['hari', 'jam_ke', 'pengampu_idpengampu', 'idjadwal']);
+        $this->reset(['hari', 'jam_ke', 'mapelId', 'guruId', 'idjadwal']);
         $this->resetValidation();
         $this->dispatch('close-jadwal-modal');
     }
@@ -124,6 +153,7 @@ class JadwalComponent extends Component
         }
 
         $mappings = Polajamhari::with('pola.jamPelajaran')->get()->keyBy('hari');
+        $gridHariOptions = array_intersect_key(Hari::NAMA, $mappings->all());
         $periods = [];
         $times = [];
         foreach ($mappings as $mapping) {
@@ -139,19 +169,22 @@ class JadwalComponent extends Component
         ksort($periods);
 
         $jadwals = Jadwal::with(['pengampu.kelas', 'pengampu.mapel', 'pengampu.guru'])
-            ->where('hari', '>=', 1)
-            ->where('hari', '<=', 5)
+            ->whereIn('hari', array_keys($gridHariOptions))
             ->whereHas('pengampu', fn ($q) => $q
                 ->where('semester_idsemester', $this->filterSemester ?: 0)
                 ->when($this->filterKelas, fn ($sub) => $sub->where('kelas_idkelas', $this->filterKelas)))
             ->get()
             ->keyBy(fn (Jadwal $row) => $row->hari.'|'.$row->jam_ke);
 
-        $pengampus = Pengampu::with(['mapel', 'guru'])
-            ->where('semester_idsemester', $this->filterSemester ?: 0)
-            ->where('kelas_idkelas', $this->filterKelas ?: 0)
-            ->orderBy('mapel_idmapel')
-            ->get();
+        $mapels = Mapel::orderBy('nama')->get();
+        $activeGurus = Guru::where('status', 'aktif')->orderBy('nama')->get();
+        $selectedPengampu = $this->mapelId && $this->filterSemester && $this->filterKelas
+            ? Pengampu::with('guru')
+                ->where('semester_idsemester', $this->filterSemester)
+                ->where('kelas_idkelas', $this->filterKelas)
+                ->where('mapel_idmapel', $this->mapelId)
+                ->first()
+            : null;
 
         return view('livewire.jadwal-component', [
             'semesters' => $semesters,
@@ -160,7 +193,10 @@ class JadwalComponent extends Component
             'periods' => $periods,
             'times' => $times,
             'jadwals' => $jadwals,
-            'pengampus' => $pengampus,
+            'mapels' => $mapels,
+            'activeGurus' => $activeGurus,
+            'selectedPengampu' => $selectedPengampu,
+            'gridHariOptions' => $gridHariOptions,
             'hariOptions' => Hari::NAMA,
         ]);
     }

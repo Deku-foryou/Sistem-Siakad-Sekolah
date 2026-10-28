@@ -22,8 +22,8 @@ class PolajamService
                 throw new DomainException('Nama pola sudah digunakan.');
             }
             $hari = array_values(array_unique(array_map('intval', $hari)));
-            if ($hari === [] || count(array_diff($hari, [1, 2, 3, 4, 5])) > 0) {
-                throw new DomainException('Pilih minimal satu hari dari Senin sampai Jumat.');
+            if ($hari === [] || count(array_diff($hari, array_keys(Hari::NAMA))) > 0) {
+                throw new DomainException('Pilih minimal satu hari dari Senin sampai Minggu.');
             }
 
             if ($id !== null && $id < 1) {

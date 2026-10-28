@@ -18,7 +18,7 @@ class JadwalService
     {
         return DB::transaction(function () use ($pengampuId, $hari, $jamKe, $replaceJadwalId) {
             if (! array_key_exists($hari, Hari::NAMA)) {
-                throw new DomainException('Hari harus Senin sampai Jumat.');
+                throw new DomainException('Hari harus Senin sampai Minggu.');
             }
             if ($pengampuId < 1 || $jamKe < 1) {
                 throw new DomainException('Pilih pengampu dan nomor jam yang valid.');
@@ -108,6 +108,56 @@ class JadwalService
                 'hari' => $hari,
                 'jam_ke' => $jamKe,
             ]);
+        });
+    }
+
+    public static function simpanDenganMapel(
+        int $semesterId,
+        int $kelasId,
+        int $mapelId,
+        int $guruId,
+        int $hari,
+        int $jamKe,
+        ?int $idjadwalPengganti = null
+    ): Jadwal {
+        return DB::transaction(function () use (
+            $semesterId,
+            $kelasId,
+            $mapelId,
+            $guruId,
+            $hari,
+            $jamKe,
+            $idjadwalPengganti
+        ) {
+            $pengampu = Pengampu::with('guru')
+                ->where('semester_idsemester', $semesterId)
+                ->where('kelas_idkelas', $kelasId)
+                ->where('mapel_idmapel', $mapelId)
+                ->first();
+
+            if ($pengampu && (int) $pengampu->guru_idguru !== $guruId) {
+                throw new DomainException(
+                    'Mapel ini di kelas ini sudah diampu oleh '.$pengampu->guru->nama
+                    .'. Ubah di menu Pengampu atau pilih guru yang sama.'
+                );
+            }
+
+            if (! $pengampu) {
+                $pengampu = PengampuService::simpan(
+                    null,
+                    $semesterId,
+                    $kelasId,
+                    $mapelId,
+                    $guruId
+                );
+            }
+
+            return self::simpan(
+                (int) $pengampu->idpengampu,
+                $hari,
+                $jamKe,
+                $idjadwalPengganti
+            );
         });
     }
 
