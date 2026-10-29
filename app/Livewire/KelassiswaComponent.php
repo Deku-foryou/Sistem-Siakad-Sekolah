@@ -86,8 +86,8 @@ class KelassiswaComponent extends Component
     {
         $row = Kelassiswa::find($idkelassiswa);
         if ($row) {
-            $row->status = 'pindah';
-            $row->save();
+            $row->delete();
+            $this->resetPage();
             $this->alert('success', 'Siswa dikeluarkan dari kelas');
         }
     }
@@ -106,8 +106,16 @@ class KelassiswaComponent extends Component
                 ->paginate($this->perPage);
         }
 
-        // siswa aktif yang belum di kelas ini (untuk multi-pilih)
+        // siswa aktif yang belum masuk kelas manapun pada tahun ajaran ini (untuk multi-pilih)
         $siswaAktif = Siswa::where('status', 'aktif')
+            ->when($this->tahunajaran_id, function ($q) {
+                $q->whereDoesntHave('kelassiswa', function ($sub) {
+                    $sub->where('status', '!=', 'pindah')
+                        ->whereHas('kelas', function ($k) {
+                            $k->where('tahunajaran_idtahunajaran', $this->tahunajaran_id);
+                        });
+                });
+            })
             ->when($this->search, function ($q) {
                 $q->where('nama', 'like', '%'.$this->search.'%')
                     ->orWhere('nisn', 'like', '%'.$this->search.'%');

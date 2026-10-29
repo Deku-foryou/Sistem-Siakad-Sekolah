@@ -39,10 +39,18 @@ class SemesterComponent extends Component
 
     public function storeSemester()
     {
-        $this->validate([
-            'tahunajaran_idtahunajaran' => 'required',
-            'nama' => 'required',
-        ]);
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            $this->validate([
+                'tahunajaran_idtahunajaran' => 'required',
+                'nama' => 'required',
+            ]);
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Validasi gagal: '.$th->getMessage());
+
+            return;
+        }
 
         $exists = Semester::where('tahunajaran_idtahunajaran', $this->tahunajaran_idtahunajaran)
             ->where('nama', $this->nama)->exists();
@@ -118,8 +126,28 @@ class SemesterComponent extends Component
 
     public function aktifkan($id)
     {
-        Semester::aktifkan($id);
-        $this->alert('success', 'Semester diaktifkan');
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            Semester::aktifkan($id);
+            $this->resetPage();
+            $this->alert('success', 'Semester diaktifkan');
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Gagal mengaktifkan semester: '.$th->getMessage());
+        }
+    }
+
+    public function nonaktifkan($id)
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            Semester::nonaktifkan($id);
+            $this->resetPage();
+            $this->alert('success', 'Semester dinonaktifkan');
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Gagal menonaktifkan semester: '.$th->getMessage());
+        }
     }
 
     public function render()

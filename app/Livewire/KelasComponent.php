@@ -66,13 +66,21 @@ class KelasComponent extends Component
         $this->updatePreview();
     }
 
+    public function updatedTahunajaranIdtahunajaran()
+    {
+        $this->isiRombelOtomatis();
+        $this->updatePreview();
+    }
+
     public function updatedTingkat()
     {
+        $this->isiRombelOtomatis();
         $this->updatePreview();
     }
 
     public function updatedJurusanId()
     {
+        $this->isiRombelOtomatis();
         $this->updatePreview();
     }
 
@@ -83,7 +91,41 @@ class KelasComponent extends Component
 
     public function updatedJurusan_id()
     {
+        $this->isiRombelOtomatis();
         $this->updatePreview();
+    }
+
+    /**
+     * Isi nomor rombel dengan nomor kosong berikutnya
+     * berdasarkan tahun ajaran, tingkat, dan jurusan terpilih.
+     */
+    public function isiRombelOtomatis(): void
+    {
+        if ($this->idkelas) {
+            return;
+        }
+        if (! $this->tahunajaran_idtahunajaran || ! $this->tingkat || ! $this->jurusan_id) {
+            return;
+        }
+        if ($this->jenis !== 'induk') {
+            return;
+        }
+
+        $terpakai = Kelas::where('tahunajaran_idtahunajaran', $this->tahunajaran_idtahunajaran)
+            ->where('tingkat', $this->tingkat)
+            ->where('jenis', 'induk')
+            ->where('jurusan_id', $this->jurusan_id)
+            ->whereNotNull('rombel')
+            ->pluck('rombel')
+            ->map(fn ($nilai) => (int) $nilai)
+            ->all();
+
+        $rombel = 1;
+        while (in_array($rombel, $terpakai, true)) {
+            $rombel++;
+        }
+
+        $this->rombel = $rombel;
     }
 
     public function updatePreview()
@@ -120,12 +162,16 @@ class KelasComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
 
+        if (! $this->rombel) {
+            $this->isiRombelOtomatis();
+        }
+
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
             'tingkat' => 'required|in:10,11,12',
             'jenis' => 'required|in:induk,mapel_pilihan',
             'jurusan_id' => 'nullable|exists:jurusan,idjurusan',
-            'rombel' => 'required|integer|min:1',
+            'rombel' => 'nullable|integer|min:1',
         ]);
 
         $data = [
@@ -134,6 +180,7 @@ class KelasComponent extends Component
             'jenis' => $this->jenis,
             'jurusan_id' => $this->jurusan_id,
             'rombel' => $this->rombel,
+            'guru_idguru' => $this->guru_idguru,
         ];
 
         try {
@@ -146,6 +193,13 @@ class KelasComponent extends Component
         }
 
         if (! $result['success']) {
+            $petaField = [
+                'tahun_ajaran' => 'tahunajaran_idtahunajaran',
+                'nama' => 'rombel',
+            ];
+            foreach (($result['errors'] ?? []) as $field => $message) {
+                $this->addError($petaField[$field] ?? $field, $message);
+            }
             $this->alert('error', 'Gagal menambah kelas: '.implode(', ', array_values($result['errors'] ?? [])));
 
             return;

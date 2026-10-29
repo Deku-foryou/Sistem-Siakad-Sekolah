@@ -74,6 +74,10 @@ class SiswaService
             $siswa->tanggal_lahir = $data['tanggal_lahir'];
             $siswa->agama = $data['agama'] ?? '';
             $siswa->alamat = $data['alamat'] ?? '';
+            $siswa->nik = $data['nik'] ?? '';
+            $siswa->telepon_siswa = $data['telepon_siswa'] ?? '';
+            $siswa->email = $data['email'] ?? '';
+            $siswa->asal_sekolah = $data['asal_sekolah'] ?? '';
             $siswa->nama_ayah = $data['nama_ayah'] ?? '';
             $siswa->nama_ibu = $data['nama_ibu'] ?? '';
             $siswa->telepon_ortu = $data['telepon_ortu'] ?? '';

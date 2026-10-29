@@ -54,13 +54,20 @@ Data Semester
                                 <tbody>
                                     @if ($semesters->count() > 0)
                                         @foreach ($semesters as $key => $datas)
-                                            <tr class="px-4">
+                                            <tr class="px-4" wire:key="sem-{{ $datas->idsemester }}">
                                                 <td class="text-center">{{ $semesters->firstItem() + $key }}</td>
                                                 <td style="min-width: 120px;text-align: center">
-                                                    <button class="btn btn-sm btn-success"
-                                                        wire:click="aktifkan('{{ $datas->idsemester }}')">
-                                                        Aktifkan
-                                                    </button>
+                                                    @if ($datas->aktif)
+                                                        <button class="btn btn-sm btn-danger"
+                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')">
+                                                            Nonaktifkan
+                                                        </button>
+                                                    @else
+                                                        <button class="btn btn-sm btn-success"
+                                                            wire:click="aktifkan('{{ $datas->idsemester }}')">
+                                                            Aktifkan
+                                                        </button>
+                                                    @endif
                                                     <button class="btn btn-sm btn-warning text-dark"
                                                         wire:click="editSemester('{{ $datas->idsemester }}')"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>

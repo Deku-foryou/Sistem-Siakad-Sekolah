@@ -51,4 +51,15 @@ class Tahunajaran extends Model
             return $tahun;
         });
     }
+
+    public static function nonaktifkan($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $tahun = static::findOrFail($id);
+            $tahun->aktif = false;
+            $tahun->save();
+
+            return $tahun;
+        });
+    }
 }

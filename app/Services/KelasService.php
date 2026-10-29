@@ -13,11 +13,13 @@ class KelasService
     public static function buat(array $data): array
     {
         $result = ['success' => false, 'kelas' => null, 'errors' => []];
-        $tahunAjaranNama = trim((string) ($data['tahun_ajaran'] ?? ''));
+        $tahunAjaranNama = trim((string) ($data['tahun_ajaran'] ?? $data['tahunajaran_idtahunajaran'] ?? ''));
         $tingkat = trim((string) ($data['tingkat'] ?? ''));
         $jenis = trim((string) ($data['jenis'] ?? 'mapel_pilihan'));
-        $nipWali = trim((string) ($data['nip_wali'] ?? ''));
+        $guruIdguru = (int) ($data['guru_idguru'] ?? 0);
         $jurusanId = trim((string) ($data['jurusan_id'] ?? ''));
+        $rombelDiminta = (int) ($data['rombel'] ?? 0);
+        $idkelasDikecualikan = $data['idkelas'] ?? null;
 
         if (! in_array($tingkat, ['10', '11', '12'], true)) {
             $result['errors']['tingkat'] = 'Tingkat harus 10, 11, atau 12';
@@ -39,35 +41,39 @@ class KelasService
             return $result;
         }
 
-        // Validate jurusan if required based on jenis
-        if ($jenis === 'induk' && $jurusanId !== '') {
-            if (! Jurusan::where('idjurusan', $jurusanId)->where('aktif', true)->exists()) {
+        // Validate jurusan: WAJIB untuk induk, tidak boleh untuk mapel_pilihan
+        if ($jenis === 'induk') {
+            if ($jurusanId === '' || (int) $jurusanId === 0) {
+                $result['errors']['jurusan_id'] = 'Jurusan wajib diisi untuk kelas Induk';
+            } elseif (! Jurusan::where('idjurusan', $jurusanId)->where('aktif', true)->exists()) {
                 $result['errors']['jurusan_id'] = 'Jurusan tidak ditemukan atau tidak aktif';
+            }
+        } else {
+            if ($jurusanId !== '' && (int) $jurusanId !== 0) {
+                $result['errors']['jurusan_id'] = 'Jurusan hanya untuk kelas Induk';
             }
         }
 
-        DB::transaction(function () use ($tahunAjaran, $tingkat, $jenis, $jurusanId, $nipWali, &$result) {
+        DB::transaction(function () use ($tahunAjaran, $tingkat, $jenis, $jurusanId, $guruIdguru, $rombelDiminta, $idkelasDikecualikan, &$result) {
             $tahunAjaran = Tahunajaran::lockForUpdate()->find($tahunAjaran->idtahunajaran);
 
             $guru = null;
-            if ($nipWali !== '' && $jenis !== 'induk') {
-                $result['errors']['nip_wali'] = 'Wali hanya boleh diisi untuk kelas Induk';
-            } elseif ($nipWali !== '') {
-                $guru = Guru::where('nip', $nipWali)->first();
-                if (! $guru && ctype_digit($nipWali)) {
-                    $guru = Guru::find((int) $nipWali);
-                }
+            if ($guruIdguru > 0 && $jenis !== 'induk') {
+                $result['errors']['guru_idguru'] = 'Wali hanya boleh diisi untuk kelas Induk';
+            } elseif ($guruIdguru > 0) {
+                $guru = Guru::where('idguru', $guruIdguru)->first();
                 if ($guru && $guru->status !== 'aktif') {
+                    $result['errors']['guru_idguru'] = 'Guru tidak ditemukan atau tidak aktif';
                     $guru = null;
                 }
                 if (! $guru) {
-                    $result['errors']['nip_wali'] = 'Wali tidak ditemukan atau tidak aktif';
+                    $result['errors']['guru_idguru'] = 'Guru tidak ditemukan atau tidak aktif';
                 } elseif ($tahunAjaran && $jenis === 'induk' && Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
                     ->where('jenis', 'induk')
                     ->where('guru_idguru', $guru->idguru)
-                    ->where('idkelas', '!=', $data['idkelas'] ?? null)
+                    ->where('idkelas', '!=', $idkelasDikecualikan)
                     ->exists()) {
-                    $result['errors']['nip_wali'] = 'Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini';
+                    $result['errors']['guru_idguru'] = 'Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini';
                 }
             }
 
@@ -86,11 +92,20 @@ class KelasService
                 $query->whereNull('jurusan_id');
             }
 
-            $takenRombels = $query->pluck('rombel')->toArray();
+            $takenRombels = array_map('intval', $query->pluck('rombel')->toArray());
 
-            $rombel = 1;
-            while (in_array($rombel, $takenRombels)) {
-                $rombel++;
+            if ($rombelDiminta > 0) {
+                if (in_array($rombelDiminta, $takenRombels, true)) {
+                    $result['errors']['rombel'] = 'Nomor rombel '.$rombelDiminta.' sudah dipakai pada tahun ajaran, tingkat, dan jurusan ini';
+
+                    return;
+                }
+                $rombel = $rombelDiminta;
+            } else {
+                $rombel = 1;
+                while (in_array($rombel, $takenRombels, true)) {
+                    $rombel++;
+                }
             }
 
             $generatedName = self::generateClassName($tingkat, $jenis, $jurusanId, $rombel, $tahunAjaran->idtahunajaran);
@@ -114,13 +129,15 @@ class KelasService
             }
 
             $kelas = new Kelas;
+            $kelas->tahunajaran_idtahunajaran = $tahunAjaran->idtahunajaran;
             $kelas->nama = $generatedName;
             $kelas->tingkat = $tingkat;
             $kelas->jenis = $jenis;
-            $kelas->tahunajaran_idtahunajaran = $tahunAjaran->idtahunajaran;
-            $kelas->jurusan_id = $jurusanId !== '' ? (int) $jurusanId : null;
             $kelas->rombel = $rombel;
             $kelas->guru_idguru = $guru ? $guru->idguru : null;
+            if ($jurusanId !== '' && (int) $jurusanId !== 0) {
+                $kelas->jurusan_id = (int) $jurusanId;
+            }
             $kelas->save();
 
             $result['kelas'] = $kelas;
@@ -130,34 +147,40 @@ class KelasService
         return $result;
     }
 
-    /**
-     * Bentuk nama kelas: "{Tingkat} {Jurusan} {Rombel}"
-     * Contoh: X MIPA 1, XI IPS 2
-     */
-    public static function bentukNama(string $tingkat, ?Jurusan $jurusan, int $rombel): string
+    public static function bentukNama(string $tingkat, $jurusan, int $rombel): string
     {
-        $tingkatLabels = [
+        $tingkatLabel = match ($tingkat) {
             '10' => 'X',
             '11' => 'XI',
             '12' => 'XII',
-        ];
-        $tingkatLabel = $tingkatLabels[$tingkat] ?? 'X';
-        $jurusanName = $jurusan ? ' '.$jurusan->nama : '';
+            default => $tingkat,
+        };
 
-        return $tingkatLabel.$jurusanName.' '.$rombel;
-    }
-
-    /**
-     * Generate class name format: Tingkat + Jurusan + Rombel
-     * Example: X IPS 1, XI MIPA 1, XII TKJ 3
-     */
-    private static function generateClassName(string $tingkat, string $jenis, $jurusanId, int $rombel, int $tahunAjaranId): string
-    {
-        $jurusan = null;
-        if ($jurusanId !== null) {
-            $jurusan = \App\Models\Jurusan::find($jurusanId);
+        $jurusanName = '';
+        if ($jurusan) {
+            $jurusanName = ' ' . strtoupper($jurusan->nama ?? $jurusan->kode ?? '');
         }
 
-        return self::bentukNama($tingkat, $jurusan, $rombel);
+        return trim($tingkatLabel . $jurusanName . ' ' . $rombel);
+    }
+
+    public static function generateClassName(string $tingkat, string $jenis, string $jurusanId, int $rombel, int $tahunAjaranId): string
+    {
+        $tingkatLabel = match ($tingkat) {
+            '10' => 'X',
+            '11' => 'XI',
+            '12' => 'XII',
+            default => $tingkat,
+        };
+
+        $jurusanName = '';
+        if ($jurusanId !== '' && (int) $jurusanId !== 0) {
+            $jurusan = Jurusan::find((int) $jurusanId);
+            if ($jurusan) {
+                $jurusanName = ' ' . strtoupper($jurusan->nama ?? $jurusan->kode ?? '');
+            }
+        }
+
+        return trim($tingkatLabel . $jurusanName . ' ' . $rombel);
     }
 }

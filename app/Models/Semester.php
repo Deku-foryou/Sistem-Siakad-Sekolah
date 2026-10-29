@@ -50,9 +50,22 @@ class Semester extends Model
             $semester->save();
 
             // aktifkan tahun ajaran induk, nonaktifkan yang lain
-            Tahunajaran::query()->update(['aktif' => false]);
-            $semester->tahunajaran->aktif = true;
-            $semester->tahunajaran->save();
+            if ($semester->tahunajaran) {
+                Tahunajaran::query()->update(['aktif' => false]);
+                $semester->tahunajaran->aktif = true;
+                $semester->tahunajaran->save();
+            }
+
+            return $semester;
+        });
+    }
+
+    public static function nonaktifkan($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $semester = static::findOrFail($id);
+            $semester->aktif = false;
+            $semester->save();
 
             return $semester;
         });

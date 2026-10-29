@@ -177,11 +177,13 @@ Data Kelas
 
     <div wire:ignore.self class="modal fade" id="deleteKelasModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
-            <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" wire:click="deleteKelas()">Ya</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
+                <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" wire:click="deleteKelas()">Ya</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                </div>
             </div>
         </div>
     </div>

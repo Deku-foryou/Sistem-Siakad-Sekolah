@@ -36,9 +36,17 @@ class TahunajaranComponent extends Component
 
     public function storeTahunajaran()
     {
-        $this->validate([
-            'nama' => 'required|unique:tahunajaran,nama',
-        ]);
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            $this->validate([
+                'nama' => 'required|unique:tahunajaran,nama',
+            ]);
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Validasi gagal: '.$th->getMessage());
+
+            return;
+        }
 
         if (! preg_match('/^\d{4}\/\d{4}$/', $this->nama)) {
             $this->alert('error', 'Format tahun ajaran harus YYYY/YYYY');
@@ -133,8 +141,28 @@ class TahunajaranComponent extends Component
 
     public function aktifkan($id)
     {
-        Tahunajaran::aktifkan($id);
-        $this->alert('success', 'Tahun ajaran diaktifkan');
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            Tahunajaran::aktifkan($id);
+            $this->resetPage();
+            $this->alert('success', 'Tahun ajaran diaktifkan');
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Gagal mengaktifkan tahun ajaran: '.$th->getMessage());
+        }
+    }
+
+    public function nonaktifkan($id)
+    {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        try {
+            Tahunajaran::nonaktifkan($id);
+            $this->resetPage();
+            $this->alert('success', 'Tahun ajaran dinonaktifkan');
+        } catch (\Throwable $th) {
+            $this->alert('error', 'Gagal menonaktifkan tahun ajaran: '.$th->getMessage());
+        }
     }
 
     public function render()

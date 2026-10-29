@@ -53,13 +53,20 @@ Data Tahun Ajaran
                                 <tbody>
                                     @if ($tahunajarans->count() > 0)
                                         @foreach ($tahunajarans as $key => $datas)
-                                            <tr class="px-4">
+                                            <tr class="px-4" wire:key="ta-{{ $datas->idtahunajaran }}">
                                                 <td class="text-center">{{ $tahunajarans->firstItem() + $key }}</td>
                                                 <td style="min-width: 120px;text-align: center">
-                                                    <button class="btn btn-sm btn-success"
-                                                        wire:click="aktifkan('{{ $datas->idtahunajaran }}')">
-                                                        Aktifkan
-                                                    </button>
+                                                    @if ($datas->aktif)
+                                                        <button class="btn btn-sm btn-danger"
+                                                            wire:click="nonaktifkan('{{ $datas->idtahunajaran }}')">
+                                                            Nonaktifkan
+                                                        </button>
+                                                    @else
+                                                        <button class="btn btn-sm btn-success"
+                                                            wire:click="aktifkan('{{ $datas->idtahunajaran }}')">
+                                                            Aktifkan
+                                                        </button>
+                                                    @endif
                                                     <button class="btn btn-sm btn-warning text-dark"
                                                         wire:click="editTahunajaran('{{ $datas->idtahunajaran }}')"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>

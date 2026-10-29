@@ -143,3 +143,129 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        var KEY = 'sidebar-scroll-top';
+
+        function host() {
+            return document.getElementById('sidebar');
+        }
+
+        function kandidat() {
+            var h = host();
+            if (!h) {
+                return [];
+            }
+            var daftar = [];
+            var simplebar = h.querySelector('.simplebar-content-wrapper');
+            if (simplebar) {
+                daftar.push(simplebar);
+            }
+            var menu = h.querySelector('.sidebar-menu');
+            if (menu) {
+                daftar.push(menu);
+            }
+            daftar.push(h);
+            return daftar;
+        }
+
+        function scrollerAktif() {
+            var daftar = kandidat();
+            for (var i = 0; i < daftar.length; i++) {
+                if (daftar[i].scrollHeight - daftar[i].clientHeight > 4) {
+                    return daftar[i];
+                }
+            }
+            return daftar.length ? daftar[0] : null;
+        }
+
+        function baca() {
+            try {
+                return sessionStorage.getItem(KEY);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function simpan() {
+            var el = scrollerAktif();
+            if (!el) {
+                return;
+            }
+            try {
+                sessionStorage.setItem(KEY, String(el.scrollTop || 0));
+            } catch (e) {
+                /* storage tidak tersedia */
+            }
+        }
+
+        function pulihkan() {
+            var nilai = baca();
+            if (nilai === null) {
+                return;
+            }
+            var posisi = parseInt(nilai, 10) || 0;
+            var daftar = kandidat();
+            for (var i = 0; i < daftar.length; i++) {
+                var el = daftar[i];
+                if (el.scrollHeight - el.clientHeight > 4) {
+                    el.scrollTop = posisi;
+                }
+            }
+            var h = host();
+            if (h && h.SimpleBar && typeof h.SimpleBar.getScrollElement === 'function') {
+                try {
+                    h.SimpleBar.getScrollElement().scrollTop = posisi;
+                } catch (e) {
+                    /* abaikan */
+                }
+            }
+        }
+
+        document.addEventListener('click', function (event) {
+            var target = event.target;
+            if (target && target.closest && target.closest('#sidebar a')) {
+                simpan();
+            }
+        }, true);
+
+        document.addEventListener('scroll', function (event) {
+            var daftar = kandidat();
+            for (var i = 0; i < daftar.length; i++) {
+                if (event.target === daftar[i]) {
+                    simpan();
+                    return;
+                }
+            }
+        }, true);
+
+        window.addEventListener('pagehide', simpan);
+        window.addEventListener('beforeunload', simpan);
+
+        var timer = null;
+
+        function mulai() {
+            pulihkan();
+            if (timer !== null) {
+                window.clearInterval(timer);
+            }
+            var n = 0;
+            timer = window.setInterval(function () {
+                pulihkan();
+                if (++n >= 40) {
+                    window.clearInterval(timer);
+                    timer = null;
+                }
+            }, 100);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', mulai);
+        } else {
+            mulai();
+        }
+
+        window.addEventListener('load', mulai);
+    })();
+</script>

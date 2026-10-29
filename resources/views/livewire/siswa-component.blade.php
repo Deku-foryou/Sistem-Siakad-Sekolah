@@ -19,14 +19,19 @@ Data Siswa
         </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
-                <thead><tr><th>NISN</th><th>Nama</th><th>JK</th><th>Status</th><th style="width: 150px; white-space: nowrap;">Aksi</th></tr></thead>
+                <thead><tr><th>Nama</th><th>Kelas</th><th>Rombel</th><th>NISN</th><th>Status</th><th>JK</th><th style="width: 150px; white-space: nowrap;">Aksi</th></tr></thead>
                 <tbody>
                     @foreach ($siswas as $s)
+                        @php
+                            $kelas = $s->kelassiswa->first()?->kelas;
+                        @endphp
                         <tr>
-                            <td>{{ $s->nisn }}</td>
                             <td>{{ $s->nama }}</td>
-                            <td>{{ $s->jenis_kelamin }}</td>
+                            <td>{{ $kelas ? $kelas->nama . ' (' . $kelas->tingkat . ')' : '-' }}</td>
+                            <td>{{ $kelas ? $kelas->rombel : '-' }}</td>
+                            <td>{{ $s->nisn }}</td>
                             <td>{{ $s->status }}</td>
+                            <td>{{ $s->jenis_kelamin }}</td>
                             <td class="text-nowrap">
                                 <button class="btn btn-sm btn-info text-white" wire:click="detailSiswa({{ $s->idsiswa }})" title="Detail" aria-label="Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-sm btn-warning" wire:click="editSiswa({{ $s->idsiswa }})"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -60,10 +65,6 @@ Data Siswa
                         <div class="mb-2"><label>Nama Ayah</label><input class="form-control" wire:model="nama_ayah"></div>
                         <div class="mb-2"><label>Nama Ibu</label><input class="form-control" wire:model="nama_ibu"></div>
                         <div class="mb-2"><label>Telepon Ortu</label><input class="form-control" wire:model="telepon_ortu"></div>
-                        <div class="mb-2"><label>Telepon Ayah</label><input class="form-control" wire:model="telepon_ayah"></div>
-                        <div class="mb-2"><label>Telepon Ibu</label><input class="form-control" wire:model="telepon_ibu"></div>
-                        <div class="mb-2"><label>Nama Wali</label><input class="form-control" wire:model="nama_wali"></div>
-                        <div class="mb-2"><label>Telepon Wali</label><input class="form-control" wire:model="telepon_wali"></div>
                         <div class="mb-2"><label>Tahun Masuk</label><input class="form-control" wire:model="tahun_masuk"></div>
                         <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
@@ -97,10 +98,6 @@ Data Siswa
                         <div class="mb-2"><label>Nama Ayah</label><input class="form-control" wire:model="nama_ayah"></div>
                         <div class="mb-2"><label>Nama Ibu</label><input class="form-control" wire:model="nama_ibu"></div>
                         <div class="mb-2"><label>Telepon Ortu</label><input class="form-control" wire:model="telepon_ortu"></div>
-                        <div class="mb-2"><label>Telepon Ayah</label><input class="form-control" wire:model="telepon_ayah"></div>
-                        <div class="mb-2"><label>Telepon Ibu</label><input class="form-control" wire:model="telepon_ibu"></div>
-                        <div class="mb-2"><label>Nama Wali</label><input class="form-control" wire:model="nama_wali"></div>
-                        <div class="mb-2"><label>Telepon Wali</label><input class="form-control" wire:model="telepon_wali"></div>
                         <div class="mb-2"><label>Tahun Masuk</label><input class="form-control" wire:model="tahun_masuk"></div>
                         <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
@@ -142,10 +139,6 @@ Data Siswa
                                 'Telepon Siswa' => $detailSiswa->telepon_siswa ?: '-',
                                 'Email Siswa' => $detailSiswa->email ?: '-',
                                 'Asal Sekolah' => $detailSiswa->asal_sekolah ?: '-',
-                                'Telepon Ayah' => $detailSiswa->telepon_ayah ?: '-',
-                                'Telepon Ibu' => $detailSiswa->telepon_ibu ?: '-',
-                                'Nama Wali' => $detailSiswa->nama_wali ?: '-',
-                                'Telepon Wali' => $detailSiswa->telepon_wali ?: '-',
                                 'Nama Ayah' => $detailSiswa->nama_ayah ?: '-',
                                 'Nama Ibu' => $detailSiswa->nama_ibu ?: '-',
                                 'Telepon Ortu' => $detailSiswa->telepon_ortu ?: '-',
@@ -165,7 +158,7 @@ Data Siswa
                                     'Tahun Ajaran' => $tahunAjaranAktif->nama ?: '-',
                                     'Tingkat' => $kelasIndukAktif?->tingkat ?: '-',
                                     'Jurusan' => $kelasIndukAktif?->jurusan?->nama ?: '-',
-                                    'Rombel' => '-',
+                                    'Rombel' => $kelasIndukAktif?->rombel ?: '-',
                                     'Nama Kelas' => $kelasIndukAktif?->nama ?: '-',
                                     'Wali Kelas' => $kelasIndukAktif?->wali?->nama ?: '-',
                                     'Mapel Pilihan' => $kelasPilihanAktif->isNotEmpty()
