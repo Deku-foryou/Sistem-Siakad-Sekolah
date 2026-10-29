@@ -32,7 +32,7 @@ class KelasComponent extends Component
 
     public $jurusan_id;
 
-    public $rombel;
+    public $rombel = 1;
 
     public $filterTahunajaran;
 

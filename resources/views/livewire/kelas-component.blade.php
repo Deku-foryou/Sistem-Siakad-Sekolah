@@ -59,19 +59,31 @@ Data Kelas
                 <div class="modal-header"><h5 class="modal-title">Tambah Kelas</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="storeKelas">
+                        @if($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <strong>Ada kesalahan:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
                         <div class="mb-2"><label>Tahun Ajaran</label>
                             <select class="form-select" wire:model="tahunajaran_idtahunajaran">
                                 <option value="">Pilih</option>
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
+                            @error('tahunajaran_idtahunajaran')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
-                        <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
+                        <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>@error('tingkat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select>@error('jenis')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Jurusan</label>
                             <select class="form-select" wire:model="jurusan_id">
                                 <option value="">-</option>
                                 @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
                             </select>
+                            @error('jurusan_id')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-2"><label>Nomor Rombel</label>
                             <select class="form-select" wire:model="rombel">
@@ -79,6 +91,7 @@ Data Kelas
                                     <option value="{{ $i }}">{{ $i }}</option>
                                 @endfor
                             </select>
+                            @error('rombel')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-3">
                             <label>Nama Kelas (Preview)</label>
@@ -100,25 +113,38 @@ Data Kelas
                 <div class="modal-header"><h5 class="modal-title">Edit Kelas</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updateKelas">
+                        @if($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <strong>Ada kesalahan:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
                         <div class="mb-2"><label>Tahun Ajaran</label>
                             <select class="form-select" wire:model="tahunajaran_idtahunajaran">
                                 <option value="">Pilih</option>
                                 @foreach ($tahunajarans as $t)<option value="{{ $t->idtahunajaran }}">{{ $t->nama }}</option>@endforeach
                             </select>
+                            @error('tahunajaran_idtahunajaran')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
-                        <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
-                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select></div>
+                        <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>@error('tingkat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select>@error('jenis')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Wali (hanya kelas induk)</label>
                             <select class="form-select" wire:model="guru_idguru">
                                 <option value="">-</option>
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
                             </select>
+                            @error('guru_idguru')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-2"><label>Jurusan</label>
                             <select class="form-select" wire:model="jurusan_id">
                                 <option value="">-</option>
                                 @foreach ($jurusan as $j)<option value="{{ $j->idjurusan }}">{{ $j->kode.' - '.$j->nama }}</option>@endforeach
                             </select>
+                            @error('jurusan_id')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-2"><label>Nomor Rombel</label>
                             <select class="form-select" wire:model="rombel">
@@ -126,6 +152,7 @@ Data Kelas
                                     <option value="{{ $i }}">{{ $i }}</option>
                                 @endfor
                             </select>
+                            @error('rombel')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-3">
                             <label>Nama Kelas (Preview)</label>

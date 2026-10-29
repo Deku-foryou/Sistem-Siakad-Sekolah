@@ -57,14 +57,24 @@ Data Guru
                 <div class="modal-header"><h5 class="modal-title">Tambah Guru</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="storeGuru">
-                        <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                        <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select></div>
-                        <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir"></div>
-                        <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir">@error('tanggal_lahir')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                        <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon"></div>
-                        <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea></div>
-                        <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select></div>
+                        @if($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <strong>Ada kesalahan:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+                        <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select>@error('jenis_kelamin')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir">@error('tempat_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir">@error('tanggal_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon">@error('telepon')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea>@error('alamat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
@@ -82,14 +92,24 @@ Data Guru
                 <div class="modal-header"><h5 class="modal-title">Edit Guru</h5></div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updateGuru">
-                        <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
-                        <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select></div>
-                        <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir"></div>
-                        <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir"></div>
-                        <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon"></div>
-                        <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea></div>
-                        <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select></div>
+                        @if($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <strong>Ada kesalahan:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+                        <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select>@error('jenis_kelamin')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir">@error('tempat_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Tanggal Lahir</label><input type="date" class="form-control" wire:model="tanggal_lahir">@error('tanggal_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon">@error('telepon')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea>@error('alamat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
