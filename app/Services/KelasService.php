@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Guru;
+use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Tahunajaran;
 use Illuminate\Support\Facades\DB;
@@ -12,16 +13,12 @@ class KelasService
     public static function buat(array $data): array
     {
         $result = ['success' => false, 'kelas' => null, 'errors' => []];
-        $nama = trim((string) ($data['nama'] ?? ''));
         $tahunAjaranNama = trim((string) ($data['tahun_ajaran'] ?? ''));
         $tingkat = trim((string) ($data['tingkat'] ?? ''));
         $jenis = trim((string) ($data['jenis'] ?? 'mapel_pilihan'));
         $nipWali = trim((string) ($data['nip_wali'] ?? ''));
         $jurusanId = trim((string) ($data['jurusan_id'] ?? ''));
 
-        if ($nama === '') {
-            $result['errors']['nama'] = 'Nama Kelas wajib diisi';
-        }
         if (! in_array($tingkat, ['10', '11', '12'], true)) {
             $result['errors']['tingkat'] = 'Tingkat harus 10, 11, atau 12';
         }
@@ -71,7 +68,7 @@ class KelasService
             return $result;
         }
 
-        DB::transaction(function () use ($nama, $tahunAjaran, $tingkat, $jenis, $guru, $jurusanId, &$result) {
+        DB::transaction(function () use ($tahunAjaran, $tingkat, $jenis, $jurusanId, &$result) {
             // Pessimistic locking: lock the tahun_ajaran record inside the transaction
             // to prevent race condition on rombel selection
             $tahunAjaran->lockForUpdate();
@@ -98,7 +95,7 @@ class KelasService
                 $rombel++;
             }
 
-            $generatedName = self::generateClassName($tingkat, $jenis, $jurusanId, $tahunAjaran->idtahunajaran);
+            $generatedName = self::generateClassName($tingkat, $jenis, $jurusanId, $rombel, $tahunAjaran->idtahunajaran);
 
             $kelas = new Kelas;
             $kelas->nama = $generatedName;
@@ -120,7 +117,7 @@ class KelasService
      * Generate class name format: Tingkat + Jurusan + Rombel
      * Example: X IPS 1, XI MIPA 1, XII TKJ 3
      */
-    private static function generateClassName(string $tingkat, string $jenis, $jurusanId, int $tahunAjaranId): string
+    private static function generateClassName(string $tingkat, string $jenis, $jurusanId, int $rombel, int $tahunAjaranId): string
     {
         // Map tingkat to label
         $tingkatLabels = [
@@ -135,10 +132,10 @@ class KelasService
         if ($jurusanId !== null) {
             $jurusan = \App\Models\Jurusan::find($jurusanId);
             if ($jurusan) {
-                $jurusanName = ' ' . $jurusan->nama;
+                $jurusanName = ' '.$jurusan->nama;
             }
         }
 
-        return $tingkatLabel . $jurusanName . ' 1';
+        return $tingkatLabel.$jurusanName.' Rombel '.$rombel;
     }
 }

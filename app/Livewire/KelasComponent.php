@@ -93,9 +93,9 @@ class KelasComponent extends Component
             $tingkatLabel = $tingkatLabels[$this->tingkat] ?? 'X';
 
             $jurusan = \App\Models\Jurusan::where('idjurusan', $this->jurusan_id)->first();
-            $jurusanName = $jurusan ? ' ' . $jurusan->nama : '';
+            $jurusanName = $jurusan ? ' '.$jurusan->nama : '';
 
-            $this->previewNama = $tingkatLabel . $jurusanName . ' ' . $this->rombel;
+            $this->previewNama = $tingkatLabel.$jurusanName.' '.$this->rombel;
         }
     }
 
@@ -111,7 +111,6 @@ class KelasComponent extends Component
 
         $data = [
             'tahunajaran_idtahunajaran' => $this->tahunajaran_idtahunajaran,
-            'nama' => $this->nama,
             'tingkat' => $this->tingkat,
             'jenis' => $this->jenis,
             'jurusan_id' => $this->jurusan_id,
@@ -125,6 +124,9 @@ class KelasComponent extends Component
 
             return;
         }
+
+        $this->nama = $result['kelas']->nama ?? '';
+        $this->rombel = $result['kelas']->rombel ?? $this->rombel;
 
         $this->reset(['idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat', 'jenis', 'guru_idguru', 'jurusan_id', 'rombel', 'previewNama']);
         $this->alert('success', 'Kelas berhasil ditambahkan');
