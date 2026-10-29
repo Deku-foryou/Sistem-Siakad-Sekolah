@@ -95,6 +95,24 @@ class KelasService
 
             $generatedName = self::generateClassName($tingkat, $jenis, $jurusanId, $rombel, $tahunAjaran->idtahunajaran);
 
+            // Check duplikat nama
+            $kelasExists = Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
+                ->where('tingkat', $tingkat)
+                ->where('jenis', $jenis)
+                ->where('rombel', $rombel);
+
+            if ($jurusanId !== '' && (int) $jurusanId !== 0) {
+                $kelasExists->where('jurusan_id', (int) $jurusanId);
+            } else {
+                $kelasExists->whereNull('jurusan_id');
+            }
+
+            if ($kelasExists->exists()) {
+                $result['errors']['nama'] = "Kelas $generatedName sudah ada pada tahun ajaran ini";
+
+                return;
+            }
+
             $kelas = new Kelas;
             $kelas->nama = $generatedName;
             $kelas->tingkat = $tingkat;
@@ -113,28 +131,33 @@ class KelasService
     }
 
     /**
-     * Generate class name format: Tingkat + Jurusan + Rombel
-     * Example: X IPS 1, XI MIPA 1, XII TKJ 3
+     * Bentuk nama kelas: "{Tingkat} {Jurusan} {Rombel}"
+     * Contoh: X MIPA 1, XI IPS 2
      */
-    private static function generateClassName(string $tingkat, string $jenis, $jurusanId, int $rombel, int $tahunAjaranId): string
+    public static function bentukNama(string $tingkat, ?Jurusan $jurusan, int $rombel): string
     {
-        // Map tingkat to label
         $tingkatLabels = [
             '10' => 'X',
             '11' => 'XI',
             '12' => 'XII',
         ];
         $tingkatLabel = $tingkatLabels[$tingkat] ?? 'X';
-
-        // Get jurusan name if jurusan provided
-        $jurusanName = '';
-        if ($jurusanId !== null) {
-            $jurusan = \App\Models\Jurusan::find($jurusanId);
-            if ($jurusan) {
-                $jurusanName = ' '.$jurusan->nama;
-            }
-        }
+        $jurusanName = $jurusan ? ' '.$jurusan->nama : '';
 
         return $tingkatLabel.$jurusanName.' '.$rombel;
+    }
+
+    /**
+     * Generate class name format: Tingkat + Jurusan + Rombel
+     * Example: X IPS 1, XI MIPA 1, XII TKJ 3
+     */
+    private static function generateClassName(string $tingkat, string $jenis, $jurusanId, int $rombel, int $tahunAjaranId): string
+    {
+        $jurusan = null;
+        if ($jurusanId !== null) {
+            $jurusan = \App\Models\Jurusan::find($jurusanId);
+        }
+
+        return self::bentukNama($tingkat, $jurusan, $rombel);
     }
 }

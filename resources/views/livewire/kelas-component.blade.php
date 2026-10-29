@@ -78,6 +78,13 @@ Data Kelas
                         </div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>@error('tingkat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select>@error('jenis')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Wali Kelas (opsional, hanya untuk Induk)</label>
+                            <select class="form-select" wire:model="guru_idguru" @if($jenis !== 'induk') disabled @endif>
+                                <option value="">-</option>
+                                @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
+                            </select>
+                            @error('guru_idguru')<span class="text-danger small">{{ $message }}</span>@enderror
+                        </div>
                         <div class="mb-2"><label>Jurusan</label>
                             <select class="form-select" wire:model="jurusan_id">
                                 <option value="">-</option>
@@ -132,8 +139,8 @@ Data Kelas
                         </div>
                         <div class="mb-2"><label>Tingkat</label><select class="form-select" wire:model="tingkat"><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>@error('tingkat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Jenis Kelas</label><select class="form-select" wire:model="jenis"><option value="induk">Induk</option><option value="mapel_pilihan">Mapel pilihan</option></select>@error('jenis')<span class="text-danger small">{{ $message }}</span>@enderror</div>
-                        <div class="mb-2"><label>Wali (hanya kelas induk)</label>
-                            <select class="form-select" wire:model="guru_idguru">
+                        <div class="mb-2"><label>Wali (opsional, hanya untuk Induk)</label>
+                            <select class="form-select" wire:model="guru_idguru" @if($jenis !== 'induk') disabled @endif>
                                 <option value="">-</option>
                                 @foreach ($gurus as $g)<option value="{{ $g->idguru }}">{{ $g->nama }}</option>@endforeach
                             </select>
