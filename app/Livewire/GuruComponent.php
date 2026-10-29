@@ -91,6 +91,8 @@ class GuruComponent extends Component
 
     public function storeGuru()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'nip' => 'required|digits_between:1,25|unique:guru,nip|unique:users,username',
             'nama' => 'required',
@@ -111,7 +113,14 @@ class GuruComponent extends Component
             'status' => $this->status,
         ];
 
-        $result = GuruService::buat($data);
+        try {
+            $result = GuruService::buat($data);
+        } catch (\Throwable $e) {
+            \Log::error('GuruService::buat error', ['exception' => $e]);
+            $this->alert('error', 'Terjadi kesalahan saat menambah guru. Silakan coba lagi.');
+
+            return;
+        }
 
         if (! $result['success']) {
             $this->alert('error', 'Gagal menambah guru: '.implode(', ', array_values($result['errors'] ?? [])));
@@ -119,7 +128,6 @@ class GuruComponent extends Component
             return;
         }
 
-        // Result already contains user, guru, and paket menu applied within transaction
         $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
@@ -155,6 +163,8 @@ class GuruComponent extends Component
 
     public function updateGuru()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'nip' => 'required|digits_between:1,25|unique:guru,nip,'.$this->idguru.',idguru|unique:users,username,'.$this->user_iduser.',id',
             'nama' => 'required',
@@ -191,12 +201,16 @@ class GuruComponent extends Component
 
     public function deleteConfirmationGuru($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->idguru = $id;
         $this->dispatch('show-delete-confirmation-guru-modal');
     }
 
     public function deleteGuru()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $guru = Guru::where('idguru', $this->idguru)->first();
         if ($guru->kelas()->count() > 0) {
             $this->alert('error', 'Guru memiliki relasi kelas, tidak dapat dihapus');

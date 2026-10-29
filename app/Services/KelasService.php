@@ -35,6 +35,10 @@ class KelasService
             $result['errors']['tahun_ajaran'] = 'Tahun ajaran tidak ditemukan';
         }
 
+        if ($result['errors'] !== []) {
+            return $result;
+        }
+
         // Validate jurusan if required based on jenis
         if ($jenis === 'induk' && $jurusanId !== '') {
             if (! Jurusan::where('idjurusan', $jurusanId)->where('aktif', true)->exists()) {
@@ -42,40 +46,35 @@ class KelasService
             }
         }
 
-        $guru = null;
-        if ($nipWali !== '' && $jenis !== 'induk') {
-            $result['errors']['nip_wali'] = 'Wali hanya boleh diisi untuk kelas Induk';
-        } elseif ($nipWali !== '') {
-            $guru = Guru::where('nip', $nipWali)->first();
-            if (! $guru && ctype_digit($nipWali)) {
-                $guru = Guru::find((int) $nipWali);
-            }
-            if ($guru && $guru->status !== 'aktif') {
-                $guru = null;
-            }
-            if (! $guru) {
-                $result['errors']['nip_wali'] = 'Wali tidak ditemukan atau tidak aktif';
-            } elseif ($tahunAjaran && $jenis === 'induk' && Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
-                ->where('jenis', 'induk')
-                ->where('guru_idguru', $guru->idguru)
-                ->where('idkelas', '!=', $data['idkelas'] ?? null)
-                ->exists()) {
-                $result['errors']['nip_wali'] = 'Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini';
-            }
-        }
+        DB::transaction(function () use ($tahunAjaran, $tingkat, $jenis, $jurusanId, $nipWali, &$result) {
+            $tahunAjaran = Tahunajaran::lockForUpdate()->find($tahunAjaran->idtahunajaran);
 
-        if ($result['errors'] !== []) {
-            return $result;
-        }
+            $guru = null;
+            if ($nipWali !== '' && $jenis !== 'induk') {
+                $result['errors']['nip_wali'] = 'Wali hanya boleh diisi untuk kelas Induk';
+            } elseif ($nipWali !== '') {
+                $guru = Guru::where('nip', $nipWali)->first();
+                if (! $guru && ctype_digit($nipWali)) {
+                    $guru = Guru::find((int) $nipWali);
+                }
+                if ($guru && $guru->status !== 'aktif') {
+                    $guru = null;
+                }
+                if (! $guru) {
+                    $result['errors']['nip_wali'] = 'Wali tidak ditemukan atau tidak aktif';
+                } elseif ($tahunAjaran && $jenis === 'induk' && Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
+                    ->where('jenis', 'induk')
+                    ->where('guru_idguru', $guru->idguru)
+                    ->where('idkelas', '!=', $data['idkelas'] ?? null)
+                    ->exists()) {
+                    $result['errors']['nip_wali'] = 'Guru sudah menjadi Wali kelas Induk pada Tahun Ajaran ini';
+                }
+            }
 
-        DB::transaction(function () use ($tahunAjaran, $tingkat, $jenis, $jurusanId, &$result) {
-            // Pessimistic locking: lock the tahun_ajaran record inside the transaction
-            // to prevent race condition on rombel selection
-            $tahunAjaran->lockForUpdate();
+            if ($result['errors'] !== []) {
+                return;
+            }
 
-            // Double-check available rombel inside locked transaction
-            // Filter berdasarkan jurusan: jika jurusan_id diberikan, ambil hanya kelas dengan jurusan yang sama
-            // jika jurusan_id NULL, ambil kelas tanpa jurusan
             $query = Kelas::where('tahunajaran_idtahunajaran', $tahunAjaran->idtahunajaran)
                 ->where('tingkat', $tingkat)
                 ->where('jenis', $jenis)
@@ -89,7 +88,6 @@ class KelasService
 
             $takenRombels = $query->pluck('rombel')->toArray();
 
-            // Find the smallest positive integer not in takenRombels
             $rombel = 1;
             while (in_array($rombel, $takenRombels)) {
                 $rombel++;
@@ -104,6 +102,7 @@ class KelasService
             $kelas->tahunajaran_idtahunajaran = $tahunAjaran->idtahunajaran;
             $kelas->jurusan_id = $jurusanId !== '' ? (int) $jurusanId : null;
             $kelas->rombel = $rombel;
+            $kelas->guru_idguru = $guru ? $guru->idguru : null;
             $kelas->save();
 
             $result['kelas'] = $kelas;
@@ -136,6 +135,6 @@ class KelasService
             }
         }
 
-        return $tingkatLabel.$jurusanName.' Rombel '.$rombel;
+        return $tingkatLabel.$jurusanName.' '.$rombel;
     }
 }

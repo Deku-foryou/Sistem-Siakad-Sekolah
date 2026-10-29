@@ -101,6 +101,8 @@ class KelasComponent extends Component
 
     public function storeKelas()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
             'tingkat' => 'required|in:10,11,12',
@@ -117,7 +119,14 @@ class KelasComponent extends Component
             'rombel' => $this->rombel,
         ];
 
-        $result = KelasService::buat($data);
+        try {
+            $result = KelasService::buat($data);
+        } catch (\Throwable $e) {
+            \Log::error('KelasService::buat error', ['exception' => $e]);
+            $this->alert('error', 'Terjadi kesalahan saat menambah kelas. Silakan coba lagi.');
+
+            return;
+        }
 
         if (! $result['success']) {
             $this->alert('error', 'Gagal menambah kelas: '.implode(', ', array_values($result['errors'] ?? [])));
@@ -156,6 +165,8 @@ class KelasComponent extends Component
 
     public function updateKelas()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
             'tingkat' => 'required|in:10,11,12',
@@ -204,12 +215,16 @@ class KelasComponent extends Component
 
     public function deleteConfirmationKelas($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->idkelas = $id;
         $this->dispatch('show-delete-confirmation-kelas-modal');
     }
 
     public function deleteKelas()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $kelas = Kelas::where('idkelas', $this->idkelas)->first();
         if ($kelas->kelassiswa()->count() > 0) {
             $this->alert('error', 'Kelas memiliki anggota, tidak dapat dihapus');
