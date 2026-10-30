@@ -53,4 +53,9 @@ class Guru extends Model
     {
         return $this->hasManyThrough(Kelassiswa::class, Kelas::class, 'guru_idguru', 'kelas_idkelas', 'idguru', 'idkelas');
     }
+
+    public function mapel()
+    {
+        return $this->belongsToMany(Mapel::class, 'gurumapel', 'guru_idguru', 'mapel_idmapel', 'idguru', 'idmapel');
+    }
 }

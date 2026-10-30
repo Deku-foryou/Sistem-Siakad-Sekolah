@@ -27,4 +27,9 @@ class Mapel extends Model
             ->orWhere('nama', 'like', "%{$value}%")
             ->orWhere('kelompok', 'like', "%{$value}%");
     }
+
+    public function guru()
+    {
+        return $this->belongsToMany(Guru::class, 'gurumapel', 'mapel_idmapel', 'guru_idguru', 'idmapel', 'idguru');
+    }
 }

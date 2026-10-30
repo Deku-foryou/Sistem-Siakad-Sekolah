@@ -43,6 +43,8 @@ class GuruComponent extends Component
 
     public $status = 'aktif';
 
+    public $mapel_ids = [];
+
     public $search = '';
 
     public $perPage = 10;
@@ -99,6 +101,8 @@ class GuruComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
+            'mapel_ids' => 'nullable|array',
+            'mapel_ids.*' => 'exists:mapel,idmapel',
         ]);
 
         $data = [
@@ -114,21 +118,22 @@ class GuruComponent extends Component
         ];
 
         try {
-            $result = GuruService::buat($data);
+            DB::transaction(function () use ($data) {
+                $result = GuruService::buat($data);
+                if ($result['success']) {
+                    GuruService::sinkronMapel($result['guru'], $this->mapel_ids);
+                } else {
+                    throw new \Exception(implode(', ', array_values($result['errors'] ?? [])));
+                }
+            });
         } catch (\Throwable $e) {
             \Log::error('GuruService::buat error', ['exception' => $e]);
-            $this->alert('error', 'Terjadi kesalahan saat menambah guru. Silakan coba lagi.');
+            $this->alert('error', 'Terjadi kesalahan saat menambah guru: ' . $e->getMessage());
 
             return;
         }
 
-        if (! $result['success']) {
-            $this->alert('error', 'Gagal menambah guru: '.implode(', ', array_values($result['errors'] ?? [])));
-
-            return;
-        }
-
-        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status']);
+        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Guru berhasil ditambahkan');
@@ -158,6 +163,7 @@ class GuruComponent extends Component
         $this->alamat = $guru->alamat;
         $this->foto = $guru->foto;
         $this->status = $guru->status;
+        $this->mapel_ids = $guru->mapel()->pluck('mapel.idmapel')->toArray();
         $this->dispatch('show-edit-guru-modal');
     }
 
@@ -171,6 +177,8 @@ class GuruComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
+            'mapel_ids' => 'nullable|array',
+            'mapel_ids.*' => 'exists:mapel,idmapel',
         ]);
 
         DB::transaction(function () {
@@ -190,9 +198,11 @@ class GuruComponent extends Component
             $user->username = $this->nip;
             $user->name = $this->nama;
             $user->save();
+
+            GuruService::sinkronMapel($guru, $this->mapel_ids);
         });
 
-        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status']);
+        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Guru berhasil diperbarui');
@@ -220,6 +230,9 @@ class GuruComponent extends Component
             return;
         }
         DB::transaction(function () use ($guru) {
+            // Hapus gurumapel dulu (karena FK restrict)
+            $guru->mapel()->detach();
+
             $user = $guru->user;
             $guru->delete();
             if ($user) {
@@ -234,6 +247,7 @@ class GuruComponent extends Component
     public function render()
     {
         $guru = Guru::latest()
+            ->with('mapel')
             ->search($this->search)
             ->paginate($this->perPage);
 
@@ -253,6 +267,7 @@ class GuruComponent extends Component
                 ])
                 ->with([
                     'user:id,username,wajib_ganti_password',
+                    'mapel',
                     'kelas' => fn ($query) => $query
                         ->select([
                             'idkelas', 'tahunajaran_idtahunajaran', 'nama', 'tingkat',
@@ -269,6 +284,7 @@ class GuruComponent extends Component
             'gurus' => $guru,
             'detailGuru' => $detailGuru,
             'tahunAjaranAktif' => $tahunAjaranAktif,
+            'mapels' => \App\Models\Mapel::orderBy('nama')->get(),
         ]);
     }
 }

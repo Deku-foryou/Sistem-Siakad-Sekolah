@@ -95,4 +95,20 @@ class GuruService
 
         return $result;
     }
+
+    public static function sinkronMapel(Guru $guru, array $mapelIds): void
+    {
+        // Normalisasi
+        $mapelIds = array_unique(array_filter(array_map('intval', $mapelIds)));
+
+        // Verifikasi semua mapel ada
+        foreach ($mapelIds as $id) {
+            if (!\App\Models\Mapel::where('idmapel', $id)->exists()) {
+                throw new \InvalidArgumentException("Mapel dengan ID {$id} tidak ditemukan.");
+            }
+        }
+
+        // Sinkronisasi: Sync relationship
+        $guru->mapel()->sync($mapelIds);
+    }
 }

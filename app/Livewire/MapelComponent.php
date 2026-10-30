@@ -39,6 +39,8 @@ class MapelComponent extends Component
 
     public function storeMapel()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'kode' => 'required|unique:mapel,kode',
             'nama' => 'required',
@@ -74,6 +76,7 @@ class MapelComponent extends Component
 
     public function editMapel($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $mapel = Mapel::where('idmapel', $id)->first();
         $this->idmapel = $mapel->idmapel;
         $this->kode = $mapel->kode;
@@ -84,6 +87,7 @@ class MapelComponent extends Component
 
     public function updateMapel()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->validate([
             'kode' => 'required|unique:mapel,kode,'.$this->idmapel.',idmapel',
             'nama' => 'required',
@@ -104,13 +108,24 @@ class MapelComponent extends Component
 
     public function deleteConfirmationMapel($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->idmapel = $id;
         $this->dispatch('show-delete-confirmation-mapel-modal');
     }
 
     public function deleteMapel()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $mapel = Mapel::where('idmapel', $this->idmapel)->first();
+        
+        $countGuru = $mapel->guru()->count();
+        if ($countGuru > 0) {
+            $this->alert('error', "Mapel masih diampu oleh {$countGuru} guru");
+            $this->dispatch('close-mapel-modal');
+            $this->idmapel = '';
+            return;
+        }
+
         try {
             $mapel->delete();
             $this->alert('success', 'Mapel berhasil dihapus');

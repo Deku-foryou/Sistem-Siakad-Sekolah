@@ -27,7 +27,7 @@ Data Guru
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>NIP</th><th>Nama</th><th>JK</th><th>Status</th><th style="width: 150px; white-space: nowrap;">Aksi</th>
+                        <th>NIP</th><th>Nama</th><th>Mapel</th><th>JK</th><th>Status</th><th style="width: 150px; white-space: nowrap;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,6 +35,15 @@ Data Guru
                         <tr>
                             <td>{{ $g->nip }}</td>
                             <td>{{ $g->nama }}</td>
+                            <td>
+                                @foreach($g->mapel->take(3) as $m)
+                                    <span class="badge bg-secondary me-1">{{ $m->kode }}</span>
+                                @endforeach
+                                @if($g->mapel->count() > 3)
+                                    <span class="badge bg-secondary">+{{ $g->mapel->count() - 3 }}</span>
+                                @endif
+                                @if($g->mapel->isEmpty()) - @endif
+                            </td>
                             <td>{{ $g->jenis_kelamin }}</td>
                             <td>{{ $g->status }}</td>
                             <td class="text-nowrap">
@@ -75,8 +84,24 @@ Data Guru
                         <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon">@error('telepon')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea>@error('alamat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2">
+                            <label>Mapel yang diampu</label>
+                            <div class="border p-2" style="max-height: 150px; overflow-y: auto;">
+                                @forelse ($mapels as $m)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ $m->idmapel }}" wire:model="mapel_ids" id="add-mapel-{{ $m->idmapel }}">
+                                        <label class="form-check-label" for="add-mapel-{{ $m->idmapel }}">
+                                            {{ $m->kode }} - {{ $m->nama }}
+                                        </label>
+                                    </div>
+                                @empty
+                                    <p class="text-muted small">Belum ada mapel. Tambahkan di menu Mapel.</p>
+                                @endforelse
+                            </div>
+                            @error('mapel_ids')<span class="text-danger small">{{ $message }}</span>@enderror
+                        </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="storeGuru">Simpan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
                         </div>
                     </form>
@@ -110,8 +135,24 @@ Data Guru
                         <div class="mb-2"><label>Telepon</label><input class="form-control" wire:model="telepon">@error('telepon')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Alamat</label><textarea class="form-control" wire:model="alamat"></textarea>@error('alamat')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2">
+                            <label>Mapel yang diampu</label>
+                            <div class="border p-2" style="max-height: 150px; overflow-y: auto;">
+                                @forelse ($mapels as $m)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ $m->idmapel }}" wire:model="mapel_ids" id="edit-mapel-{{ $m->idmapel }}">
+                                        <label class="form-check-label" for="edit-mapel-{{ $m->idmapel }}">
+                                            {{ $m->kode }} - {{ $m->nama }}
+                                        </label>
+                                    </div>
+                                @empty
+                                    <p class="text-muted small">Belum ada mapel. Tambahkan di menu Mapel.</p>
+                                @endforelse
+                            </div>
+                            @error('mapel_ids')<span class="text-danger small">{{ $message }}</span>@enderror
+                        </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="updateGuru">Simpan Perubahan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
                         </div>
                     </form>
@@ -175,7 +216,7 @@ Data Guru
                             <div class="col-12">
                                 @include('livewire.partials.detail-card', [
                                     'title' => 'Mengajar',
-                                    'rows' => ['Keterangan' => 'Segera tersedia'],
+                                    'rows' => ['Mapel' => $detailGuru->mapel->isEmpty() ? '-' : $detailGuru->mapel->pluck('nama')->implode(', ')],
                                 ])
                             </div>
                         </div>
