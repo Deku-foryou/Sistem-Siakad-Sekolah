@@ -200,7 +200,12 @@ class JadwalComponent extends Component
             ->keyBy(fn (Jadwal $row) => $row->hari.'|'.$row->jam_ke);
 
         $mapels = Mapel::orderBy('nama')->get();
-        $activeGurus = Guru::where('status', 'aktif')->orderBy('nama')->get();
+        $activeGurus = $this->mapelId 
+            ? Guru::where('status', 'aktif')
+                ->whereHas('mapel', fn($q) => $q->where('mapel.idmapel', $this->mapelId))
+                ->orderBy('nama')->get()
+            : Guru::where('status', 'aktif')->orderBy('nama')->get();
+
         $selectedPengampu = $this->mapelId && $this->filterSemester && $this->filterKelas
             ? Pengampu::with('guru')
                 ->where('semester_idsemester', $this->filterSemester)

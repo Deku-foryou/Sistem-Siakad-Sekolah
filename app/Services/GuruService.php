@@ -69,6 +69,7 @@ class GuruService
             $guru = new Guru;
             $guru->user_iduser = $user->id;
             $guru->nip = $nip;
+            $guru->kode_guru = $data['kode_guru'] ?? null;
             $guru->nama = $data['nama'];
             $guru->jenis_kelamin = $jk;
             $guru->tempat_lahir = $data['tempat_lahir'] ?? '';

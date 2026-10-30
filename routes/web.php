@@ -15,7 +15,6 @@ use App\Livewire\GuruComponent;
 use App\Livewire\HomedocsComponent;
 use App\Livewire\JadwalComponent;
 use App\Livewire\BuktiPublikasiComponent;
-use App\Livewire\JampelajaranComponent;
 use App\Livewire\KelasComponent;
 use App\Livewire\KelassiswaComponent;
 use App\Livewire\MapelComponent;
@@ -54,7 +53,7 @@ if (Schema::hasTable('appmenunew')) {
 
 // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
 // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'jampelajaran', 'pengampu', 'jadwal', 'jurusan'];
+$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'pengampu', 'jadwal', 'jurusan'];
 
 Route::get('/', function () {
     return view('login');
@@ -119,7 +118,7 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
                 Route::get('kelas', KelasComponent::class);
                 Route::get('kelassiswa', KelassiswaComponent::class);
                 Route::get('polajam', PolajamComponent::class)->name('polajam');
-                Route::get('jampelajaran', JampelajaranComponent::class)->name('jampelajaran');
+                Route::get('jampelajaran', App\Livewire\JamhariComponent::class)->name('jampelajaran');
                 Route::get('pengampu', PengampuComponent::class)->name('pengampu');
                 Route::get('jadwal', JadwalComponent::class)->name('jadwal');
 Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');

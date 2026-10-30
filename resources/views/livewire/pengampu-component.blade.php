@@ -37,7 +37,7 @@
                 <option value="{{ $semester->idsemester }}">{{ $semester->tahunajaran->nama ?? '-' }} · {{ $semester->nama }}</option>@endforeach</select>
             <label>Kelas</label><select class="form-select mb-2" wire:model="kelas_idkelas"><option value="">Pilih kelas</option>@foreach ($kelasOptions as $kelas)
                 <option value="{{ $kelas->idkelas }}">{{ $kelas->nama }} ({{ $kelas->tingkat }})</option>@endforeach</select>
-            <label>Mata Pelajaran</label><select class="form-select mb-2" wire:model="mapel_idmapel"><option value="">Pilih mata pelajaran</option>@foreach ($mapels as $mapel)
+            <label>Mata Pelajaran</label><select class="form-select mb-2" wire:model.live="mapel_idmapel"><option value="">Pilih mata pelajaran</option>@foreach ($mapels as $mapel)
                 <option value="{{ $mapel->idmapel }}">{{ $mapel->nama }}</option>@endforeach</select>
             <label>Guru Aktif</label><select class="form-select" wire:model="guru_idguru"><option value="">Pilih guru</option>@foreach ($gurus as $guru)
                 <option value="{{ $guru->idguru }}">{{ $guru->nama }} ({{ $guru->nip }})</option>@endforeach</select>
@@ -49,7 +49,7 @@
                 <option value="{{ $semester->idsemester }}">{{ $semester->tahunajaran->nama ?? '-' }} · {{ $semester->nama }}</option>@endforeach</select>
             <label>Kelas</label><select class="form-select mb-2" wire:model="kelas_idkelas"><option value="">Pilih kelas</option>@foreach ($kelasOptions as $kelas)
                 <option value="{{ $kelas->idkelas }}">{{ $kelas->nama }} ({{ $kelas->tingkat }})</option>@endforeach</select>
-            <label>Mata Pelajaran</label><select class="form-select mb-2" wire:model="mapel_idmapel"><option value="">Pilih mata pelajaran</option>@foreach ($mapels as $mapel)
+            <label>Mata Pelajaran</label><select class="form-select mb-2" wire:model.live="mapel_idmapel"><option value="">Pilih mata pelajaran</option>@foreach ($mapels as $mapel)
                 <option value="{{ $mapel->idmapel }}">{{ $mapel->nama }}</option>@endforeach</select>
             <label>Guru Aktif</label><select class="form-select" wire:model="guru_idguru"><option value="">Pilih guru</option>@foreach ($gurus as $guru)
                 <option value="{{ $guru->idguru }}">{{ $guru->nama }} ({{ $guru->nip }})</option>@endforeach</select>

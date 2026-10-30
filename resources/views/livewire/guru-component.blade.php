@@ -37,7 +37,7 @@ Data Guru
                             <td>{{ $g->nama }}</td>
                             <td>
                                 @foreach($g->mapel->take(3) as $m)
-                                    <span class="badge bg-secondary me-1">{{ $m->kode }}</span>
+                                    <span class="badge bg-secondary me-1" title="{{ $m->nama }}">{{ $m->nama }}</span>
                                 @endforeach
                                 @if($g->mapel->count() > 3)
                                     <span class="badge bg-secondary">+{{ $g->mapel->count() - 3 }}</span>
@@ -77,6 +77,7 @@ Data Guru
                         </div>
                         @endif
                         <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Kode Guru</label><input class="form-control" wire:model="kode_guru">@error('kode_guru')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select>@error('jenis_kelamin')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir">@error('tempat_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
@@ -86,9 +87,10 @@ Data Guru
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2">
                             <label>Mapel yang diampu</label>
+                            <input type="text" class="form-control mb-2" wire:model.live="mapelSearch" placeholder="Cari mapel...">
                             <div class="border p-2" style="max-height: 150px; overflow-y: auto;">
                                 @forelse ($mapels as $m)
-                                    <div class="form-check">
+                                    <div class="form-check" @if($mapelSearch && !str_contains(strtolower($m->nama), strtolower($mapelSearch)) && !str_contains(strtolower($m->kode), strtolower($mapelSearch))) style="display:none;" @endif>
                                         <input class="form-check-input" type="checkbox" value="{{ $m->idmapel }}" wire:model="mapel_ids" id="add-mapel-{{ $m->idmapel }}">
                                         <label class="form-check-label" for="add-mapel-{{ $m->idmapel }}">
                                             {{ $m->kode }} - {{ $m->nama }}
@@ -128,6 +130,7 @@ Data Guru
                         </div>
                         @endif
                         <div class="mb-2"><label>NIP</label><input class="form-control" wire:model="nip">@error('nip')<span class="text-danger small">{{ $message }}</span>@enderror</div>
+                        <div class="mb-2"><label>Kode Guru</label><input class="form-control" wire:model="kode_guru">@error('kode_guru')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama">@error('nama')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>JK</label><select class="form-select" wire:model="jenis_kelamin"><option value="L">L</option><option value="P">P</option></select>@error('jenis_kelamin')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>Tempat Lahir</label><input class="form-control" wire:model="tempat_lahir">@error('tempat_lahir')<span class="text-danger small">{{ $message }}</span>@enderror</div>
@@ -137,9 +140,10 @@ Data Guru
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="nonaktif">nonaktif</option></select>@error('status')<span class="text-danger small">{{ $message }}</span>@enderror</div>
                         <div class="mb-2">
                             <label>Mapel yang diampu</label>
+                            <input type="text" class="form-control mb-2" wire:model.live="mapelSearch" placeholder="Cari mapel...">
                             <div class="border p-2" style="max-height: 150px; overflow-y: auto;">
                                 @forelse ($mapels as $m)
-                                    <div class="form-check">
+                                    <div class="form-check" @if($mapelSearch && !str_contains(strtolower($m->nama), strtolower($mapelSearch)) && !str_contains(strtolower($m->kode), strtolower($mapelSearch))) style="display:none;" @endif>
                                         <input class="form-check-input" type="checkbox" value="{{ $m->idmapel }}" wire:model="mapel_ids" id="edit-mapel-{{ $m->idmapel }}">
                                         <label class="form-check-label" for="edit-mapel-{{ $m->idmapel }}">
                                             {{ $m->kode }} - {{ $m->nama }}
@@ -177,6 +181,7 @@ Data Guru
                             };
                             $biodataRows = [
                                 'NIP' => $detailGuru->nip ?: '-',
+                                'Kode Guru' => $detailGuru->kode_guru ?: '-',
                                 'Nama' => $detailGuru->nama ?: '-',
                                 'Jenis Kelamin' => $detailGuru->jenis_kelamin === 'L' ? 'Laki-laki' : ($detailGuru->jenis_kelamin === 'P' ? 'Perempuan' : '-'),
                                 'Tempat Lahir' => $detailGuru->tempat_lahir ?: '-',

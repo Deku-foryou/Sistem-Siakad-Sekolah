@@ -17,6 +17,7 @@ class Guru extends Model
         'idguru',
         'user_iduser',
         'nip',
+        'kode_guru',
         'nama',
         'jenis_kelamin',
         'tempat_lahir',

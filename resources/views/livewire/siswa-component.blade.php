@@ -50,7 +50,7 @@ Data Siswa
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title">Tambah Siswa</h5></div>
                 <div class="modal-body">
-                    <form wire:submit.prevent="storeSiswa">
+                    <form wire:submit="storeSiswa">
                         <div class="mb-2"><label>NISN</label><input class="form-control" wire:model="nisn">@error('nisn')<span class="text-danger">{{ $message }}</span>@enderror</div>
                         <div class="mb-2"><label>NIS</label><input class="form-control" wire:model="nis"></div>
                         <div class="mb-2"><label>NIK</label><input class="form-control" wire:model="nik"></div>
@@ -69,7 +69,7 @@ Data Siswa
                         <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">Simpan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
                         </div>
                     </form>
@@ -83,7 +83,7 @@ Data Siswa
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title">Edit Siswa</h5></div>
                 <div class="modal-body">
-                    <form wire:submit.prevent="updateSiswa">
+                    <form wire:submit="updateSiswa">
                         <div class="mb-2"><label>NISN</label><input class="form-control" wire:model="nisn"></div>
                         <div class="mb-2"><label>NIS</label><input class="form-control" wire:model="nis"></div>
                         <div class="mb-2"><label>NIK</label><input class="form-control" wire:model="nik"></div>
@@ -102,7 +102,7 @@ Data Siswa
                         <div class="mb-2"><label>Asal Sekolah</label><input class="form-control" wire:model="asal_sekolah"></div>
                         <div class="mb-2"><label>Status</label><select class="form-select" wire:model="status"><option value="aktif">aktif</option><option value="lulus">lulus</option><option value="pindah">pindah</option><option value="keluar">keluar</option></select></div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">Simpan Perubahan</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
                         </div>
                     </form>

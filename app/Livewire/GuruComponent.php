@@ -27,6 +27,8 @@ class GuruComponent extends Component
 
     public $nip;
 
+    public $kode_guru;
+
     public $nama;
 
     public $jenis_kelamin = 'L';
@@ -44,6 +46,8 @@ class GuruComponent extends Component
     public $status = 'aktif';
 
     public $mapel_ids = [];
+
+    public $mapelSearch = '';
 
     public $search = '';
 
@@ -97,6 +101,7 @@ class GuruComponent extends Component
 
         $this->validate([
             'nip' => 'required|digits_between:1,25|unique:guru,nip|unique:users,username',
+            'kode_guru' => 'nullable|string|max:50|unique:guru,kode_guru',
             'nama' => 'required',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
@@ -107,6 +112,7 @@ class GuruComponent extends Component
 
         $data = [
             'nip' => $this->nip,
+            'kode_guru' => $this->kode_guru,
             'nama' => $this->nama,
             'jenis_kelamin' => $this->jenis_kelamin,
             'tempat_lahir' => $this->tempat_lahir,
@@ -133,7 +139,7 @@ class GuruComponent extends Component
             return;
         }
 
-        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
+        $this->reset(['idguru', 'user_iduser', 'nip', 'kode_guru', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Guru berhasil ditambahkan');
@@ -142,7 +148,7 @@ class GuruComponent extends Component
 
     public function close()
     {
-        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status']);
+        $this->reset(['idguru', 'user_iduser', 'nip', 'kode_guru', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids', 'mapelSearch']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->resetValidation();
@@ -155,6 +161,7 @@ class GuruComponent extends Component
         $this->idguru = $guru->idguru;
         $this->user_iduser = $guru->user_iduser;
         $this->nip = $guru->nip;
+        $this->kode_guru = $guru->kode_guru;
         $this->nama = $guru->nama;
         $this->jenis_kelamin = $guru->jenis_kelamin;
         $this->tempat_lahir = $guru->tempat_lahir;
@@ -173,6 +180,7 @@ class GuruComponent extends Component
 
         $this->validate([
             'nip' => 'required|digits_between:1,25|unique:guru,nip,'.$this->idguru.',idguru|unique:users,username,'.$this->user_iduser.',id',
+            'kode_guru' => 'nullable|string|max:50|unique:guru,kode_guru,'.$this->idguru.',idguru',
             'nama' => 'required',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
@@ -184,6 +192,7 @@ class GuruComponent extends Component
         DB::transaction(function () {
             $guru = Guru::where('idguru', $this->idguru)->first();
             $guru->nip = $this->nip;
+            $guru->kode_guru = $this->kode_guru;
             $guru->nama = $this->nama;
             $guru->jenis_kelamin = $this->jenis_kelamin;
             $guru->tempat_lahir = $this->tempat_lahir;
@@ -202,7 +211,7 @@ class GuruComponent extends Component
             GuruService::sinkronMapel($guru, $this->mapel_ids);
         });
 
-        $this->reset(['idguru', 'user_iduser', 'nip', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
+        $this->reset(['idguru', 'user_iduser', 'nip', 'kode_guru', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'telepon', 'alamat', 'foto', 'status', 'mapel_ids']);
         $this->status = 'aktif';
         $this->jenis_kelamin = 'L';
         $this->alert('success', 'Guru berhasil diperbarui');

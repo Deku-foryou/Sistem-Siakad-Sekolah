@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-final class Hari
+class Hari
 {
-    public const NAMA = [
+    const NAMA = [
         1 => 'Senin',
         2 => 'Selasa',
         3 => 'Rabu',
@@ -16,6 +16,6 @@ final class Hari
 
     public static function nama(int $hari): string
     {
-        return self::NAMA[$hari] ?? throw new \InvalidArgumentException('Hari harus Senin sampai Minggu.');
+        return self::NAMA[$hari] ?? '-';
     }
 }
