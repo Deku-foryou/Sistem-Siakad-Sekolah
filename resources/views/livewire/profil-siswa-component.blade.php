@@ -110,6 +110,12 @@
                     <div class="profil-stat-value">{{ $kelasList->map(fn ($k) => $k->jurusan?->nama)->filter()->unique()->implode(', ') ?: 'Belum diisi' }}</div>
                 </div>
             </div>
+            <div class="col-12 col-md-6">
+                <div class="profil-stat-card">
+                    <div class="profil-stat-label">Wali Kelas</div>
+                    <div class="profil-stat-value">{{ $kelasList->map(fn ($k) => $k->wali?->nama)->filter()->unique()->implode(', ') ?: 'Belum ditentukan' }}</div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-3">
@@ -204,7 +210,7 @@
                     </div>
                     <div class="col-12 col-sm-6">
                         <div class="profil-field">
-                            <div class="profil-field-label">Wali</div>
+                            <div class="profil-field-label">Wali Murid</div>
                             <div class="profil-field-value">
                                 <div>{{ $siswa->nama_wali ?: 'Belum diisi' }}</div>
                                 <div class="text-body-secondary small">{{ $siswa->telepon_wali ?: 'Belum diisi' }}</div>
