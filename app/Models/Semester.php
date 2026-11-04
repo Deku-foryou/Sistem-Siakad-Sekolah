@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\KonteksAkademikService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -43,31 +44,24 @@ class Semester extends Model
 
     public static function aktifkan($id)
     {
-        return DB::transaction(function () use ($id) {
-            $semester = static::findOrFail($id);
-            static::query()->update(['aktif' => false]);
-            $semester->aktif = true;
-            $semester->save();
-
-            // aktifkan tahun ajaran induk, nonaktifkan yang lain
-            if ($semester->tahunajaran) {
-                Tahunajaran::query()->update(['aktif' => false]);
-                $semester->tahunajaran->aktif = true;
-                $semester->tahunajaran->save();
-            }
-
-            return $semester;
-        });
+        // Delegasikan ke KonteksAkademikService agar aktivasi semester
+        // dan tahun ajaran induknya terjadi atomik dalam satu transaksi.
+        return KonteksAkademikService::aktifkanSemester((int) $id)->semester;
     }
 
     public static function nonaktifkan($id)
     {
         return DB::transaction(function () use ($id) {
-            $semester = static::findOrFail($id);
+            $semester = static::query()->lockForUpdate()->findOrFail($id);
             $semester->aktif = false;
             $semester->save();
 
             return $semester;
         });
+    }
+
+    public function jadwalkelas()
+    {
+        return $this->hasMany(JadwalKelas::class, 'semester_idsemester', 'idsemester');
     }
 }

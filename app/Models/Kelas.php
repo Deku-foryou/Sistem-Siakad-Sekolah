@@ -52,6 +52,11 @@ class Kelas extends Model
         return $this->hasMany(Kelassiswa::class, 'kelas_idkelas', 'idkelas');
     }
 
+    public function pengampu()
+    {
+        return $this->hasMany(Pengampu::class, 'kelas_idkelas', 'idkelas');
+    }
+
     public function siswa()
     {
         return $this->belongsToMany(Siswa::class, 'kelassiswa', 'kelas_idkelas', 'siswa_idsiswa');

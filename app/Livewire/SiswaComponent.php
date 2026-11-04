@@ -109,6 +109,7 @@ class SiswaComponent extends Component
 
     public function storeSiswa()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->validate([
             'nisn' => 'required|digits:10|unique:siswa,nisn|unique:users,username',
             'nik' => 'nullable|digits:16|unique:siswa,nik',
@@ -193,6 +194,7 @@ class SiswaComponent extends Component
 
     public function updateSiswa()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->validate([
             'nisn' => 'required|digits:10|unique:siswa,nisn,'.$this->idsiswa.',idsiswa|unique:users,username,'.$this->user_iduser.',id',
             'nik' => 'nullable|digits:16|unique:siswa,nik,'.$this->idsiswa.',idsiswa',
@@ -241,12 +243,14 @@ class SiswaComponent extends Component
 
     public function deleteConfirmationSiswa($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->idsiswa = $id;
         $this->dispatch('show-delete-confirmation-siswa-modal');
     }
 
     public function deleteSiswa()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $siswa = Siswa::where('idsiswa', $this->idsiswa)->first();
         if ($siswa->kelassiswa()->count() > 0) {
             $this->alert('error', 'Siswa memiliki relasi penempatan, tidak dapat dihapus');

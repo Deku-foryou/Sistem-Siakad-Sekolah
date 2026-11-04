@@ -4,10 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Guru;
 use App\Models\Jadwal;
+use App\Models\Jampelajaran;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Pengampu;
-use App\Models\Polajamhari;
 use App\Models\Publikasijadwal;
 use App\Models\Semester;
 use App\Services\JadwalService;
@@ -175,17 +175,41 @@ class JadwalComponent extends Component
             $this->filterKelas = '';
         }
 
-        $mappings = Polajamhari::with('pola.jamPelajaran')->get()->keyBy('hari');
-        $gridHariOptions = array_intersect_key(Hari::NAMA, $mappings->all());
+        // Generate grid options dari konfigurasi Jampelajaran (tanpa Polajamhari)
+        // Ambil semua jam_ke yang dikonfigurasi
+        $allJamKe = Jampelajaran::where('jenis', 'pelajaran')
+            ->distinct()
+            ->orderBy('jam_ke')
+            ->pluck('jam_ke');
+
+        // Ambil semua hari yang sudah ada jadwal di semester+kelas ini
+        $usedHari = Jadwal::whereHas('pengampu', fn ($q) => $q
+            ->where('semester_idsemester', $this->filterSemester ?: 0)
+            ->when($this->filterKelas, fn ($sub) => $sub->where('kelas_idkelas', $this->filterKelas)))
+            ->distinct()
+            ->pluck('hari');
+
+        // Filter Hari::NAMA hanya untuk hari yang ada jadwal
+        $gridHariOptions = $usedHari->count() > 0
+            ? array_intersect_key(Hari::NAMA, array_flip($usedHari->all()))
+            : [];
+
+        // Build periods dan times dari Jampelajaran
         $periods = [];
         $times = [];
-        foreach ($mappings as $mapping) {
-            foreach ($mapping->pola->jamPelajaran as $period) {
-                if ($period->jenis === 'pelajaran') {
-                    $periods[(int) $period->jam_ke] = [
-                        'jam_ke' => (int) $period->jam_ke,
-                    ];
-                    $times[$mapping->hari.'|'.$period->jam_ke] = substr($period->mulai, 0, 5).'–'.substr($period->selesai, 0, 5);
+        foreach ($allJamKe as $jamke) {
+            $periods[(int) $jamke] = ['jam_ke' => (int) $jamke];
+
+            // Ambil waktu untuk jam_ke ini (dari record pertama)
+            $jam = Jampelajaran::where('jam_ke', $jamke)
+                ->where('jenis', 'pelajaran')
+                ->first();
+
+            if ($jam) {
+                $timeDisplay = substr($jam->mulai, 0, 5).'–'.substr($jam->selesai, 0, 5);
+                // Untuk setiap hari yang ada, set waktu yang sama (global config)
+                foreach ($gridHariOptions as $hari => $hariNama) {
+                    $times[$hari.'|'.$jamke] = $timeDisplay;
                 }
             }
         }
@@ -200,9 +224,9 @@ class JadwalComponent extends Component
             ->keyBy(fn (Jadwal $row) => $row->hari.'|'.$row->jam_ke);
 
         $mapels = Mapel::orderBy('nama')->get();
-        $activeGurus = $this->mapelId 
+        $activeGurus = $this->mapelId
             ? Guru::where('status', 'aktif')
-                ->whereHas('mapel', fn($q) => $q->where('mapel.idmapel', $this->mapelId))
+                ->whereHas('mapel', fn ($q) => $q->where('mapel.idmapel', $this->mapelId))
                 ->orderBy('nama')->get()
             : Guru::where('status', 'aktif')->orderBy('nama')->get();
 

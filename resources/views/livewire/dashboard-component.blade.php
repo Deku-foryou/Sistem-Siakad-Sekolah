@@ -1,290 +1,168 @@
-@section('title', 'Dashboard')
+@section('title', 'Dashboard Superadmin')
 
-<div>
-    <div class="container-fluid mb-5 px-4" style="margin-top: 20px">
-        
-        <div class="container-fluid px-0 p-3 rounded-top">
-            <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
-                <div class="mb-3 mb-lg-0">
-                    <p class="p-0 m-0 h3 fw-bold">Dashboard</p>
-                    <div class="mt-2" style="color: #868686">
-                        Your main content goes here..
-                    </div>
+<div class="container-fluid px-3 px-lg-4 py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Dashboard Superadmin</h1>
+            <p class="text-body-secondary mb-0">Pusat informasi akademik SIAKAD.</p>
+        </div>
+        <span class="badge bg-success px-3 py-2">
+            <i class="fa-solid fa-user-shield me-1" aria-hidden="true"></i> Superadmin
+        </span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <section class="detail-card h-100">
+                <div class="p-3">
+                    <div class="text-body-secondary small">Total Siswa Aktif</div>
+                    <div class="fs-3 fw-bold">{{ $statistik['siswa_aktif'] }}</div>
                 </div>
-            </div>
+            </section>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <section class="detail-card h-100">
+                <div class="p-3">
+                    <div class="text-body-secondary small">Total Guru Aktif</div>
+                    <div class="fs-3 fw-bold">{{ $statistik['guru_aktif'] }}</div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <section class="detail-card h-100">
+                <div class="p-3">
+                    <div class="text-body-secondary small">Total Kelas (Thn. Aktif)</div>
+                    @if ($konteks->valid())
+                        <div class="fs-3 fw-bold">{{ $statistik['kelas'] }}</div>
+                    @else
+                        <div class="fs-6 fw-semibold text-warning">Konteks tidak valid</div>
+                    @endif
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <section class="detail-card h-100">
+                <div class="p-3">
+                    <div class="text-body-secondary small">Total Mata Pelajaran</div>
+                    <div class="fs-3 fw-bold">{{ $statistik['mapel'] }}</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-4">
+            <section class="detail-card h-100">
+                <h2 class="detail-card-title mb-0">Identitas Pengguna</h2>
+                <div class="p-3">
+                    <div class="fw-bold fs-5 text-break">{{ $pengguna->name ?: '-' }}</div>
+                    <div class="detail-identity-number mb-3">{{ $pengguna->username ? '@'.$pengguna->username : '-' }}</div>
+                    <table class="table table-sm table-borderless detail-table mb-0">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Username</th>
+                                <td>{{ $pengguna->username ?: '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Email</th>
+                                <td class="text-break">{{ $pengguna->email ?: '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Level Akses</th>
+                                <td><span class="badge bg-success">Superadmin</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
-        <!-- Top 4 Cards -->
-        <div class="row mb-4">
-            <!-- Total Sales -->
-            <div class="col-lg-3 mb-3">
-                <div class="card p-4 border-0 h-100" style="border-radius: 12px; background-color: #fff0eb; border: 1px solid #fcd4c7 !important;">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex justify-content-center align-items-center rounded" style="width: 45px; height: 45px; background-color: #f15833;">
-                            <i class="fa-solid fa-clipboard-list text-white"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Sales</div>
-                            <div class="h3 mb-1 fw-bold mt-2">$25,000</div>
-                            <div style="color: #f15833; font-size: 12px; font-weight: 600;">+5% since last month</div>
-                        </div>
-                    </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <section class="detail-card h-100">
+                <h2 class="detail-card-title mb-0">Tahun Ajaran</h2>
+                <div class="p-3 d-flex flex-column h-100">
+                    <div class="text-body-secondary small mb-1">Tahun ajaran aktif</div>
+                    @if ($konteks->tahunAjaran)
+                        <div class="fs-4 fw-bold text-break">{{ $konteks->tahunAjaran->nama }}</div>
+                        <div><span class="badge bg-success">Aktif</span></div>
+                    @else
+                        <div class="fs-5 fw-semibold text-body-secondary">Belum ada tahun ajaran aktif</div>
+                        <div><span class="badge bg-secondary">Tidak ada</span></div>
+                    @endif
+                    <a href="/tahunajaran" class="small mt-3 text-decoration-none">
+                        Kelola tahun ajaran <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+                    </a>
                 </div>
-            </div>
-            
-            <!-- Total Purchase -->
-            <div class="col-lg-3 mb-3">
-                <div class="card p-4 border-0 h-100" style="border-radius: 12px; background-color: #ebfaef; border: 1px solid #c2eecf !important;">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex justify-content-center align-items-center rounded" style="width: 45px; height: 45px; background-color: #10b981;">
-                            <i class="fa-solid fa-repeat text-white"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Purchase</div>
-                            <div class="h3 mb-1 fw-bold mt-2">$18,000</div>
-                            <div style="color: #10b981; font-size: 12px; font-weight: 600;">+22% since last month</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Total Expenses -->
-            <div class="col-lg-3 mb-3">
-                <div class="card p-4 border-0 h-100" style="border-radius: 12px; background-color: #eaf8fb; border: 1px solid #bcecf5 !important;">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex justify-content-center align-items-center rounded" style="width: 45px; height: 45px; background-color: #06b6d4;">
-                            <i class="fa-solid fa-dollar-sign text-white"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Expenses</div>
-                            <div class="h3 mb-1 fw-bold mt-2">$9,000</div>
-                            <div style="color: #06b6d4; font-size: 12px; font-weight: 600;">+10% since last month</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Invoice Due -->
-            <div class="col-lg-3 mb-3">
-                <div class="card p-4 border-0 h-100" style="border-radius: 12px; background-color: #fff9eb; border: 1px solid #fcebb5 !important;">
-                    <div class="d-flex align-items-start gap-3">
-                        <div class="d-flex justify-content-center align-items-center rounded" style="width: 45px; height: 45px; background-color: #f59e0b;">
-                            <i class="fa-solid fa-file-invoice text-white"></i>
-                        </div>
-                        <div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Invoice Due</div>
-                            <div class="h3 mb-1 fw-bold mt-2">$25,000</div>
-                            <div style="color: #f59e0b; font-size: 12px; font-weight: 600;">+35% since last month</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </section>
         </div>
 
-        <!-- 3 Cards Second Row -->
-        <div class="row mb-4">
-            <!-- Total Profit -->
-            <div class="col-lg-4 mb-3">
-                <div class="card p-4 h-100 shadow-sm border-0" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="h3 mb-1 fw-bold">$25,458</div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Profit</div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <section class="detail-card h-100">
+                <h2 class="detail-card-title mb-0">Semester</h2>
+                <div class="p-3 d-flex flex-column h-100">
+                    <div class="text-body-secondary small mb-1">Semester aktif</div>
+                    @if ($konteks->semester)
+                        <div class="fs-4 fw-bold text-break">Semester {{ $konteks->semester->nama }}</div>
+                        <div class="detail-identity-number">
+                            Tahun ajaran: {{ $konteks->semesterTahunAjaranNama() ?: '-' }}
                         </div>
-                        <div class="text-danger">
-                            <i class="fa-regular fa-clone fa-lg"></i>
-                        </div>
+                    @else
+                        <div class="fs-5 fw-semibold text-body-secondary">Belum ada semester aktif</div>
+                    @endif
+                    <a href="/tahunajaran" class="small mt-3 text-decoration-none">
+                        Kelola tahun ajaran dan semester <i class="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12">
+            @if ($konteks->punyaPeringatan())
+                <div class="alert alert-warning" role="alert">
+                    <div class="fw-semibold mb-2">
+                        <i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>
+                        Konteks akademik belum valid
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-4 pt-2">
-                        <div style="color: #10b981; font-size: 12px; font-weight: 600;">+35% vs Last Month</div>
-                        <a href="#" class="text-danger text-decoration-underline" style="font-size: 13px; font-weight: 600;">View</a>
+                    <ul class="mb-3 ps-3">
+                        @foreach ($konteks->pesanPeringatan() as $pesan)
+                            <li>{{ $pesan }}</li>
+                        @endforeach
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/tahunajaran" class="btn btn-sm btn-outline-success">Kelola Tahun Ajaran</a>
+                        <a href="/tahunajaran" class="btn btn-sm btn-outline-success">Kelola Tahun Ajaran & Semester</a>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Total Payment Returns -->
-            <div class="col-lg-4 mb-3">
-                <div class="card p-4 h-100 shadow-sm border-0" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="h3 mb-1 fw-bold">$45,458</div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Payment Returns</div>
-                        </div>
-                        <div class="text-danger">
-                            <i class="fa-regular fa-credit-card fa-lg"></i>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-4 pt-2">
-                        <div style="color: #f15833; font-size: 12px; font-weight: 600;">-20% vs Last Month</div>
-                        <a href="#" class="text-danger text-decoration-underline" style="font-size: 13px; font-weight: 600;">View</a>
-                    </div>
+            @else
+                <div class="alert alert-success" role="status">
+                    <i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>
+                    Konteks akademik aktif dan konsisten:
+                    tahun ajaran {{ $konteks->tahunAjaranNama() }},
+                    semester {{ $konteks->semesterNama() }}.
                 </div>
-            </div>
-            
-            <!-- Total Expenses (3rd card) -->
-            <div class="col-lg-4 mb-3">
-                <div class="card p-4 h-100 shadow-sm border-0" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="h3 mb-1 fw-bold">$34,458</div>
-                            <div class="text-secondary fw-medium" style="font-size: 14px;">Total Expenses</div>
-                        </div>
-                        <div class="text-warning">
-                            <i class="fa-solid fa-money-bill-wave fa-lg"></i>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-4 pt-2">
-                        <div style="color: #f59e0b; font-size: 12px; font-weight: 600;">-20% vs Last Month</div>
-                        <a href="#" class="text-danger text-decoration-underline" style="font-size: 13px; font-weight: 600;">View</a>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
 
-        <!-- Charts Row -->
-        <div class="row">
-            <!-- Bar Chart -->
-            <div class="col-lg-7 mb-3">
-                <div class="card p-4 shadow-sm border-0 h-100" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold m-0" style="font-size: 16px;">Sales vs Purchase</h5>
-                        <select class="form-select form-select-sm" style="width: auto; border: 1px solid #eee; border-radius: 8px;">
-                            <option>This Year</option>
-                        </select>
-                    </div>
-                    <div style="height: 300px;">
-                        <canvas id="salesChart"></canvas>
-                    </div>
+        <div class="col-12">
+            <section class="detail-card">
+                <h2 class="detail-card-title mb-0">Ringkasan Akademik</h2>
+                <div class="p-4 text-center">
+                    <i class="fa-solid fa-chart-simple fs-3 text-secondary mb-2" aria-hidden="true"></i>
+                    @if ($konteks->valid())
+                        <p class="fw-semibold mb-1">Statistik akademik belum tersedia</p>
+                        <p class="text-body-secondary mb-0">
+                            Ringkasan siswa, guru, kelas, jadwal, dan absensi akan ditambahkan pada tahap pengembangan berikutnya.
+                        </p>
+                    @else
+                        <p class="fw-semibold mb-1">Ringkasan akademik belum dapat ditampilkan</p>
+                        <p class="text-body-secondary mb-0">
+                            Lengkapi dan aktifkan konteks tahun ajaran serta semester terlebih dahulu.
+                        </p>
+                    @endif
                 </div>
-            </div>
-
-            <!-- Overall Information -->
-            <div class="col-lg-5 mb-3">
-                <div class="card p-4 shadow-sm border-0 h-100" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold m-0" style="font-size: 16px;">Overall Information</h5>
-                        <select class="form-select form-select-sm" style="width: auto; border: 1px solid #eee; border-radius: 8px;">
-                            <option>Last 6 Months</option>
-                        </select>
-                    </div>
-                    <div class="text-secondary fw-medium mb-3" style="font-size: 14px;">Customers Overview</div>
-                    
-                    <div class="row align-items-center mb-4 mt-2">
-                        <div class="col-5">
-                            <div style="height: 140px;">
-                                <canvas id="donutChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-7">
-                            <div class="d-flex justify-content-around">
-                                <div class="text-center">
-                                    <div class="h4 fw-bold mb-1">5.5K</div>
-                                    <div class="text-success fw-medium mb-1" style="font-size: 13px;">First Time</div>
-                                    <span class="badge bg-success rounded-pill px-3 py-1 mt-1" style="font-size: 11px;">↑ 25%</span>
-                                </div>
-                                <div class="text-center">
-                                    <div class="h4 fw-bold mb-1">3.5K</div>
-                                    <div class="text-warning fw-medium mb-1" style="font-size: 13px;">Return</div>
-                                    <span class="badge bg-success rounded-pill px-3 py-1 mt-1" style="font-size: 11px;">↑ 21%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-auto pt-4 pb-2 border-top">
-                        <div class="text-center">
-                            <div class="h4 fw-bold mb-0">6987</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="h4 fw-bold mb-0">4896</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="h4 fw-bold mb-0">487</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </section>
         </div>
-
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('livewire:navigated', () => {
-    initCharts();
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    initCharts();
-});
-
-function initCharts() {
-    // Check if element exists before initializing
-    if (document.getElementById('salesChart')) {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['28 Jan', '29 Jan', '30 Jan', '31 Jan', '1 Feb', '2 Feb', '3 Feb', '4 Feb', '5 Feb'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [75, 85, 100, 98, 88, 105, 90, 115, 95],
-                    backgroundColor: '#f15833',
-                    borderRadius: 4,
-                    barPercentage: 0.8,
-                    categoryPercentage: 0.4
-                }, {
-                    label: 'Purchase',
-                    data: [55, 58, 60, 62, 58, 65, 55, 68, 58],
-                    backgroundColor: '#f9a88f',
-                    borderRadius: 4,
-                    barPercentage: 0.8,
-                    categoryPercentage: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 120,
-                        ticks: { callback: function(value) { return value + 'k'; } },
-                        grid: { borderDash: [5, 5], color: '#f0f0f0' }
-                    },
-                    x: {
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
-    }
-
-    if (document.getElementById('donutChart')) {
-        const donutCtx = document.getElementById('donutChart').getContext('2d');
-        new Chart(donutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Return', 'First Time'],
-                datasets: [{
-                    data: [35, 65],
-                    backgroundColor: ['#f59e0b', '#10b981'],
-                    borderWidth: 0,
-                    cutout: '75%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-    }
-}
-</script>

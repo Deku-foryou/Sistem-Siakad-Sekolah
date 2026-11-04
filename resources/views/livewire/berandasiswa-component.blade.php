@@ -86,7 +86,37 @@ Beranda Siswa
             </section>
         </div>
 
-        @foreach (['Jadwal hari ini', 'Absensi hari ini', 'Tagihan SPP'] as $placeholder)
+        <div class="col-12 col-md-6 col-lg-4">
+            <section class="detail-card h-100">
+                <h2 class="detail-card-title mb-0">Jadwal hari ini ({{ $namaHariIni }})</h2>
+                <div class="p-3">
+                    @if(count($jadwalHariIni) > 0)
+                        <table class="table table-sm table-borderless detail-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Jam</th>
+                                    <th scope="col">Mapel</th>
+                                    <th scope="col">Guru</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($jadwalHariIni as $item)
+                                    <tr>
+                                        <td>{{ $item['jam_ke'] }}</td>
+                                        <td>{{ $item['mapel'] ?? '-' }}</td>
+                                        <td>{{ $item['guru'] ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="text-body-secondary">Tidak ada jadwal hari ini.</div>
+                    @endif
+                </div>
+            </section>
+        </div>
+
+        @foreach (['Absensi hari ini', 'Tagihan SPP'] as $placeholder)
             <div class="col-12 col-md-6 col-lg-4">
                 <section class="detail-card h-100">
                     <h2 class="detail-card-title mb-0">{{ $placeholder }}</h2>

@@ -65,6 +65,7 @@ class UsersComponent extends Component
 
     public function storeUsers()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->validate([
             'username' => 'required|unique:users,username',
             'name' => 'required ',
@@ -115,6 +116,8 @@ class UsersComponent extends Component
 
     public function updateUsers()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'username' => 'required|unique:users,username,'.$this->id,
             'name' => 'required ',
@@ -155,6 +158,7 @@ class UsersComponent extends Component
 
     public function deleteUsers()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $users = User::where('id', $this->id)->first();
 
         try {
@@ -235,6 +239,7 @@ class UsersComponent extends Component
 
     public function resetPasswordUser($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $user = User::find($id);
         if (! $user) {
             $this->alert('error', 'User tidak ditemukan');

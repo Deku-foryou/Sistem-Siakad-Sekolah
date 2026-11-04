@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Semester;
 use App\Models\Tahunajaran;
+use App\Services\KonteksAkademikService;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -29,11 +30,13 @@ class SemesterComponent extends Component
 
     public function updatingSearch()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->resetPage();
     }
 
     public function updatingPerpage()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->resetPage();
     }
 
@@ -73,6 +76,7 @@ class SemesterComponent extends Component
 
     public function close()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
         $this->reset(['idsemester', 'tahunajaran_idtahunajaran', 'nama', 'aktif']);
         $this->resetValidation();
         $this->dispatch('close-semester-modal');
@@ -80,6 +84,8 @@ class SemesterComponent extends Component
 
     public function editSemester($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $semester = Semester::where('idsemester', $id)->first();
         $this->idsemester = $semester->idsemester;
         $this->tahunajaran_idtahunajaran = $semester->tahunajaran_idtahunajaran;
@@ -90,12 +96,23 @@ class SemesterComponent extends Component
 
     public function updateSemester()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->validate([
             'tahunajaran_idtahunajaran' => 'required',
             'nama' => 'required',
         ]);
 
         $semester = Semester::where('idsemester', $this->idsemester)->first();
+
+        // Semester yang sedang aktif tidak boleh diganti tahun ajaran induknya.
+        $parentBerubah = (int) $semester->tahunajaran_idtahunajaran !== (int) $this->tahunajaran_idtahunajaran;
+        if ($semester->aktif && $parentBerubah) {
+            $this->alert('error', 'Semester aktif tidak dapat diganti tahun ajaran induknya. Nonaktifkan semester terlebih dahulu.');
+
+            return;
+        }
+
         $semester->tahunajaran_idtahunajaran = $this->tahunajaran_idtahunajaran;
         $semester->nama = $this->nama;
         $semester->save();
@@ -107,13 +124,24 @@ class SemesterComponent extends Component
 
     public function deleteConfirmationSemester($id)
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $this->idsemester = $id;
         $this->dispatch('show-delete-confirmation-semester-modal');
     }
 
     public function deleteSemester()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $semester = Semester::where('idsemester', $this->idsemester)->first();
+        if ($semester->aktif) {
+            $this->alert('error', 'Semester aktif tidak dapat dihapus. Nonaktifkan terlebih dahulu.');
+            $this->dispatch('close-semester-modal');
+            $this->idsemester = '';
+
+            return;
+        }
         try {
             $semester->delete();
             $this->alert('success', 'Semester berhasil dihapus');
@@ -144,7 +172,7 @@ class SemesterComponent extends Component
         try {
             Semester::nonaktifkan($id);
             $this->resetPage();
-            $this->alert('success', 'Semester dinonaktifkan');
+            $this->alert('warning', 'Semester dinonaktifkan. Tidak ada konteks akademik aktif sampai semester lain diaktifkan.');
         } catch (\Throwable $th) {
             $this->alert('error', 'Gagal menonaktifkan semester: '.$th->getMessage());
         }
@@ -162,6 +190,7 @@ class SemesterComponent extends Component
         return view('livewire.semester-component', [
             'semesters' => $semesters,
             'tahunajarans' => $tahunajarans,
+            'konteks' => KonteksAkademikService::ambil(),
         ]);
     }
 }

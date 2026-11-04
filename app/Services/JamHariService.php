@@ -45,6 +45,9 @@ class JamHariService
     {
         DB::transaction(function () use ($id, $data) {
             $jam = Jamhari::findOrFail($id);
+            if (self::jamDipakai($jam) > 0) {
+                throw new DomainException('Jam sudah dipakai oleh jadwal kelas, tidak bisa diubah');
+            }
             $hari = $jam->hari;
             $jenis = $data['jenis'];
             $jamKe = $jenis === 'pelajaran' ? (int) $data['jam_ke'] : null;
@@ -91,8 +94,7 @@ class JamHariService
             return 0;
         }
         return DB::table('jadwalkelas')
-            ->where('hari', $jam->hari)
-            ->where('jam_ke', $jam->jam_ke)
+            ->where('jamhari_idjamhari', $jam->idjamhari)
             ->count();
     }
 

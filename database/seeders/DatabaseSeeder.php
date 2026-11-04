@@ -3,9 +3,10 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use App\Models\Appmenunew;
 use App\Models\User;
 use App\Models\Usermenu;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,6 +23,9 @@ class DatabaseSeeder extends Seeder
             DataIndukMenuSeeder::class,
             IkonMenuSeeder::class,
             JadwalMenuSeeder::class,
+            SemesterMenuCleanupSeeder::class,
+            PolajamCleanupSeeder::class,
+            AbsensiHarianMenuSeeder::class,
         ]);
 
         // Create default admin user
@@ -37,21 +41,20 @@ class DatabaseSeeder extends Seeder
         );
 
         if ($admin->wasRecentlyCreated) {
-            info("DatabaseSeeder: Superadmin user created with email: admin@sekolah.id");
+            info('DatabaseSeeder: Superadmin user created with email: admin@sekolah.id');
         } else {
-            info("DatabaseSeeder: Superadmin user already exists, skipping creation.");
+            info('DatabaseSeeder: Superadmin user already exists, skipping creation.');
         }
 
         // Populate usermenu for superadmin - assign all menus to superadmin
         // Superadmin should have access to all application menus
-        $menus = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // All appmenunew IDs
-        foreach ($menus as $key => $menuId) {
+        $menus = Appmenunew::query()->pluck('idappmenunew');
+        foreach ($menus as $menuId) {
             Usermenu::firstOrCreate(
                 ['user_iduser' => $admin->id, 'appmenunew_idappmenunew' => $menuId],
-                ['idusermenu' => $key + 1] // Unique idusermenu for each entry
             );
         }
 
-        info("DatabaseSeeder: Usermenu entries created for superadmin with " . count($menus) . " menus.");
+        info('DatabaseSeeder: Usermenu entries created for superadmin with '.count($menus).' menus.');
     }
 }

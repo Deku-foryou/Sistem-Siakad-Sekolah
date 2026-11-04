@@ -4,127 +4,184 @@ AGENTS.md — SIAKAD Laravel 12 + Livewire 3
 HOW TO INVESTIGATE
 
 Read highest-value sources first:
+- Root manifest: `composer.json`, `.editorconfig`
+- Config files: `config/*.php`
+- Migration and seeder files: `database/migrations/`, `database/seeders/`
+- Routes: `routes/web.php` — the entrypoint for all web routes
+- AppServiceProvider.php — especially view composers (sidebar, docs_sidebar)
+- database/seeders/DatabaseSeeder.php — seeder execution order
 
-- Root manifest (composer.json) and config files
-- Migration and seeder files in database/migrations/ and database/seeders/
-- routes/web.php — the entrypoint for all web routes
-- AppServiceProvider.php — especially view composers that query DB at boot
-- database/seeds/ — all seeder files and their call order in DatabaseSeeder.php
-
-If unclear, inspect representative code files rather than random leaf files. The flow is:
-routes/web.php → AppServiceProvider::boot() → view composers → database queries.
+Architecture flow:
+routes/web.php → dynamic route generation from appmenunew table → AppServiceProvider::boot() → view composers → database queries
 
 # ================================================
 KEY COMMANDS
 
-- php artisan migrate:fresh --seed     — FULL reset + rebuild (drops all tables)
+- php artisan migrate --pretend        — Dry run: show what would migrate
+- php artisan migrate                  — Run pending migrations (SAFE for production)
 - php artisan migrate:status           — Show which migrations have run
-- php artisan migrate:reset            — Roll back all migrations (keeps data)
-- php artisan migrate:refresh          — Re-run all migrations without dropping data
-- php artisan tinker                   — Interactive PHP shell
+- php artisan test                     — Run PHPUnit tests
 - php artisan route:list               — List all registered routes
-- php artisan config:cache             — Re-cache after config changes
+- php vendor/bin/pint <file>           — Format single file (Pint formatter)
 
 # ================================================
-MIGRATION &amp; SEEDER NOTES
+CRITICAL: DUAL SCHEDULING SYSTEMS
 
-CRITICAL: The usermenu table has NO create migration by default.
+⚠️  Two independent systems exist:
 
-- If usermenu table is missing, sidebar/composer queries fail with "Table doesn't exist"
-- Fix: create migration with idusermenu (integer, not auto-increment), appmenunew_idappmenunew FK, user_iduser FK
-- See: database/migrations/2026_10_28_140832_create_usermenu_table.php
+**SYSTEM 1: Jadwal (legacy, active)**
+- Table: jadwal (idjadwal, pengampu_idpengampu, hari, jam_ke, status)
+- Component: JadwalComponent
+- Service: JadwalService
+- Features: CRUD, conflict detection, publikasi, snapshot, tarik publikasi
+- Status: Production system, used by existing schedules
+- Grid: Generates hari + jam_ke options from Jampelajaran (global config)
 
-Seeders are called in this order from DatabaseSeeder.php:
+**SYSTEM 2: JadwalKelas (new)**
+- Table: jadwalkelas (idjadwalkelas, semester_idsemester, jamhari_idjamhari, mapel_idmapel, guru_idguru)
+- Component: JadwalKelasComponent
+- Service: JadwalKelasService
+- Features: CRUD, conflict detection (no publikasi yet)
+- Status: Development/testing system
+- Grid: Generates hari + jam from Jamhari (per-class config, kelas_id field)
 
-1. PaketDefaultSeeder
-2. AkademikMenuSeeder
-3. BerandaMenuSeeder
-4. DataIndukMenuSeeder
-5. IkonMenuSeeder
-6. JadwalMenuSeeder
+**Key difference:** Jadwal is global (semester-wide), JadwalKelas is per-class.
+Do NOT mix APIs or import between these systems.
 
-After all seeders, DatabaseSeeder creates the admin user ([admin@sekolah.id](mailto:admin@sekolah.id) / rahasia123 / superadmin).
+# ================================================
+MIGRATION & SEEDER NOTES
 
-If usermenu table is empty after migrate:fresh --seed, check:
+**Usermenu table:**
+- Created by migration 2026_10_28_140832_create_usermenu_table.php
+- Key fields: idusermenu (PK, not auto-increment), appmenunew_idappmenunew (FK), user_iduser (FK)
+- Constraint: RESTRICT on delete
+- Used by: sidebar view composer in AppServiceProvider
 
-- DatabaseSeeder assigns menus to the admin user via Usermenu::firstOrCreate()
-- All 15 appmenunew IDs must be assigned (1..15)
+**Seeder execution order (DatabaseSeeder.php):**
+1. PaketDefaultSeeder — rolecat (Siswa, Guru)
+2. AkademikMenuSeeder — Akademik category + menus + usermenu entries
+3. BerandaMenuSeeder — Beranda category + menus
+4. DataIndukMenuSeeder — Data Induk menus
+5. IkonMenuSeeder — Icon updates for appmenunew
+6. JadwalMenuSeeder — Jadwal category (Jam Pelajaran, Pengampu, Jadwal)
+7. PolajamCleanupSeeder — Cleanup old Pola Jam menu (if exists)
+
+**After all seeders:** DatabaseSeeder creates admin user (admin@sekolah.id / rahasia123 / superadmin) and assigns all 15 menus.
+
+**Cleanup seeder pattern:**
+Use JampelajaranCleanupSeeder and PolajamCleanupSeeder as templates when removing deprecated menus:
+```php
+$menu = Appmenunew::where('url', 'menu_url')->first();
+if ($menu) {
+    DB::table('usermenu')->where('appmenunew_idappmenunew', $menu->idappmenunew)->delete();
+    DB::table('role')->where('appmenunew_idappmenunew', $menu->idappmenunew)->delete();
+    $menu->delete();
+}
+```
+Always run cleanup seeder AFTER the seeder that creates menus (so old data is cleaned if re-seeding).
 
 # ================================================
 PROJECT STRUCTURE
 
-Database migrations (key ones):
+**Migrations (key):**
+- 2026_10_26: users, appmenunew, tahunajaran, semester, guru, siswa, mapel, kelas, kelassiswa
+- 2026_10_27: polajam, polajamhari, jampelajaran, pengampu, jadwal, publikasijadwal
+- 2026_10_28: rolecat, appmenucat, role, usermenu, status columns
+- 2026_11_06: jamhari (per-class jam config)
+- 2026_11_07: jadwalkelas, kode_guru
 
-- 2026_10_26_000000_create_users_table.php        — users table
-- 2026_10_26_000000_create_appmenunew_table.php  — application menus
-- 2026_10_26_000001_add_siakad_fields_to_users_table.php  — SIAKAD fields on users
-- 2026_10_28_140832_create_usermenu_table.php    — USER-MENU LINKING TABLE (critical!)
-- 2026_10_28_135304_create_rolecat_table.php    — role categories (Siswa, Guru)
-- 2026_10_28_135531_create_role_table.php       — role-menu assignments
+**Livewire components (major):**
+- JadwalComponent — UI for legacy schedule management
+- JadwalKelasComponent — UI for new per-class schedule management
+- JamhariComponent — UI for Jamhari (jam pelajaran) configuration
+- All admin components require: `abort_unless(auth()->user()?->level === 'superadmin', 403)` at start of public methods
 
-Seeders:
+**Models worth knowing:**
+- Jadwal, Jampelajaran, Polajam, Polajamhari (legacy system) — do NOT use in new code
+- JadwalKelas, Jamhari (new system) — preferred for new features
+- Pengampu — connects semester+kelas+mapel+guru, used by both systems
 
-- PaketDefaultSeeder           — initializes rolecat Siswa/Guru
-- AkademikMenuSeeder           — Akademik category + menus + usermenu entries
-- BerandaMenuSeeder            — Beranda category + menus + role assignments
-- DataIndukMenuSeeder          — Data Induk category menus
-- IkonMenuSeeder               — Ikon category menus
-- JadwalMenuSeeder             — Jadwal/Pengampu category menus
+**Sidebar rendering:**
+View composer in AppServiceProvider queries: `Usermenu::with(['appmenunew', 'user'])->where('user_iduser', auth()->id())`
+Renders to `assets.sidebar` view. Menu order is `appmenunew.urut` ascending.
+If menu missing from sidebar: check usermenu table has entry + appmenunew url is in route list.
 
 # ================================================
 COMMON PITFALLS
 
-1. routes/web.php top-level DB query
-   - BEFORE: $appMenuUrls = \\App\\Models\\Appmenunew::query()-&gt;whereNotNull('url')-&gt;pluck('url')-&gt;unique()-&gt;values();
-   - This runs during Laravel bootstrap, BEFORE migrations.
-   - FIX: Wrap in Schema::hasTable('appmenunew') check, or move to seeder.
-2. Missing usermenu table migration
-   - Usermenu model exists but no create migration → table never created → sidebar empty
-   - Fix: create migration with proper FK to appmenunew and users
-3. Migration ordering issues
-   - Some migrations reference columns/tables created in later migrations
-   - Fix: rename migrations with proper timestamp ordering (e.g., 2026_10_31 vs 2026_10_28)
-4. Admin account not creatable after fresh database
-   - DatabaseSeeder must create admin user AFTER all migrations run
-   - Password: rahasia123, level: superadmin, email: [admin@sekolah.id](mailto:admin@sekolah.id)
+1. **Routes are partially dynamic**
+   - routes/web.php lines 92-102: Loop generates routes for all appmenunew.url values NOT in $explicitUrls
+   - Explicit routes (like /jadwalkelas, /polajam) are hardcoded before this loop
+   - If a menu route won't load: check if URL is in appmenunew + route loop includes it + component exists
+
+2. **Grid/Hari generation depends on correct source**
+   - JadwalComponent grid uses: distinct jam_ke from Jampelajaran (global) + hari from existing Jadwal records
+   - JadwalKelasComponent grid uses: Jamhari.where('kelas_id', ...) for per-class hari/jam
+   - Mixing sources will cause empty grid or validation errors
+
+3. **Jampelajaran vs Jamhari confusion**
+   - Jampelajaran: global jam config (used by Jadwal system), tied to polajam_idpolajam
+   - Jamhari: per-class jam config (used by JadwalKelas system), tied to kelas_id
+   - Do NOT query Jampelajaran for JadwalKelas validation or vice versa
+
+4. **Publikasi only for Jadwal**
+   - JadwalService has publikasikan() and tarikPublikasi()
+   - JadwalKelasService does NOT have publikasi (future feature)
+   - Publikasijadwal table stores snapshots of Jadwal records only
+
+5. **Menu cleanup requires seeder**
+   - Seeder JadwalMenuSeeder only CREATES menus in code
+   - To REMOVE menus from database: must create cleanup seeder (see pattern above)
+   - Seeders do NOT auto-sync database with code changes
+
+6. **Schema::hasTable() checks in routes/web.php**
+   - routes/web.php runs BEFORE migrations during bootstrap
+   - appMenuUrls array uses: `if (Schema::hasTable('appmenunew')) { ... }`
+   - This prevents "table not found" error on fresh install
 
 # ================================================
 VERIFICATION STEPS
 
-After php artisan migrate:fresh --seed, verify:
+After changes to Jadwal, JadwalKelas, or menu systems:
 
-1. php artisan migrate:status — all migrations [1] Ran
-2. php artisan route:list — usermenu/{id} route present
-3. usermenu table has rows for user_id=1 (superadmin) with 15 appmenunew_id entries
-4. App appears functional: login with [admin@sekolah.id](mailto:admin@sekolah.id) / rahasia123
-5. Sidebar composer query returns menu data without "Table doesn't exist" error
+1. `php artisan migrate:status` — all migrations [1] Ran
+2. `php artisan route:list` — check /jadwal, /jadwalkelas, /jampelajaran routes present
+3. `php artisan test` — run test suite (at least unit tests should pass)
+4. Check no Polajam references in JadwalService/JadwalComponent (except in comments)
+5. Check no Jamhari references in Jadwal system
+6. Verify menu cleanup: `SELECT * FROM appmenunew WHERE url = 'menu_url'` should be empty after cleanup seeder
 
 # ================================================
 ENV / CONFIG
 
 - Database: templatedb (MySQL)
-- .env: DB_DATABASE=templatedb, DB_USERNAME=root, DB_PASSWORD=(empty)
+- DB_USERNAME: root, DB_PASSWORD: (empty)
 - App namespace: App
-- Livewire 3, MewsCaptcha, Laravel Sanctum
-- Custom level-based auth (not Spatie full permission)
-- Config: config/siakad.php — paket_default.siswa = 'Siswa', paket_default.guru = 'Guru'
+- Auth: Custom level-based (superadmin, Guru, Siswa) — NOT Spatie
+- Formatter: Laravel Pint (use `php vendor/bin/pint <file>` on changed files only)
+- View composers: sidebar, docs_sidebar (run on every request, keep queries efficient)
 
+# ================================================
+ATURAN KERJA (WAJIB)
 
+- **Jangan membaca, menampilkan, atau mengedit .env.**
 
-## Aturan kerja (wajib)
+- **Dilarang: migrate:fresh, migrate:reset, db:wipe.** Migrations hanya aditif. Jalankan `php artisan migrate --pretend` lebih dulu.
 
-- Jangan membaca, menampilkan, atau mengedit .env.
+- **Jangan menambah package Composer tanpa izin.**
 
-- Dilarang: migrate:fresh, migrate:reset, db:wipe, drop table/kolom, menghapus data nyata, RefreshDatabase/DatabaseMigrations. Migration hanya aditif; jalankan `migrate --pretend` lebih dulu.
+- **Jangan membuat file tes permanen di tests/.** Skrip uji ditaruh di storage/app/tmp-uji, dijalankan dalam DB::beginTransaction() + rollBack() di finally, lalu dihapus.
 
-- Jangan menambah package composer tanpa izin. Jangan membuat file tes permanen di tests/; skrip uji ditaruh di storage/app/tmp-uji, dijalankan dalam DB::beginTransaction() + rollBack() di finally, lalu dihapus.
+- **Git hanya baca** (status, diff, log, show). Jangan add/commit/push/checkout/reset/stash/clean.
 
-- Git hanya baca (status, diff, log, show); jangan add/commit/checkout/reset/stash/clean.
+- **Shell PowerShell, path berspasi:** Mulai dengan `Set-Location -LiteralPath "C:\project-reyhan\template web"`. Panggil `php ...` dan `php vendor/bin/pint <file-spesifik>`.
 
-- Shell PowerShell, path project berspasi: mulai dengan Set-Location -LiteralPath "C:\\project-reyhan\\template web". Panggil `php ...` dan `php vendor/bin/pint <file-spesifik>`; Pint hanya pada file yang diubah. Untuk tinker, pakai skrip PHP terpisah, bukan --execute dengan kutip.
+- **Jangan menulis hasil atau PASS yang tidak berasal dari output aktual.** Jika tidak bisa diukur, tulis "TIDAK BISA DIUKUR: <alasan>". Browser = "Belum diuji".
 
-- Dilarang menulis hasil, angka, atau PASS yang tidak berasal dari output perintah yang benar-benar dijalankan. Jika tidak bisa diukur tulis "TIDAK BISA DIUKUR: &lt;alasan&gt;". Yang butuh browser tulis "Belum diuji".
-
-- Jangan memasukkan teks proses berpikir, catatan internal, atau kalimat seperti "spec says..." ke dalam file kode.
-
-- Konvensi: tabel lowercase tanpa plural, PK id{tabel}, FK {tabel}\_id{pk}, FK ON DELETE RESTRICT, komponen Livewire NamaComponent + view kebab-case, aturan bisnis di Service, semua method publik komponen admin diawali abort\_unless(auth()-&gt;user()?-&gt;level === 'superadmin', 403). Pesan dan label Bahasa Indonesia.
+- **Konvensi:**
+  - Tabel: lowercase tanpa plural, PK id{tabel}, FK {tabel}_id{pk}, ON DELETE RESTRICT
+  - Livewire: Component PascalCase, view kebab-case
+  - Admin components: semua method publik diawali `abort_unless(auth()->user()?->level === 'superadmin', 403)`
+  - Pesan/label: Bahasa Indonesia
+  - Aturan bisnis: di Service class
+  - Menu cleanup: gunakan seeder pattern, selalu run AFTER create seeder

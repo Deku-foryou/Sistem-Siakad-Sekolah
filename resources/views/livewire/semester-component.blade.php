@@ -3,6 +3,25 @@ Data Semester
 @endsection
 
 <div>
+
+    @if (! $konteks->valid())
+        <div class="alert alert-warning mb-0 mx-3 mt-3" role="alert">
+            <div class="fw-semibold">
+                <i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>
+                Konteks akademik belum valid
+            </div>
+            <div class="mt-1">
+                @if ($konteks->semester && ! $konteks->tahunAjaran)
+                    Semester aktif belum memiliki tahun ajaran aktif. Gunakan tombol <strong>Sinkronkan Konteks</strong> untuk memperbaikinya.
+                @elseif ($konteks->tahunAjaran && ! $konteks->semester)
+                    Belum ada semester aktif. Aktifkan semester untuk menggunakan fitur akademik.
+                @else
+                    Semester aktif belum sesuai dengan tahun ajaran aktif. Gunakan tombol <strong>Sinkronkan Konteks</strong> untuk memperbaikinya.
+                @endif
+            </div>
+        </div>
+    @endif
+
     <div class="container-fluid mb-5 px-4" style="margin-top: 20px">
 
         <div class="container-fluid px-0 p-3 rounded-top">
@@ -57,7 +76,21 @@ Data Semester
                                             <tr class="px-4" wire:key="sem-{{ $datas->idsemester }}">
                                                 <td class="text-center">{{ $semesters->firstItem() + $key }}</td>
                                                 <td style="min-width: 120px;text-align: center">
-                                                    @if ($datas->aktif)
+                                                    @php
+                                                        $tahunIndukAktif = (bool) ($datas->tahunajaran?->aktif);
+                                                        $tidakSinkron = $datas->aktif && ! $tahunIndukAktif;
+                                                    @endphp
+                                                    @if ($tidakSinkron)
+                                                        <button class="btn btn-sm btn-warning"
+                                                            wire:click="aktifkan('{{ $datas->idsemester }}')"
+                                                            title="Aktifkan tahun ajaran induk agar konteks sinkron">
+                                                            Sinkronkan Konteks
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger"
+                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')">
+                                                            Nonaktifkan
+                                                        </button>
+                                                    @elseif ($datas->aktif)
                                                         <button class="btn btn-sm btn-danger"
                                                             wire:click="nonaktifkan('{{ $datas->idsemester }}')">
                                                             Nonaktifkan
@@ -78,7 +111,9 @@ Data Semester
                                                 <td>{{ $datas->tahunajaran->nama ?? '-' }}</td>
                                                 <td>{{ $datas->nama }}</td>
                                                 <td>
-                                                    @if ($datas->aktif)
+                                                    @if ($datas->aktif && ! (bool) ($datas->tahunajaran?->aktif))
+                                                        <span class="badge bg-warning text-dark">Konteks Tidak Sinkron</span>
+                                                    @elseif ($datas->aktif)
                                                         <span class="badge bg-success">Aktif</span>
                                                     @else
                                                         <span class="badge bg-secondary">Nonaktif</span>

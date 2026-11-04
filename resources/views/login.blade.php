@@ -35,6 +35,13 @@
                                 </div>
                             </div>
                             <h2 class="fs-6 fw-normal text-center text-secondary mb-4">Sign in to your account</h2>
+                            
+                            @if(session('error'))
+                                <div class="alert alert-danger" style="font-size: 13px; padding: 10px; margin-bottom: 15px;">
+                                    {{ session('error') }}
+                                </div>
+                            @endif
+
                             <form action="/login" method="POST">
                                 @csrf
                                 <div class="row gy-2 overflow-hidden">

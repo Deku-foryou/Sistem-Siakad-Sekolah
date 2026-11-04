@@ -74,13 +74,50 @@
 
         <div class="sidebar-menu" data-simplebar>
         <ul class="sidebar-nav p-0 mt-3" data-coreui="navigation">
+            @php
+                // Menu beranda khusus guru/siswa tidak relevan (dan 404) untuk superadmin.
+                $menuKhususRoleLain = ['berandaguru', 'berandasiswa'];
+                $sembunyikanMenuRoleLain = Auth::user()->level === 'superadmin';
+            @endphp
+
             <li class="nav-title">Main</li>
 
-            <li class="nav-item">
-                <a class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}" href="/dashboard">
-                    <i class="fa-solid fa-house me-3"></i> Dashboard
-                </a>
-            </li>
+            @if (Auth::user()->level === 'superadmin')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}" href="/dashboard">
+                        <i class="fa-solid fa-house me-3"></i> Dashboard
+                    </a>
+                </li>
+            @endif
+
+            @if (in_array(Auth::user()?->level, ['guru', 'superadmin'], true))
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('jadwalguru') ? 'active' : '' }}" href="/jadwalguru">
+                        <i class="fa-solid fa-calendar-week me-3"></i> Jadwal Mengajar
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()?->level === 'guru')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('absensi-perjam') ? 'active' : '' }}" href="/absensi-perjam">
+                        <i class="fa-solid fa-list-check me-3"></i> Absensi Per Jam
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()?->level === 'siswa')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('jadwalsiswa') ? 'active' : '' }}" href="/jadwalsiswa">
+                        <i class="fa-solid fa-calendar-week me-3"></i> Jadwal Pelajaran
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('absensi-siswa') ? 'active' : '' }}" href="/absensi-siswa">
+                        <i class="fa-solid fa-clipboard-list me-3"></i> Histori Absensi
+                    </a>
+                </li>
+            @endif
 
 
 
@@ -103,7 +140,7 @@
                         href="/appmenunew"><i class="fa-regular fa-folder-closed me-3"></i> Kelola Menu</a></li>
             @endif
 
-            @if (Auth::user()->level == 'admin' || Auth::user()->level == 'superadmin')
+            @if (Auth::user()->level == 'superadmin')
                 <li class="nav-title">Manage Users</li>
                 <li class="nav-item"><a class="nav-link {{ request()->is('users') ? 'active' : '' }}" href="/users"><i
                             class="fa-solid fa-users-rectangle me-3"></i> Users</a></li>
@@ -112,13 +149,20 @@
             @foreach ($appMenuCat as $items)
                 @php
                     $hasMenuItems = $appMenu->filter(function ($menu) use ($items) {
-                        return $menu->appmenunew->appmenucat_idappmenucat == $items->idappmenucat;
+                        return $menu->appmenunew->url !== 'semester'
+                            && $menu->appmenunew->appmenucat_idappmenucat == $items->idappmenucat;
                     })->isNotEmpty();
                 @endphp
 
                 @if ($hasMenuItems)
                     <li class="nav-title">{{ $items->appmenucat }}</li>
                     @foreach ($appMenu as $datas)
+                        @if ($datas->appmenunew->url === 'semester')
+                            @continue
+                        @endif
+                        @if ($sembunyikanMenuRoleLain && in_array($datas->appmenunew->url, $menuKhususRoleLain, true))
+                            @continue
+                        @endif
                         @if ($datas->appmenunew->appmenucat_idappmenucat == $items->idappmenucat)
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is($datas->appmenunew->url) ? 'active' : '' }}"

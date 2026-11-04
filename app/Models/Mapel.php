@@ -32,4 +32,9 @@ class Mapel extends Model
     {
         return $this->belongsToMany(Guru::class, 'gurumapel', 'mapel_idmapel', 'guru_idguru', 'idmapel', 'idguru');
     }
+
+    public function jadwalkelas()
+    {
+        return $this->hasMany(JadwalKelas::class, 'mapel_idmapel', 'idmapel');
+    }
 }

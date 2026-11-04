@@ -42,6 +42,7 @@ Data Kelas
                             <td>{{ $k->jenis === 'induk' ? 'Induk' : 'Mapel pilihan' }}</td>
                             <td>{{ $k->wali->nama ?? '-' }}</td>
                             <td>
+                                <a href="{{ route('jadwalkelas', ['kelas' => $k->idkelas]) }}" class="btn btn-sm btn-info" title="Lihat Jadwal" aria-label="Lihat jadwal kelas {{ $k->nama }}"><i class="fa-regular fa-calendar-days"></i></a>
                                 <button class="btn btn-sm btn-warning" wire:click="editKelas({{ $k->idkelas }})"><i class="fa-regular fa-pen-to-square"></i></button>
                                 <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationKelas({{ $k->idkelas }})"><i class="fa-solid fa-trash-can"></i></button>
                             </td>

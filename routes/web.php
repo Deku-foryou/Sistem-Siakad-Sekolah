@@ -3,8 +3,10 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImportDownloadController;
 use App\Http\Controllers\LoginController;
+use App\Livewire\AbsensiHarianComponent;
 use App\Livewire\AppmenucatComponent;
 use App\Livewire\AppmenunewComponent;
+use App\Livewire\BuktiPublikasiComponent;
 use App\Livewire\DashboardComponent;
 use App\Livewire\DocscatComponent;
 use App\Livewire\DocsComponent;
@@ -13,22 +15,18 @@ use App\Livewire\DocsCreateComponent;
 use App\Livewire\DocsEditComponent;
 use App\Livewire\GuruComponent;
 use App\Livewire\HomedocsComponent;
-use App\Livewire\JadwalComponent;
-use App\Livewire\BuktiPublikasiComponent;
 use App\Livewire\KelasComponent;
 use App\Livewire\KelassiswaComponent;
 use App\Livewire\MapelComponent;
 use App\Livewire\PengampuComponent;
-use App\Livewire\PolajamComponent;
 use App\Livewire\RolecatComponent;
 use App\Livewire\RoleComponent;
-use App\Livewire\SemesterComponent;
 use App\Livewire\SiswaComponent;
 use App\Livewire\TahunajaranComponent;
 use App\Livewire\UsersComponent;
 use App\Models\Appmenunew;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Mews\Captcha\Facades\Captcha;
 
 /*
@@ -53,7 +51,7 @@ if (Schema::hasTable('appmenunew')) {
 
 // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
 // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'polajam', 'pengampu', 'jadwal', 'jurusan'];
+$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'pengampu', 'jurusan', 'jadwalkelas'];
 
 Route::get('/', function () {
     return view('login');
@@ -74,7 +72,8 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
         Route::get('/setting', [AuthController::class, 'index']);
         Route::post('/profil/{id}', [AuthController::class, 'update'])->name('profil.edit');
 
-        Route::get('dashboard', DashboardComponent::class);
+        Route::get('dashboard', DashboardComponent::class)
+            ->middleware('check.level:superadmin');
 
         Route::get('welcome-docs', HomedocsComponent::class);
 
@@ -87,6 +86,36 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
         Route::get('/docs/{id}', DocsContentComponent::class);
 
         // Non Spatie--------------------------------------------------------------------
+
+        // Guru & Siswa beranda routes (role-specific dashboard)
+        Route::middleware(['check.level:guru'])->group(
+            function () {
+                Route::get('berandaguru', App\Livewire\BerandaguruComponent::class)->name('berandaguru');
+            }
+        );
+
+        Route::middleware(['check.level:siswa'])->group(
+            function () {
+                Route::get('berandasiswa', App\Livewire\BerandasiswaComponent::class)->name('berandasiswa');
+                Route::get('jadwalsiswa', App\Livewire\JadwalSiswaComponent::class)->name('jadwalsiswa');
+                Route::get('absensi-siswa', App\Livewire\HistoriAbsensiSiswaComponent::class)->name('absensi-siswa');
+            }
+        );
+
+        // Guru routes (guru & superadmin)
+        Route::middleware(['check.level:guru,superadmin'])->group(
+            function () {
+                Route::get('absensi-harian', AbsensiHarianComponent::class)->name('absensi-harian');
+                Route::get('jadwalguru', App\Livewire\JadwalGuruComponent::class)->name('jadwalguru');
+            }
+        );
+
+        // Absensi Per Jam: khusus guru (belum ada fitur superadmin pada tahap ini)
+        Route::middleware(['check.level:guru'])->group(
+            function () {
+                Route::get('absensi-perjam', App\Livewire\AbsensiPerjamComponent::class)->name('absensi-perjam');
+            }
+        );
 
         // Daftar url unik dari appmenunew (tanpa join usermenu/user)
         foreach ($appMenuUrls as $url) {
@@ -111,17 +140,16 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
                 Route::get('role/{id}', RoleComponent::class);
 
                 Route::get('tahunajaran', TahunajaranComponent::class);
-                Route::get('semester', SemesterComponent::class);
+                Route::redirect('semester', 'tahunajaran');
                 Route::get('guru', GuruComponent::class);
                 Route::get('siswa', SiswaComponent::class);
                 Route::get('mapel', MapelComponent::class);
-                Route::get('kelas', KelasComponent::class);
+                Route::get('kelas', KelasComponent::class)->name('kelas');
                 Route::get('kelassiswa', KelassiswaComponent::class);
-                Route::get('polajam', PolajamComponent::class)->name('polajam');
                 Route::get('jampelajaran', App\Livewire\JamhariComponent::class)->name('jampelajaran');
                 Route::get('pengampu', PengampuComponent::class)->name('pengampu');
-                Route::get('jadwal', JadwalComponent::class)->name('jadwal');
-Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
+                Route::get('jadwalkelas', App\Livewire\JadwalKelasComponent::class)->name('jadwalkelas');
+                Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
                 Route::get('bukti-publikasi/{id}', BuktiPublikasiComponent::class)->name('bukti-publikasi');
                 Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
                     ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])

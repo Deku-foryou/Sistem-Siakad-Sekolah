@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DomainException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -42,20 +43,26 @@ class Tahunajaran extends Model
 
     public static function aktifkan($id)
     {
-        return DB::transaction(function () use ($id) {
-            static::query()->update(['aktif' => false]);
-            $tahun = static::findOrFail($id);
-            $tahun->aktif = true;
-            $tahun->save();
-
-            return $tahun;
-        });
+        // Aktivasi tahun ajaran hanya boleh lewat aktivasi semester (KonteksAkademikService::aktifkanSemester).
+        // Ini mencegah konteks tidak konsisten (semester aktif di tahun ajaran lain tetap aktif).
+        throw new DomainException('Aktivasi tahun ajaran harus dilakukan melalui pengaktifan semester pada tahun ajaran tersebut.');
     }
 
     public static function nonaktifkan($id)
     {
         return DB::transaction(function () use ($id) {
-            $tahun = static::findOrFail($id);
+            $tahun = static::query()->lockForUpdate()->findOrFail($id);
+
+            // Cegah kondisi "semester aktif tanpa tahun ajaran aktif".
+            $semesterAktif = $tahun->semesters()
+                ->where('aktif', true)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($semesterAktif) {
+                throw new DomainException('Tahun ajaran memiliki semester aktif. Nonaktifkan semester terlebih dahulu.');
+            }
+
             $tahun->aktif = false;
             $tahun->save();
 

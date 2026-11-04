@@ -11,14 +11,31 @@
         </div>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger my-0 mt-3" role="alert">
+            <p class="mb-1 fw-semibold"><i class="fa-regular fa-circle-xmark me-2"></i>Periksa kembali data yang Anda isi:</p>
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if ($message = Session::get('success'))
-    <div class="alert alert-success pb-0 my-0 mt-3">
-        <p><i class="fa-regular fa-circle-check me-2 text-success"></i> {{ $message }}</p>
-    </div>
+        <div class="alert alert-success pb-0 my-0 mt-3">
+            <p><i class="fa-regular fa-circle-check me-2 text-success"></i> {{ $message }}</p>
+        </div>
     @elseif ($message = Session::get('error'))
-    <div class="alert alert-danger pb-0 my-0 mt-3">
-        <p><i class="fa-regular fa-circle-xmark me-2 text-danger"></i>{{ $message }}</p>
-    </div>
+        <div class="alert alert-danger pb-0 my-0 mt-3">
+            <p><i class="fa-regular fa-circle-xmark me-2 text-danger"></i>{{ $message }}</p>
+        </div>
+    @endif
+
+    @if ($userFind->wajib_ganti_password)
+        <div class="alert alert-warning my-0 mt-3" role="alert">
+            <p class="mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Wajib Ganti Password.</strong> Untuk keamanan akun, Anda wajib mengganti password sebelum dapat menggunakan fitur aplikasi lainnya.</p>
+        </div>
     @endif
 
 
@@ -75,8 +92,8 @@
 
                     <div class="form-group mt-3">
                         <label for="currentPassword">Current Password</label>
-                        <input type="text" class="form-control" name="lastPassword" id="currentPassword"
-                            placeholder="Enter Current Password">
+                        <input type="password" class="form-control" name="lastPassword" id="currentPassword"
+                            placeholder="Enter Current Password" autocomplete="current-password">
                     </div>
 
                     <div class="form-group mt-3">

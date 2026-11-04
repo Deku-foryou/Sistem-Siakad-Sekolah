@@ -79,6 +79,8 @@ class RoleHasPermissionsComponent extends Component
 
     public function storeRole_has_permissions()
     {
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+
         $permission = Permission::find($this->permission_id);
         $role = Role::find($this->id);
 

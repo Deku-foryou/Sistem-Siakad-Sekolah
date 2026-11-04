@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Support\BerandaUrl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -15,7 +16,7 @@ class AuthController extends Controller
     public function index()
     {
 
-        $idUser = Auth()->user()->id;
+        $idUser = auth()->user()->id;
 
         $userFind = User::findOrFail($idUser);
 
@@ -59,45 +60,64 @@ class AuthController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        $passwordChanged = false;
+        // Penjaga IDOR: hanya pemilik akun yang boleh mengubah profilnya.
+        abort_unless((int) $id === (int) auth()->id(), 403);
 
-        $user->name = $request->name;
-        // username read-only: tidak diubah dari form
+        // Audit struktur tabel users: name NOT NULL (max 255), email nullable (max 255, unique).
+        $rules = [
+            'name' => 'required|string|max:255',
+        ];
+
         if ($request->filled('email')) {
-            $user->email = $request->email;
+            $rules['email'] = 'email|max:255|unique:users,email,'.$id;
         }
 
-        // Check if the provided last password matches the current password
-        if (! Hash::check($request->lastPassword, $user->password)) {
-            return redirect()->back()->with('error', 'Password Lama Anda Salah');
-        }
+        $request->validate($rules);
 
-        if ($request->filled('password')) {
-            // Check if password and confirm password match
-            if ($request->password != $request->confirmpassword) {
-                return redirect()->back()->with('error', 'Konfirmasi Password tidak sama');
+        return DB::transaction(function () use ($request, $id) {
+            $user = User::query()
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            $passwordChanged = false;
+
+            $user->name = $request->name;
+            // username read-only: tidak diubah dari form
+            if ($request->filled('email')) {
+                $user->email = $request->email;
             }
 
-            if (strlen($request->password) < 8) {
-                return redirect()->back()->with('error', 'Password baru minimal 8 karakter');
+            // Check if the provided last password matches the current password
+            if (! Hash::check($request->lastPassword, $user->password)) {
+                return redirect()->back()->with('error', 'Password Lama Anda Salah');
             }
 
-            if (Hash::check($request->password, $user->password)) {
-                return redirect()->back()->with('error', 'Password baru tidak boleh sama dengan password lama');
+            if ($request->filled('password')) {
+                // Check if password and confirm password match
+                if ($request->password != $request->confirmpassword) {
+                    return redirect()->back()->with('error', 'Konfirmasi Password tidak sama');
+                }
+
+                if (strlen($request->password) < 8) {
+                    return redirect()->back()->with('error', 'Password baru minimal 8 karakter');
+                }
+
+                if (Hash::check($request->password, $user->password)) {
+                    return redirect()->back()->with('error', 'Password baru tidak boleh sama dengan password lama');
+                }
+
+                // Hash and save the new password
+                $user->password = Hash::make($request->password);
+                $user->wajib_ganti_password = false;
+                $passwordChanged = true;
             }
 
-            // Hash and save the new password
-            $user->password = Hash::make($request->password);
-            $user->wajib_ganti_password = false;
-            $passwordChanged = true;
-        }
+            $user->save();
 
-        $user->save();
+            $redirect = $passwordChanged ? BerandaUrl::untuk($user) : '/setting';
 
-        $redirect = $passwordChanged ? BerandaUrl::untuk($user) : '/setting';
-
-        return redirect($redirect)->with('success', 'Data Berhasil Diperbarui');
+            return redirect($redirect)->with('success', 'Data Berhasil Diperbarui');
+        });
     }
 
     /**

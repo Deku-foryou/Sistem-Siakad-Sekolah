@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Models\Jadwal;
 use App\Models\Jampelajaran;
 use App\Models\Pengampu;
-use App\Models\Polajam;
-use App\Models\Polajamhari;
 use App\Models\Publikasijadwal;
 use App\Models\Semester;
 use App\Support\Hari;
@@ -35,26 +33,14 @@ class JadwalService
                 throw new DomainException('Semester pengampu tidak ditemukan.');
             }
 
-            $polaId = Polajamhari::where('hari', $hari)->value('polajam_idpolajam');
-            if (! $polaId) {
-                throw new DomainException(Hari::nama($hari).' belum dipetakan ke pola jam.');
-            }
-            Polajam::query()->
-                lockForUpdate()->findOrFail($polaId);
-            $polaHari = Polajamhari::where('hari', $hari)
-                ->where('polajam_idpolajam', $polaId)
-                ->lockForUpdate()
-                ->first();
-            if (! $polaHari) {
-                throw new DomainException('Pemetaan hari berubah. Muat ulang jadwal.');
-            }
-            $jam = Jampelajaran::where('polajam_idpolajam', $polaHari->polajam_idpolajam)
-                ->where('jenis', 'pelajaran')
+            // Validasi jam_ke ada di konfigurasi Jampelajaran
+            // Cari jam_ke di Jampelajaran tanpa filter pola (jam_ke universal di sistem)
+            $jam = Jampelajaran::where('jenis', 'pelajaran')
                 ->where('jam_ke', $jamKe)
                 ->lockForUpdate()
                 ->first();
             if (! $jam) {
-                throw new DomainException('Jam ke-'.$jamKe.' tidak tersedia pada pola hari '.Hari::nama($hari).'.');
+                throw new DomainException('Jam ke-'.$jamKe.' tidak dikonfigurasi dalam sistem.');
             }
 
             $relevan = Jadwal::query()
