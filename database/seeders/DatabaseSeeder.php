@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
             PolajamCleanupSeeder::class,
             AbsensiHarianMenuSeeder::class,
             JadwalSiswaMenuSeeder::class,
+            ProfilSiswaMenuSeeder::class,
+            MenuLabelSettingCleanupSeeder::class,
         ]);
 
         // Create default admin user

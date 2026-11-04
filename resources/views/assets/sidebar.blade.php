@@ -76,7 +76,7 @@
         <ul class="sidebar-nav p-0 mt-3" data-coreui="navigation">
             @php
                 // Menu khusus peran lain tidak relevan (dan 404) untuk superadmin.
-                $menuKhususRoleLain = ['berandaguru', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa'];
+                $menuKhususRoleLain = ['berandaguru', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa'];
                 $sembunyikanMenuRoleLain = Auth::user()->level === 'superadmin';
             @endphp
 

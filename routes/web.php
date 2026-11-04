@@ -51,7 +51,7 @@ if (Schema::hasTable('appmenunew')) {
 
 // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
 // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'pengampu', 'jurusan', 'jadwalkelas', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa'];
+$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'pengampu', 'jurusan', 'jadwalkelas', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa'];
 
 Route::get('/', function () {
     return view('login');
@@ -99,6 +99,7 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
                 Route::get('berandasiswa', App\Livewire\BerandasiswaComponent::class)->name('berandasiswa');
                 Route::get('jadwalsiswa', App\Livewire\JadwalSiswaComponent::class)->name('jadwalsiswa');
                 Route::get('absensi-siswa', App\Livewire\HistoriAbsensiSiswaComponent::class)->name('absensi-siswa');
+                Route::get('profil-siswa', App\Livewire\ProfilSiswaComponent::class)->name('profil-siswa');
             }
         );
 

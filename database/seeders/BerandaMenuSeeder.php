@@ -22,7 +22,7 @@ class BerandaMenuSeeder extends Seeder
         foreach ([
             ['label' => 'Beranda Siswa', 'url' => 'berandasiswa', 'icon' => 'fa-solid fa-house', 'urut' => 1],
             ['label' => 'Beranda Guru', 'url' => 'berandaguru', 'icon' => 'fa-solid fa-house', 'urut' => 2],
-            ['label' => 'Profil Saya', 'url' => 'setting', 'icon' => 'fa-solid fa-id-card', 'urut' => 3],
+            ['label' => 'Pengaturan Akun', 'url' => 'setting', 'icon' => 'fa-solid fa-gear', 'urut' => 3],
         ] as $definition) {
             $menu = Appmenunew::unguarded(fn () => Appmenunew::firstOrCreate(
                 ['url' => $definition['url']],
