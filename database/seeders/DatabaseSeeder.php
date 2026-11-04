@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             JadwalSiswaMenuSeeder::class,
             ProfilSiswaMenuSeeder::class,
             MenuLabelSettingCleanupSeeder::class,
+            PengumumanMenuSeeder::class,
         ]);
 
         // Create default admin user

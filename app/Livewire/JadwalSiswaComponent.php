@@ -58,6 +58,7 @@ class JadwalSiswaComponent extends Component
             'kelasList' => $kelasList,
             'jadwalPerHari' => $jadwalPerHari,
             'namaHari' => \App\Support\Hari::NAMA,
+            'hariIni' => now()->dayOfWeekIso,
         ]);
     }
 

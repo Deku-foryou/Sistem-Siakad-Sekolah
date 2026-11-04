@@ -51,7 +51,7 @@ if (Schema::hasTable('appmenunew')) {
 
 // URL yang sudah didaftarkan eksplisit di bawah tidak boleh didaftarkan ulang
 // oleh loop dinamis, agar proteksi check.level tidak terlewati.
-$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'pengampu', 'jurusan', 'jadwalkelas', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa'];
+$explicitUrls = ['appmenunew', 'appmenucat', 'rolecat', 'role', 'users', 'usermenu', 'tahunajaran', 'semester', 'guru', 'siswa', 'mapel', 'kelas', 'kelassiswa', 'pengampu', 'jurusan', 'jadwalkelas', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa', 'pengumuman-siswa'];
 
 Route::get('/', function () {
     return view('login');
@@ -100,6 +100,8 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
                 Route::get('jadwalsiswa', App\Livewire\JadwalSiswaComponent::class)->name('jadwalsiswa');
                 Route::get('absensi-siswa', App\Livewire\HistoriAbsensiSiswaComponent::class)->name('absensi-siswa');
                 Route::get('profil-siswa', App\Livewire\ProfilSiswaComponent::class)->name('profil-siswa');
+                Route::get('pengumuman-siswa', App\Livewire\PengumumanSiswaComponent::class)->name('pengumuman-siswa');
+                Route::get('pengumuman-siswa/{id}', App\Livewire\PengumumanSiswaComponent::class)->name('pengumuman-siswa.detail');
             }
         );
 
@@ -151,6 +153,7 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
                 Route::get('pengampu', PengampuComponent::class)->name('pengampu');
                 Route::get('jadwalkelas', App\Livewire\JadwalKelasComponent::class)->name('jadwalkelas');
                 Route::get('jurusan', App\Livewire\JurusanComponent::class)->name('jurusan');
+                Route::get('pengumuman', App\Livewire\PengumumanComponent::class)->name('pengumuman');
                 Route::get('bukti-publikasi/{id}', BuktiPublikasiComponent::class)->name('bukti-publikasi');
                 Route::get('import/template/{jenis}', [ImportDownloadController::class, 'template'])
                     ->whereIn('jenis', ['siswa', 'guru', 'mapel', 'kelas', 'penempatan'])
