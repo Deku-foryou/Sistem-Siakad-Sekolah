@@ -34,7 +34,9 @@
 
     @if ($userFind->wajib_ganti_password)
         <div class="alert alert-warning my-0 mt-3" role="alert">
-            <p class="mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Wajib Ganti Password.</strong> Untuk keamanan akun, Anda wajib mengganti password sebelum dapat menggunakan fitur aplikasi lainnya.</p>
+            <p class="mb-1"><i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Wajib Ganti Password.</strong></p>
+            <p class="mb-1">Untuk keamanan akun Anda, silakan buat password baru terlebih dahulu. Isi <strong>Password Lama</strong>, <strong>Password</strong> (minimal 8 karakter, tidak sama dengan password lama), dan <strong>Konfirmasi Password</strong>, lalu klik <strong>Save Change</strong>.</p>
+            <p class="mb-0">Selama password belum diganti, Anda akan tetap diarahkan ke halaman ini dan belum dapat membuka Beranda, Jadwal Pelajaran, atau Histori Absensi. Setelah berhasil, Anda akan diteruskan ke Beranda.</p>
         </div>
     @endif
 

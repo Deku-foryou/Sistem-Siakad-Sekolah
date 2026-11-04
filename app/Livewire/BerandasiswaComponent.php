@@ -2,14 +2,20 @@
 
 namespace App\Livewire;
 
-use App\Models\Kelas;
-use App\Models\Publikasijadwal;
-use App\Models\Semester;
-use App\Models\Tahunajaran;
+use App\Models\JadwalKelas;
+use App\Models\Kelassiswa;
+use App\Services\KonteksAkademikService;
+use App\Support\Hari;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use App\Support\Hari;
 
+/**
+ * Beranda Siswa (read-only).
+ *
+ * - Konteks akademik (tahun ajaran & semester) selalu dari KonteksAkademikService::ambil().
+ * - Jadwal hari ini berasal dari jadwalkelas + jamhari, sama seperti /jadwalsiswa.
+ * - Tidak membaca tabel jadwal legacy (jadwal / publikasijadwal).
+ */
 class BerandasiswaComponent extends Component
 {
     public function render()
@@ -17,6 +23,7 @@ class BerandasiswaComponent extends Component
         $user = Auth::user();
         abort_unless($user?->level === 'siswa', 403);
 
+        $konteks = KonteksAkademikService::ambil();
         $siswa = $user->siswa()
             ->select([
                 'idsiswa', 'user_iduser', 'nisn', 'nis', 'nama',
@@ -24,48 +31,39 @@ class BerandasiswaComponent extends Component
             ])
             ->first();
 
-        $tahunAjaranAktif = null;
-        $kelasIndukAktif = null;
-        $jadwalHariIni = [];
+        $kelasList = collect();
+        $jadwalHariIni = collect();
         $namaHariIni = Hari::nama(now()->dayOfWeekIso);
 
-        if ($siswa) {
-            $tahunAjaranAktif = Tahunajaran::query()
-                ->where('aktif', true)
-                ->value('idtahunajaran');
+        if ($siswa && $konteks->valid()) {
+            // Penempatan aktif pada tahun ajaran aktif saja.
+            $kelasList = Kelassiswa::query()
+                ->with(['kelas.jurusan', 'kelas.wali'])
+                ->where('siswa_idsiswa', $siswa->idsiswa)
+                ->where('status', 'aktif')
+                ->whereHas('kelas', fn ($query) => $query->where('tahunajaran_idtahunajaran', $konteks->tahunAjaran->idtahunajaran))
+                ->get()
+                ->pluck('kelas')
+                ->filter()
+                ->sortBy('nama')
+                ->values();
 
-            if ($tahunAjaranAktif) {
-                // Ambil semester aktif (misal yang terbaru untuk tahun ajaran aktif)
-                $semesterAktifId = Semester::query()
-                    ->where('tahunajaran_idtahunajaran', $tahunAjaranAktif)
-                    ->orderByDesc('idsemester')
-                    ->value('idsemester');
+            $kelasIds = $kelasList->pluck('idkelas')->all();
 
-                $kelasIndukAktif = Kelas::query()
-                    ->select([
-                        'idkelas', 'tahunajaran_idtahunajaran', 'nama',
-                        'tingkat', 'jenis', 'guru_idguru',
+            if ($kelasIds) {
+                $hariIni = now()->dayOfWeekIso;
+                $jadwalHariIni = JadwalKelas::query()
+                    ->with(['jamhari.kelas', 'mapel', 'guru'])
+                    ->where('semester_idsemester', $konteks->semester->idsemester)
+                    ->whereHas('jamhari', fn ($query) => $query
+                        ->whereIn('kelas_id', $kelasIds)
+                        ->where('hari', $hariIni))
+                    ->get()
+                    ->sortBy(fn ($item) => [
+                        (int) ($item->jamhari->jam_ke ?? 999),
+                        (string) ($item->jamhari->mulai ?? ''),
                     ])
-                    ->with('wali:idguru,nama')
-                    ->where('tahunajaran_idtahunajaran', $tahunAjaranAktif)
-                    ->where('jenis', 'induk')
-                    ->whereHas('kelassiswa', fn ($query) => $query->where('siswa_idsiswa', $siswa->idsiswa))
-                    ->first();
-
-                if ($kelasIndukAktif && $semesterAktifId) {
-                    $publikasi = Publikasijadwal::query()
-                        ->where('semester_idsemester', $semesterAktifId)
-                        ->where('kelas_idkelas', $kelasIndukAktif->idkelas)
-                        ->where('status', 'published')
-                        ->latest('idpublikasijadwal')
-                        ->first();
-
-                    if ($publikasi && is_array($publikasi->snapshot)) {
-                        $hariIni = now()->dayOfWeekIso;
-                        $jadwalHariIni = array_filter($publikasi->snapshot, fn ($item) => isset($item['hari']) && (int) $item['hari'] === $hariIni);
-                        usort($jadwalHariIni, fn ($a, $b) => ($a['jam_ke'] ?? 0) <=> ($b['jam_ke'] ?? 0));
-                    }
-                }
+                    ->values();
             }
         }
 
@@ -75,8 +73,8 @@ class BerandasiswaComponent extends Component
                 'username' => $user->username ?: '-',
                 'wajibGantiPassword' => (bool) $user->wajib_ganti_password,
             ],
-            'tahunAjaranAktif' => $tahunAjaranAktif,
-            'kelasIndukAktif' => $kelasIndukAktif,
+            'konteks' => $konteks,
+            'kelasList' => $kelasList,
             'jadwalHariIni' => $jadwalHariIni,
             'namaHariIni' => $namaHariIni,
         ]);

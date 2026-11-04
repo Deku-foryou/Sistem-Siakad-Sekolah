@@ -75,8 +75,8 @@
         <div class="sidebar-menu" data-simplebar>
         <ul class="sidebar-nav p-0 mt-3" data-coreui="navigation">
             @php
-                // Menu beranda khusus guru/siswa tidak relevan (dan 404) untuk superadmin.
-                $menuKhususRoleLain = ['berandaguru', 'berandasiswa'];
+                // Menu khusus peran lain tidak relevan (dan 404) untuk superadmin.
+                $menuKhususRoleLain = ['berandaguru', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa'];
                 $sembunyikanMenuRoleLain = Auth::user()->level === 'superadmin';
             @endphp
 
@@ -105,20 +105,6 @@
                     </a>
                 </li>
             @endif
-
-            @if (Auth::user()?->level === 'siswa')
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->is('jadwalsiswa') ? 'active' : '' }}" href="/jadwalsiswa">
-                        <i class="fa-solid fa-calendar-week me-3"></i> Jadwal Pelajaran
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->is('absensi-siswa') ? 'active' : '' }}" href="/absensi-siswa">
-                        <i class="fa-solid fa-clipboard-list me-3"></i> Histori Absensi
-                    </a>
-                </li>
-            @endif
-
 
 
             <li class="nav-item">
