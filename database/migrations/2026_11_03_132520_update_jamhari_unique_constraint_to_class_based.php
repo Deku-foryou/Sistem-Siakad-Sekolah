@@ -7,19 +7,56 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private const TABLE = 'jamhari';
+
+    private const GLOBAL_INDEX_COLUMNS = ['hari', 'jam_ke'];
+
+    private const CLASS_INDEX_COLUMNS = ['kelas_id', 'hari', 'jam_ke'];
+
+    private const GLOBAL_INDEX_NAME = 'jamhari_hari_jamke_unique';
+
+    private const CLASS_INDEX_NAME = 'jamhari_kelas_hari_jamke_unique';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('jamhari', function (Blueprint $table) {
-            // Drop the old global unique constraint on (hari, jam_ke)
-            $table->dropUnique('jamhari_hari_jamke_unique');
+        if (! Schema::hasTable(self::TABLE)) {
+            return;
+        }
 
-            // Add new class-based unique index.
-            // In MySQL/InnoDB, NULL values in unique indexes are not considered duplicates.
-            // Since kelas_id is nullable, we are safe to use this simple index for class-based uniqueness.
-            $table->unique(['kelas_id', 'hari', 'jam_ke'], 'jamhari_kelas_hari_jamke_unique');
+        $this->assertRequiredColumns(self::CLASS_INDEX_COLUMNS);
+        $indexes = Schema::getIndexes(self::TABLE);
+        $globalIndex = $this->findUniqueIndex($indexes, self::GLOBAL_INDEX_COLUMNS);
+        $classIndex = $this->findUniqueIndex($indexes, self::CLASS_INDEX_COLUMNS);
+
+        $this->assertIndexNameIsAvailable($indexes, self::GLOBAL_INDEX_NAME, self::GLOBAL_INDEX_COLUMNS);
+        $this->assertIndexNameIsAvailable($indexes, self::CLASS_INDEX_NAME, self::CLASS_INDEX_COLUMNS);
+
+        if ($classIndex !== null) {
+            if ($globalIndex === null) {
+                return;
+            }
+
+            Schema::table(self::TABLE, function (Blueprint $table) use ($globalIndex) {
+                $table->dropUnique($globalIndex['name']);
+            });
+
+            return;
+        }
+
+        if ($globalIndex === null) {
+            throw new \RuntimeException(
+                'Tidak dapat menormalisasi jamhari: unique index global maupun kelas-per-kelas tidak ditemukan.'
+            );
+        }
+
+        $this->assertNoClassDuplicates();
+
+        Schema::table(self::TABLE, function (Blueprint $table) use ($globalIndex) {
+            $table->dropUnique($globalIndex['name']);
+            $table->unique(self::CLASS_INDEX_COLUMNS, self::CLASS_INDEX_NAME);
         });
     }
 
@@ -28,22 +65,114 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Check for global duplication before re-adding global unique constraint
-        // This prevents rollback from failing or corrupting data
-        $duplicateGlobals = DB::table('jamhari')
+        if (! Schema::hasTable(self::TABLE)) {
+            return;
+        }
+
+        $this->assertRequiredColumns(self::CLASS_INDEX_COLUMNS);
+        $indexes = Schema::getIndexes(self::TABLE);
+        $globalIndex = $this->findUniqueIndex($indexes, self::GLOBAL_INDEX_COLUMNS);
+        $classIndex = $this->findUniqueIndex($indexes, self::CLASS_INDEX_COLUMNS);
+
+        if ($globalIndex === null && $classIndex === null) {
+            throw new \RuntimeException(
+                'Tidak dapat rollback jamhari: unique index kelas-per-kelas dan unique index global tidak ditemukan.'
+            );
+        }
+
+        $this->assertNoGlobalDuplicates();
+
+        if ($globalIndex !== null && $classIndex !== null) {
+            Schema::table(self::TABLE, function (Blueprint $table) use ($classIndex) {
+                $table->dropUnique($classIndex['name']);
+            });
+
+            return;
+        }
+
+        if ($globalIndex !== null) {
+            return;
+        }
+
+        Schema::table(self::TABLE, function (Blueprint $table) use ($classIndex) {
+            $table->dropUnique($classIndex['name']);
+            $table->unique(self::GLOBAL_INDEX_COLUMNS, self::GLOBAL_INDEX_NAME);
+        });
+    }
+
+    private function assertRequiredColumns(array $columns): void
+    {
+        $missingColumns = array_values(array_filter(
+            $columns,
+            fn (string $column): bool => ! Schema::hasColumn(self::TABLE, $column)
+        ));
+
+        if ($missingColumns !== []) {
+            throw new \RuntimeException(
+                'Tidak dapat memigrasikan jamhari: kolom prasyarat tidak ditemukan: '.implode(', ', $missingColumns).'.'
+            );
+        }
+    }
+
+    private function findUniqueIndex(array $indexes, array $columns): ?array
+    {
+        $matches = array_values(array_filter(
+            $indexes,
+            fn (array $index): bool => $index['unique']
+                && array_map('strtolower', $index['columns']) === $columns
+        ));
+
+        if (count($matches) > 1) {
+            throw new \RuntimeException(
+                'Schema jamhari ambigu: ditemukan lebih dari satu unique index untuk ('.implode(', ', $columns).').'
+            );
+        }
+
+        return $matches[0] ?? null;
+    }
+
+    private function assertIndexNameIsAvailable(array $indexes, string $name, array $columns): void
+    {
+        foreach ($indexes as $index) {
+            if ($index['name'] === strtolower($name)
+                && (! $index['unique'] || array_map('strtolower', $index['columns']) !== $columns)) {
+                throw new \RuntimeException(
+                    "Schema jamhari ambigu: nama index {$name} digunakan oleh index dengan definisi berbeda."
+                );
+            }
+        }
+    }
+
+    private function assertNoClassDuplicates(): void
+    {
+        $duplicate = DB::table(self::TABLE)
             ->whereNotNull('kelas_id')
+            ->whereNotNull('jam_ke')
+            ->select('kelas_id', 'hari', 'jam_ke')
+            ->groupBy('kelas_id', 'hari', 'jam_ke')
+            ->havingRaw('COUNT(*) > 1')
+            ->first();
+
+        if ($duplicate !== null) {
+            throw new RuntimeException(
+                "Tidak dapat menormalisasi jamhari: duplikasi kelas_id={$duplicate->kelas_id}, hari={$duplicate->hari}, jam_ke={$duplicate->jam_ke}."
+            );
+        }
+    }
+
+    private function assertNoGlobalDuplicates(): void
+    {
+        $duplicate = DB::table(self::TABLE)
+            ->whereNotNull('jam_ke')
             ->select('hari', 'jam_ke')
             ->groupBy('hari', 'jam_ke')
             ->havingRaw('COUNT(*) > 1')
-            ->exists();
+            ->first();
 
-        if ($duplicateGlobals) {
-            throw new \Exception('Tidak dapat rollback: Terdapat kelas yang menggunakan jam yang sama pada hari yang sama. Hapus duplikasi terlebih dahulu sebelum rollback.');
+        if ($duplicate !== null) {
+            throw new RuntimeException(
+                "Tidak dapat rollback jamhari ke unique global: hari={$duplicate->hari}, jam_ke={$duplicate->jam_ke} digunakan lebih dari satu baris."
+            );
         }
-
-        Schema::table('jamhari', function (Blueprint $table) {
-            $table->dropUnique('jamhari_kelas_hari_jamke_unique');
-            $table->unique(['hari', 'jam_ke'], 'jamhari_hari_jamke_unique');
-        });
     }
 };

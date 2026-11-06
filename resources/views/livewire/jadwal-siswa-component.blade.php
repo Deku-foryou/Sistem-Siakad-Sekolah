@@ -16,9 +16,49 @@
     .jadwal-waktu-ke { font-size: 12px; color: #6b7280; }
     .jadwal-mapel { font-weight: 700; color: #111827; font-size: 14px; line-height: 1.4; word-break: break-word; }
     .jadwal-kelas { font-size: 13px; }
+    .print-header { display: none; }
+
+    @media print {
+        @page { size: A4; margin: 12mm; }
+
+        body { background: #fff !important; }
+
+        .wrapper { margin: 0 !important; padding: 0 !important; }
+
+        #sidebar,
+        header.header,
+        .no-print,
+        .border-top,
+        .footer { display: none !important; }
+
+        .container-fluid { padding: 0 !important; width: 100% !important; }
+
+        .print-header { display: block !important; text-align: center; margin-bottom: 12px; }
+        .print-header h1 { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
+        .print-header p { margin: 0; font-size: 11px; color: #333; }
+
+        .jadwal-ringkasan { display: none !important; }
+        .jadwal-hari-card { box-shadow: none !important; border: 1px solid #bbb !important; border-radius: 0 !important; margin-bottom: 10px !important; page-break-inside: avoid; }
+        .jadwal-hari-ini { border: 1px solid #198754 !important; }
+        .bg-success-subtle, .bg-white, .bg-light { background: #fff !important; }
+        .card-header, .card-body { border: 0 !important; }
+    }
 </style>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+{{-- Hanya tampil saat cetak --}}
+<div class="print-header" aria-hidden="true">
+    <h1>Jadwal Pelajaran</h1>
+    <p>
+        {{ $siswa?->nama ?: '-' }}
+        @if ($kelasList->isNotEmpty())
+            &middot; {{ $kelasList->pluck('nama')->implode(', ') }}
+        @endif
+        &middot; Tahun Ajaran {{ $konteks->tahunAjaranNama() ?: '-' }}
+        &middot; Semester {{ $konteks->semesterNama() ?: '-' }}
+    </p>
+</div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 no-print">
         <div>
             <h1 class="h4 fw-bold mb-1">Jadwal Pelajaran</h1>
             @if ($konteks->valid())
@@ -31,7 +71,12 @@
                 </p>
             @endif
         </div>
-        <span class="badge bg-success px-3 py-2">Siswa</span>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                <i class="fa-solid fa-print me-1" aria-hidden="true"></i>Cetak Jadwal
+            </button>
+            <span class="badge bg-success px-3 py-2">Siswa</span>
+        </div>
     </div>
 
     @if (! $konteks->valid())
@@ -54,19 +99,36 @@
             <p class="fw-semibold mb-1">Belum memiliki kelas aktif</p>
             <p class="text-body-secondary mb-0">Anda belum terdaftar aktif pada kelas mana pun di tahun ajaran {{ $konteks->tahunAjaranNama() }}. Silakan hubungi administrasi sekolah.</p>
         </div>
-    @elseif ($jadwalPerHari->isEmpty())
-        <div class="detail-card p-4 text-center">
-            <i class="fa-regular fa-calendar-xmark fs-2 text-secondary mb-2" aria-hidden="true"></i>
-            <p class="fw-semibold mb-1">Belum ada jadwal</p>
-            <p class="text-body-secondary mb-0">Kelas {{ $kelasList->pluck('nama')->implode(', ') }} belum memiliki jadwal pada semester {{ $konteks->semesterNama() }}.</p>
-        </div>
     @else
-        @php
-            $jadwalHariIni = $jadwalPerHari->get((int) $hariIni);
-        @endphp
+        {{-- Navigasi hari --}}
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 no-print" role="group" aria-label="Filter hari" wire:loading.class="opacity-50">
+            <span class="small text-body-secondary fw-semibold me-1">Hari:</span>
+            <button type="button" class="btn btn-sm {{ $filterHari === '0' ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '0')">Semua</button>
+            <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $hariIni ? 'btn-success' : 'btn-outline-success' }}" wire:click="$set('filterHari', '{{ $hariIni }}')">Hari Ini</button>
+            @foreach ($namaHari as $h => $n)
+                <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $h ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '{{ $h }}')">{{ $n }}</button>
+            @endforeach
+        </div>
 
-        {{-- Ringkasan hari ini --}}
-        <section class="jadwal-ringkasan mb-3" aria-label="Ringkasan jadwal hari ini">
+        @if ($jadwalPerHari->isEmpty())
+            <div class="detail-card p-4 text-center">
+                <i class="fa-regular fa-calendar-xmark fs-2 text-secondary mb-2" aria-hidden="true"></i>
+                <p class="fw-semibold mb-1">Belum ada jadwal</p>
+                <p class="text-body-secondary mb-0">Kelas {{ $kelasList->pluck('nama')->implode(', ') }} belum memiliki jadwal pada semester {{ $konteks->semesterNama() }}.</p>
+            </div>
+        @elseif ($jadwalTampil->isEmpty())
+            <div class="detail-card p-4 text-center">
+                <i class="fa-regular fa-calendar-xmark fs-2 text-secondary mb-2" aria-hidden="true"></i>
+                <p class="fw-semibold mb-1">Tidak ada jadwal</p>
+                <p class="text-body-secondary mb-0">Tidak ada jadwal pada hari {{ $namaHari[(int) $filterHari] ?? '' }} untuk kelas Anda pada semester {{ $konteks->semesterNama() }}.</p>
+            </div>
+        @else
+            @php
+                $jadwalHariIni = $jadwalPerHari->get((int) $hariIni);
+            @endphp
+
+            {{-- Ringkasan hari ini --}}
+        <section class="jadwal-ringkasan mb-3 no-print" aria-label="Ringkasan jadwal hari ini">
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <div class="jadwal-ringkasan-icon" aria-hidden="true">
                     <i class="fa-regular fa-calendar-days"></i>
@@ -90,7 +152,7 @@
             </div>
         </section>
 
-        @foreach ($jadwalPerHari as $hari => $items)
+        @foreach ($jadwalTampil as $hari => $items)
             @php $isHariIni = (int) $hari === (int) $hariIni; @endphp
             <div class="card jadwal-hari-card shadow-sm mb-3 {{ $isHariIni ? 'jadwal-hari-ini' : '' }}">
                 <div class="card-header d-flex align-items-center justify-content-between py-2 {{ $isHariIni ? 'bg-success-subtle' : 'bg-white' }}">
@@ -121,5 +183,6 @@
                 </div>
             </div>
         @endforeach
+        @endif
     @endif
 </div>

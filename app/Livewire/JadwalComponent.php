@@ -175,6 +175,11 @@ class JadwalComponent extends Component
             $this->filterKelas = '';
         }
 
+        // Istirahat global (jenis=istirahat) untuk ditampilkan di header kolom hari.
+        $istirahats = Jampelajaran::where('jenis', 'istirahat')
+            ->orderBy('mulai')
+            ->get(['mulai', 'selesai']);
+
         // Generate grid options dari konfigurasi Jampelajaran (tanpa Polajamhari)
         // Ambil semua jam_ke yang dikonfigurasi
         $allJamKe = Jampelajaran::where('jenis', 'pelajaran')
@@ -257,7 +262,7 @@ class JadwalComponent extends Component
             'publikasiAktif' => $publikasiAktif,
             'publikasiTerakhir' => $publikasiTerakhir,
             'kelasOptions' => $kelas,
-            'mappings' => $mappings,
+            'istirahats' => $istirahats,
             'periods' => $periods,
             'times' => $times,
             'jadwals' => $jadwals,

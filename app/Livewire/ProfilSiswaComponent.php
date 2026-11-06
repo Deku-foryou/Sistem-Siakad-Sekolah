@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Kelassiswa;
+use App\Services\JadwalSiswaService;
 use App\Services\KonteksAkademikService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -27,18 +27,9 @@ class ProfilSiswaComponent extends Component
 
         $kelasList = collect();
 
-        if ($siswa && $konteks->valid()) {
-            // Penempatan aktif pada tahun ajaran aktif saja.
-            $kelasList = Kelassiswa::query()
-                ->with(['kelas.jurusan', 'kelas.wali'])
-                ->where('siswa_idsiswa', $siswa->idsiswa)
-                ->where('status', 'aktif')
-                ->whereHas('kelas', fn ($query) => $query->where('tahunajaran_idtahunajaran', $konteks->tahunAjaran->idtahunajaran))
-                ->get()
-                ->pluck('kelas')
-                ->filter()
-                ->sortBy('nama')
-                ->values();
+        if ($siswa) {
+            // Sumber tunggal penempatan aktif: JadwalSiswaService (kelassiswa aktif, TA aktif).
+            $kelasList = app(JadwalSiswaService::class)->kelasAktif($siswa->idsiswa, $konteks);
         }
 
         $fotoUrl = null;

@@ -88,31 +88,31 @@
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-3">
                 <div class="profil-stat-card">
-                    <div class="profil-stat-label">Tahun Ajaran</div>
+                    <div class="profil-stat-label"><i class="fa-regular fa-calendar-check me-1" aria-hidden="true"></i>Tahun Ajaran</div>
                     <div class="profil-stat-value">{{ $konteks->tahunAjaranNama() ?: 'Belum diisi' }}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="profil-stat-card">
-                    <div class="profil-stat-label">Semester</div>
+                    <div class="profil-stat-label"><i class="fa-regular fa-bookmark me-1" aria-hidden="true"></i>Semester</div>
                     <div class="profil-stat-value">{{ $konteks->semesterNama() ?: 'Belum diisi' }}</div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
                 <div class="profil-stat-card">
-                    <div class="profil-stat-label">Kelas</div>
+                    <div class="profil-stat-label"><i class="fa-solid fa-school me-1" aria-hidden="true"></i>Kelas</div>
                     <div class="profil-stat-value">{{ $kelasList->pluck('nama')->implode(', ') ?: 'Belum ditempatkan di kelas aktif' }}</div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
                 <div class="profil-stat-card">
-                    <div class="profil-stat-label">Jurusan</div>
+                    <div class="profil-stat-label"><i class="fa-solid fa-book-open me-1" aria-hidden="true"></i>Jurusan</div>
                     <div class="profil-stat-value">{{ $kelasList->map(fn ($k) => $k->jurusan?->nama)->filter()->unique()->implode(', ') ?: 'Belum diisi' }}</div>
                 </div>
             </div>
             <div class="col-12 col-md-6">
                 <div class="profil-stat-card">
-                    <div class="profil-stat-label">Wali Kelas</div>
+                    <div class="profil-stat-label"><i class="fa-solid fa-person-chalkboard me-1" aria-hidden="true"></i>Wali Kelas</div>
                     <div class="profil-stat-value">{{ $kelasList->map(fn ($k) => $k->wali?->nama)->filter()->unique()->implode(', ') ?: 'Belum ditentukan' }}</div>
                 </div>
             </div>
@@ -190,12 +190,26 @@
                             <div class="profil-field-value {{ $siswa->email ? '' : 'profil-empty' }}">{{ $siswa->email ?: 'Belum diisi' }}</div>
                         </div>
                     </div>
+                    @if (! ($siswa->nama_ayah || $siswa->telepon_ayah || $siswa->nama_ibu || $siswa->telepon_ibu || $siswa->nama_wali || $siswa->telepon_wali || $siswa->telepon_ortu))
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 mb-0 small" role="status">
+                                <i class="fa-solid fa-circle-exclamation me-1" aria-hidden="true"></i>
+                                Kontak orang tua/wali belum tersedia. Hubungi admin sekolah untuk melengkapinya.
+                            </div>
+                        </div>
+                    @endif
                     <div class="col-12 col-sm-6">
                         <div class="profil-field">
                             <div class="profil-field-label">Ayah</div>
                             <div class="profil-field-value">
                                 <div>{{ $siswa->nama_ayah ?: 'Belum diisi' }}</div>
-                                <div class="text-body-secondary small">{{ $siswa->telepon_ayah ?: 'Belum diisi' }}</div>
+                                <div class="text-body-secondary small">
+                                    @if ($siswa->telepon_ayah)
+                                        <a href="tel:{{ preg_replace('/[^0-9+]/', '', $siswa->telepon_ayah) }}" class="text-decoration-none">{{ $siswa->telepon_ayah }}</a>
+                                    @else
+                                        Belum diisi
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -204,7 +218,13 @@
                             <div class="profil-field-label">Ibu</div>
                             <div class="profil-field-value">
                                 <div>{{ $siswa->nama_ibu ?: 'Belum diisi' }}</div>
-                                <div class="text-body-secondary small">{{ $siswa->telepon_ibu ?: 'Belum diisi' }}</div>
+                                <div class="text-body-secondary small">
+                                    @if ($siswa->telepon_ibu)
+                                        <a href="tel:{{ preg_replace('/[^0-9+]/', '', $siswa->telepon_ibu) }}" class="text-decoration-none">{{ $siswa->telepon_ibu }}</a>
+                                    @else
+                                        Belum diisi
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,10 +233,26 @@
                             <div class="profil-field-label">Wali Murid</div>
                             <div class="profil-field-value">
                                 <div>{{ $siswa->nama_wali ?: 'Belum diisi' }}</div>
-                                <div class="text-body-secondary small">{{ $siswa->telepon_wali ?: 'Belum diisi' }}</div>
+                                <div class="text-body-secondary small">
+                                    @if ($siswa->telepon_wali)
+                                        <a href="tel:{{ preg_replace('/[^0-9+]/', '', $siswa->telepon_wali) }}" class="text-decoration-none">{{ $siswa->telepon_wali }}</a>
+                                    @else
+                                        Belum diisi
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
+                    @if ($siswa->telepon_ortu)
+                        <div class="col-12 col-sm-6">
+                            <div class="profil-field">
+                                <div class="profil-field-label">Telepon Orang Tua/Wali</div>
+                                <div class="profil-field-value">
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $siswa->telepon_ortu) }}" class="text-decoration-none">{{ $siswa->telepon_ortu }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 

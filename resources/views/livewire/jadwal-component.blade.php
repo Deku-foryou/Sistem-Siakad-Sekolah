@@ -34,8 +34,8 @@
     </div></div>
     @if (! $filterSemester)
         <div class="alert alert-info">Belum ada semester. Buat tahun ajaran dan semester terlebih dahulu.</div>
-    @elseif ($periods === [] || $mappings->isEmpty())
-        <div class="alert alert-info">Belum ada pola jam atau jam pelajaran yang dapat ditampilkan. Atur dulu jam pelajaran per hari di menu Jam Pelajaran. <a href="{{ url("/jampelajaran") }}">Jam Pelajaran</a>.</div>
+    @elseif ($periods === [])
+        <div class="alert alert-info">Belum ada pola jam atau jam pelajaran yang dapat ditampilkan. Atur dulu jam pelajaran per hari di menu Jam Pelajaran. <a href="{{ url("/jamhari") }}">Jam Pelajaran</a>.</div>
     @elseif (! $filterKelas)
         <div class="alert alert-info">Belum ada kelas pada tahun ajaran semester ini.</div>
     @else
@@ -43,12 +43,9 @@
             <thead class="table-success"><tr><th>Jam</th>
                 @foreach ($gridHariOptions as $day => $namaHari)
                     <th>{{ $namaHari }}
-                        @php($mapping = $mappings->get($day))
-                        @if ($mapping)
-                            @foreach ($mapping->pola->jamPelajaran->where('jenis', 'istirahat')->sortBy('mulai') as $break)
+                        @foreach ($istirahats as $break)
                                 <div><small class="fw-normal">Istirahat {{ substr($break->mulai, 0, 5) }}–{{ substr($break->selesai, 0, 5) }}</small></div>
                             @endforeach
-                        @endif
                     </th>
                 @endforeach
             </tr></thead>
@@ -56,24 +53,18 @@
             @foreach ($periods as $period)
                 <tr><th class="text-nowrap">Ke-{{ $period['jam_ke'] }}</th>
                     @foreach ($gridHariOptions as $day => $namaHari)
-                        @php($mapping = $mappings->get($day))
-                        @php($hasPeriod = $mapping && $mapping->pola->jamPelajaran->contains(fn ($item) => $item->jenis === 'pelajaran' && (int) $item->jam_ke === $period['jam_ke']))
                         @php($cell = $jadwals->get($day.'|'.$period['jam_ke']))
                         <td class="p-1">
-                            @if ($hasPeriod)
-                                <button class="btn btn-sm w-100 {{ $cell ? 'btn-success' : 'btn-outline-secondary' }}"
-                                    wire:click="bukaSlot({{ $day }}, {{ $period['jam_ke'] }})">
-                                    <small>{{ $times[$day.'|'.$period['jam_ke']] ?? '' }}</small><br>
-                                    @if ($cell)
-                                        <strong>{{ $cell->pengampu->mapel->nama }}</strong><br>
-                                        <small>{{ $cell->pengampu->guru->nama }}</small>
-                                    @else
-                                        <span>+</span>
-                                    @endif
-                                </button>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
+                            <button class="btn btn-sm w-100 {{ $cell ? 'btn-success' : 'btn-outline-secondary' }}"
+                                wire:click="bukaSlot({{ $day }}, {{ $period['jam_ke'] }})">
+                                <small>{{ $times[$day.'|'.$period['jam_ke']] ?? '' }}</small><br>
+                                @if ($cell)
+                                    <strong>{{ $cell->pengampu->mapel->nama }}</strong><br>
+                                    <small>{{ $cell->pengampu->guru->nama }}</small>
+                                @else
+                                    <span>+</span>
+                                @endif
+                            </button>
                         </td>
                     @endforeach
                 </tr>

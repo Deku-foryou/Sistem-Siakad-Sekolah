@@ -169,7 +169,11 @@ class VerifyAbsensiHardeningFix extends Command
                         'sakit',
                         'Edited',
                         $guru->id,
-                        $guru
+                        $guru,
+                        $absensiOther->tahunajaran_idtahunajaran,
+                        $absensiOther->semester_idsemester,
+                        $absensiOther->kelas_idkelas,
+                        $absensiOther->tanggal
                     );
 
                     $this->error('   ❌ FAIL: Service accepted unauthorized edit!');

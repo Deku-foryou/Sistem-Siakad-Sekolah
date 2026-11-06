@@ -12,6 +12,46 @@
         <span class="badge bg-success px-3 py-2">Siswa</span>
     </div>
 
+    @if ($siswa)
+        {{-- Rekap kehadiran semester & tahun ajaran aktif --}}
+        <section class="card border mb-3" aria-label="Rekap kehadiran semester aktif">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <div>
+                        <h2 class="h6 fw-bold mb-0">Rekap Kehadiran</h2>
+                        <p class="text-body-secondary small mb-0">
+                            Semester {{ $konteks->semesterNama() ?? '-' }} &middot;
+                            Tahun Ajaran {{ $konteks->tahunAjaranNama() ?? '-' }} &middot;
+                            Tidak terpengaruh filter di bawah
+                        </p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-success" wire:click="unduhRekap" wire:loading.attr="disabled">
+                        <i class="fa-solid fa-file-csv me-1" aria-hidden="true"></i>Unduh Rekap (CSV)
+                    </button>
+                </div>
+                <div class="row g-2">
+                    @foreach ([['Harian', $rekapHarian, $persenHarian], ['Per Jam', $rekapPerJam, $persenPerJam]] as [$label, $r, $persen])
+                        <div class="col-md-6">
+                            <div class="border rounded p-2 h-100 bg-white">
+                                <div class="small text-body-secondary mb-1">{{ $label }}</div>
+                                <div class="d-flex flex-wrap gap-2 mb-1">
+                                    <span class="badge bg-success">Hadir {{ $r['hadir'] }}</span>
+                                    <span class="badge bg-warning text-dark">Sakit {{ $r['sakit'] }}</span>
+                                    <span class="badge bg-info text-dark">Izin {{ $r['izin'] }}</span>
+                                    <span class="badge bg-danger">Alpha {{ $r['alpha'] }}</span>
+                                </div>
+                                <div class="small text-body-secondary">
+                                    <span class="fw-semibold text-body">{{ $r['total'] }}</span> catatan &middot;
+                                    Kehadiran <span class="fw-semibold text-body">{{ $persen }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if (! $siswa)
         <div class="alert alert-warning" role="alert">
             Akun ini belum terhubung ke data siswa. Histori absensi belum dapat ditampilkan. Hubungi administrator.

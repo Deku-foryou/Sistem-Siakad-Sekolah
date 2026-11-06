@@ -31,7 +31,7 @@ class AuditAbsensiHarian extends Command
             $superadmin = User::where('level', 'superadmin')->first();
             $guru = User::where('level', 'guru')->first();
 
-            if (!$superadmin) {
+            if (! $superadmin) {
                 throw new \Exception('Superadmin user not found');
             }
 
@@ -47,7 +47,7 @@ class AuditAbsensiHarian extends Command
                 ->where('status', 'aktif')
                 ->first();
 
-            if (!$siswaAktif) {
+            if (! $siswaAktif) {
                 $this->line('   ⚠️ Tidak ada siswa aktif di kelas, skip test');
             } else {
                 $this->line("   ✓ Siswa aktif: {$siswaAktif->siswa->nama}");
@@ -65,7 +65,7 @@ class AuditAbsensiHarian extends Command
                             $siswaIdle->siswa->idsiswa => [
                                 'status' => 'hadir',
                                 'catatan' => 'Test bypass',
-                            ]
+                            ],
                         ];
 
                         $result = $service->saveAbsensiMassal(
@@ -74,7 +74,8 @@ class AuditAbsensiHarian extends Command
                             $kelas->idkelas,
                             $tanggalHari,
                             $absensiData,
-                            $superadmin->id
+                            $superadmin->id,
+                            $superadmin
                         );
 
                         $this->line('   ⚠️ MASALAH: Service tidak validasi siswa aktif dalam saveAbsensiMassal!');
@@ -99,10 +100,15 @@ class AuditAbsensiHarian extends Command
             // TEST 2: Akses guru
             $this->newLine();
             $this->line('2. TEST: Akses guru ke kelas');
-            if (!$guru) {
+            if (! $guru) {
                 $this->line('   ℹ️ Tidak ada guru user, skip test');
             } else {
-                $hasAccess = $service->checkGuruAccess($guru, $kelas->idkelas);
+                $hasAccess = $service->checkGuruAccess(
+                    $guru,
+                    $tahunAjaran->idtahunajaran,
+                    $semester->idsemester,
+                    $kelas->idkelas
+                );
                 $this->line('   Result: '.($hasAccess ? 'AKSES DIBERIKAN' : 'AKSES DITOLAK'));
             }
 
@@ -116,7 +122,7 @@ class AuditAbsensiHarian extends Command
                         $siswaAktif->siswa->idsiswa => [
                             'status' => 'tidak_hadir',
                             'catatan' => 'Test',
-                        ]
+                        ],
                     ];
 
                     $result = $service->saveAbsensiMassal(
@@ -125,7 +131,8 @@ class AuditAbsensiHarian extends Command
                         $kelas->idkelas,
                         $tanggalHari,
                         $absensiData,
-                        $superadmin->id
+                        $superadmin->id,
+                        $superadmin
                     );
 
                     $this->error('   ⚠️ MASALAH: Status invalid diterima!');
@@ -144,7 +151,8 @@ class AuditAbsensiHarian extends Command
                     $tahunAjaran->idtahunajaran,
                     $semester->idsemester,
                     $kelas->idkelas,
-                    $tanggalMasaDepan
+                    $tanggalMasaDepan,
+                    $superadmin
                 );
                 $this->error('   ⚠️ MASALAH: Tanggal masa depan diterima!');
             } catch (\Exception $e) {
@@ -159,7 +167,8 @@ class AuditAbsensiHarian extends Command
                     $tahunAjaran->idtahunajaran,
                     $semester->idsemester,
                     $kelas->idkelas,
-                    'invalid-date'
+                    'invalid-date',
+                    $superadmin
                 );
                 $this->error('   ⚠️ MASALAH: Format tanggal invalid diterima!');
             } catch (\Exception $e) {
@@ -176,7 +185,8 @@ class AuditAbsensiHarian extends Command
                         $tahunAjaran->idtahunajaran,
                         $semesterBeda->idsemester,
                         $kelas->idkelas,
-                        $tanggalHari
+                        $tanggalHari,
+                        $superadmin
                     );
                     $this->error('   ⚠️ MASALAH: Konteks tidak sesuai diterima!');
                 } catch (\Exception $e) {
@@ -207,7 +217,7 @@ class AuditAbsensiHarian extends Command
 
                     if ($guru) {
                         $canEdit = $service->checkEditDeadline($guru, $absensi1);
-                        $this->line("   Guru bisa edit kemarin: ".($canEdit ? 'YA' : 'TIDAK'));
+                        $this->line('   Guru bisa edit kemarin: '.($canEdit ? 'YA' : 'TIDAK'));
                         if ($canEdit) {
                             $this->line('   ✓ H+1 allows yesterday');
                         }
@@ -225,8 +235,8 @@ class AuditAbsensiHarian extends Command
 
                     if ($guru) {
                         $canEdit2 = $service->checkEditDeadline($guru, $absensi2);
-                        $this->line("   Guru bisa edit 2 hari lalu: ".($canEdit2 ? 'YA' : 'TIDAK'));
-                        if (!$canEdit2) {
+                        $this->line('   Guru bisa edit 2 hari lalu: '.($canEdit2 ? 'YA' : 'TIDAK'));
+                        if (! $canEdit2) {
                             $this->line('   ✓ H+1 blocks 2+ days');
                         }
                     }
@@ -246,7 +256,7 @@ class AuditAbsensiHarian extends Command
                         $siswaAktif->siswa->idsiswa => [
                             'status' => 'hadir',
                             'catatan' => 'First',
-                        ]
+                        ],
                     ];
 
                     $result1 = $service->saveAbsensiMassal(
@@ -255,10 +265,11 @@ class AuditAbsensiHarian extends Command
                         $kelas->idkelas,
                         $tanggalUnik,
                         $dataFirst,
-                        $superadmin->id
+                        $superadmin->id,
+                        $superadmin
                     );
 
-                    $this->line("   First save: OK");
+                    $this->line('   First save: OK');
 
                     try {
                         $result2 = $service->saveAbsensiMassal(
@@ -267,11 +278,12 @@ class AuditAbsensiHarian extends Command
                             $kelas->idkelas,
                             $tanggalUnik,
                             $dataFirst,
-                            $superadmin->id
+                            $superadmin->id,
+                            $superadmin
                         );
                         $this->error('   ⚠️ MASALAH: Duplikasi diterima!');
                     } catch (\Exception $e) {
-                        $this->line("   ✓ Duplikasi ditolak");
+                        $this->line('   ✓ Duplikasi ditolak');
                     }
                 } catch (\Exception $e) {
                     $this->line("   First save failed: {$e->getMessage()}");

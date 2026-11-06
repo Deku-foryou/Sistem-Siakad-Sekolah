@@ -2,14 +2,25 @@
 
 namespace App\Livewire;
 
-use App\Models\JadwalKelas;
-use App\Models\Kelassiswa;
+use App\Services\JadwalSiswaService;
 use App\Services\KonteksAkademikService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class JadwalSiswaComponent extends Component
 {
+    /** Filter hari: '0' = semua, '1'..'7' = hari tertentu. */
+    public string $filterHari = '0';
+
+    public function updatedFilterHari(): void
+    {
+        abort_unless(auth()->user()?->level === 'siswa', 403);
+
+        if (! in_array($this->filterHari, ['0', '1', '2', '3', '4', '5', '6', '7'], true)) {
+            $this->filterHari = '0';
+        }
+    }
+
     public function render()
     {
         $user = Auth::user();
@@ -20,34 +31,23 @@ class JadwalSiswaComponent extends Component
 
         $kelasList = collect();
         $jadwalPerHari = collect();
+        $jadwalTampil = collect();
 
         if ($konteks->valid() && $siswa) {
-            // Penempatan aktif pada tahun ajaran aktif saja.
-            $kelasList = Kelassiswa::query()
-                ->with('kelas')
-                ->where('siswa_idsiswa', $siswa->idsiswa)
-                ->where('status', 'aktif')
-                ->whereHas('kelas', fn ($q) => $q->where('tahunajaran_idtahunajaran', $konteks->tahunAjaran->idtahunajaran))
-                ->get()
-                ->pluck('kelas')
-                ->sortBy('nama')
-                ->values();
+            // Sumber tunggal: JadwalSiswaService (penempatan aktif TA aktif, jadwal semester aktif).
+            $jadwalSiswa = app(JadwalSiswaService::class);
+            $kelasList = $jadwalSiswa->kelasAktif($siswa->idsiswa, $konteks);
 
             $kelasIds = $kelasList->pluck('idkelas')->all();
 
             if ($kelasIds) {
-                $jadwalPerHari = $this->kelompokkanPerHari(
-                    JadwalKelas::query()
-                        ->with([
-                            'semester',
-                            'jamhari.kelas',
-                            'mapel',
-                            'guru',
-                        ])
-                        ->where('semester_idsemester', $konteks->semester->idsemester)
-                        ->whereHas('jamhari', fn ($q) => $q->whereIn('kelas_id', $kelasIds))
-                        ->get()
-                );
+                $jadwalPerHari = $jadwalSiswa->perHari($jadwalSiswa->jadwal($konteks, $kelasIds));
+
+                $jadwalTampil = $this->filterHari === '0'
+                    ? $jadwalPerHari
+                    : $jadwalPerHari->filter(
+                        fn ($grup, int|string $hari) => (int) $hari === (int) $this->filterHari
+                    );
             }
         }
 
@@ -57,21 +57,10 @@ class JadwalSiswaComponent extends Component
             'konteks' => $konteks,
             'kelasList' => $kelasList,
             'jadwalPerHari' => $jadwalPerHari,
+            'jadwalTampil' => $jadwalTampil,
             'namaHari' => \App\Support\Hari::NAMA,
             'hariIni' => now()->dayOfWeekIso,
+            'filterHari' => $this->filterHari,
         ]);
-    }
-
-    private function kelompokkanPerHari($jadwal)
-    {
-        // Urutkan berdasarkan hari, lalu jam_ke, lalu jam mulai.
-        return $jadwal
-            ->sortBy(fn ($j) => [
-                (int) $j->jamhari->hari,
-                (int) ($j->jamhari->jam_ke ?? 999),
-                (string) $j->jamhari->mulai,
-            ])
-            ->groupBy(fn ($j) => (int) $j->jamhari->hari)
-            ->sortKeys();
     }
 }

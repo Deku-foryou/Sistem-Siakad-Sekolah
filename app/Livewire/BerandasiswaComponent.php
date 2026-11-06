@@ -2,8 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\JadwalKelas;
-use App\Models\Kelassiswa;
+use App\Services\JadwalSiswaService;
 use App\Services\KonteksAkademikService;
 use App\Support\Hari;
 use Illuminate\Support\Facades\Auth;
@@ -36,34 +35,17 @@ class BerandasiswaComponent extends Component
         $namaHariIni = Hari::nama(now()->dayOfWeekIso);
 
         if ($siswa && $konteks->valid()) {
-            // Penempatan aktif pada tahun ajaran aktif saja.
-            $kelasList = Kelassiswa::query()
-                ->with(['kelas.jurusan', 'kelas.wali'])
-                ->where('siswa_idsiswa', $siswa->idsiswa)
-                ->where('status', 'aktif')
-                ->whereHas('kelas', fn ($query) => $query->where('tahunajaran_idtahunajaran', $konteks->tahunAjaran->idtahunajaran))
-                ->get()
-                ->pluck('kelas')
-                ->filter()
-                ->sortBy('nama')
-                ->values();
+            // Sumber tunggal: JadwalSiswaService (penempatan aktif TA aktif, jadwal semester aktif).
+            $jadwalSiswa = app(JadwalSiswaService::class);
+            $kelasList = $jadwalSiswa->kelasAktif($siswa->idsiswa, $konteks);
 
             $kelasIds = $kelasList->pluck('idkelas')->all();
 
             if ($kelasIds) {
                 $hariIni = now()->dayOfWeekIso;
-                $jadwalHariIni = JadwalKelas::query()
-                    ->with(['jamhari.kelas', 'mapel', 'guru'])
-                    ->where('semester_idsemester', $konteks->semester->idsemester)
-                    ->whereHas('jamhari', fn ($query) => $query
-                        ->whereIn('kelas_id', $kelasIds)
-                        ->where('hari', $hariIni))
-                    ->get()
-                    ->sortBy(fn ($item) => [
-                        (int) ($item->jamhari->jam_ke ?? 999),
-                        (string) ($item->jamhari->mulai ?? ''),
-                    ])
-                    ->values();
+                $jadwalHariIni = $jadwalSiswa->urutkan(
+                    $jadwalSiswa->jadwal($konteks, $kelasIds, $hariIni)
+                );
             }
         }
 

@@ -2,12 +2,13 @@
 
 namespace App\Livewire;
 
-use App\Models\AbsensiHarian;
 use App\Models\Kelas;
 use App\Models\Semester;
-use App\Models\TahunAjaran;
+use App\Models\Tahunajaran;
 use App\Services\AbsensiHarianService;
 use Carbon\Carbon;
+use DomainException;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class AbsensiHarianComponent extends Component
@@ -44,6 +45,8 @@ class AbsensiHarianComponent extends Component
 
     public function boot()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         $this->service = app(AbsensiHarianService::class);
     }
 
@@ -51,27 +54,25 @@ class AbsensiHarianComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
 
-        // Set default tanggal ke hari ini
         $this->tanggal = Carbon::today()->format('Y-m-d');
-
-        // Load pilihan
         $this->loadTahunAjaran();
     }
 
     public function render()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         return view('livewire.absensi-harian-component');
     }
 
     private function loadTahunAjaran()
     {
-        $this->tahunAjaranList = TahunAjaran::query()
+        $this->tahunAjaranList = Tahunajaran::query()
             ->orderBy('idtahunajaran', 'desc')
             ->get()
-            ->mapWithKeys(fn ($ta) => [$ta->idtahunajaran => "{$ta->nama}"])
+            ->mapWithKeys(fn ($ta) => [$ta->idtahunajaran => $ta->nama])
             ->toArray();
 
-        // Set ke tahun ajaran aktif / terbaru
         if (! $this->tahunAjaranId && count($this->tahunAjaranList)) {
             $this->tahunAjaranId = array_key_first($this->tahunAjaranList);
             $this->loadSemester();
@@ -80,11 +81,14 @@ class AbsensiHarianComponent extends Component
 
     public function updatedTahunAjaranId()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         $this->tahunAjaranId = (int) $this->tahunAjaranId;
         $this->semesterId = null;
         $this->kelasId = null;
         $this->siswaList = [];
         $this->absensiData = [];
+        $this->isLoaded = false;
         $this->loadSemester();
     }
 
@@ -100,7 +104,7 @@ class AbsensiHarianComponent extends Component
             ->where('tahunajaran_idtahunajaran', $this->tahunAjaranId)
             ->orderByDesc('idsemester')
             ->get()
-            ->mapWithKeys(fn ($s) => [$s->idsemester => "Semester {$s->nama}"])
+            ->mapWithKeys(fn ($semester) => [$semester->idsemester => "Semester {$semester->nama}"])
             ->toArray();
 
         if (! $this->semesterId && count($this->semesterList)) {
@@ -111,47 +115,51 @@ class AbsensiHarianComponent extends Component
 
     public function updatedSemesterId()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         $this->semesterId = (int) $this->semesterId;
         $this->kelasId = null;
         $this->siswaList = [];
         $this->absensiData = [];
+        $this->isLoaded = false;
         $this->loadKelas();
     }
 
     private function loadKelas()
     {
-        if (! $this->tahunAjaranId || ! $this->semesterId) {
-            $this->kelasList = [];
+        $this->kelasList = [];
+        $this->kelasId = null;
+        $this->siswaList = [];
+        $this->absensiData = [];
+        $this->isLoaded = false;
 
+        if (! $this->tahunAjaranId || ! $this->semesterId) {
             return;
         }
 
-        $query = Kelas::query()
-            ->where('tahunajaran_idtahunajaran', $this->tahunAjaranId);
+        try {
+            $kelas = $this->service->getKelasTersedia(
+                auth()->user(),
+                (int) $this->tahunAjaranId,
+                (int) $this->semesterId
+            );
+            $this->kelasList = $kelas
+                ->mapWithKeys(fn (Kelas $item) => [$item->idkelas => $item->nama])
+                ->toArray();
 
-        // Jika guru (bukan superadmin), filter ke kelas yang dia ampuh
-        $user = auth()->user();
-        if ($user->level === 'guru' && $user->guru) {
-            $guruId = $user->guru->idguru;
-            $query->where(function ($q) use ($guruId) {
-                $q->where('guru_idguru', $guruId);
-            });
-        }
-
-        $this->kelasList = $query
-            ->orderBy('nama')
-            ->get()
-            ->mapWithKeys(fn ($k) => [$k->idkelas => $k->nama])
-            ->toArray();
-
-        if (! $this->kelasId && count($this->kelasList)) {
-            $this->kelasId = array_key_first($this->kelasList);
-            $this->loadSiswaAbsensi();
+            if (count($this->kelasList)) {
+                $this->kelasId = array_key_first($this->kelasList);
+                $this->loadSiswaAbsensi();
+            }
+        } catch (DomainException $exception) {
+            $this->errorMessage = $exception->getMessage();
         }
     }
 
     public function updatedKelasId()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         $this->kelasId = (int) $this->kelasId;
         $this->siswaList = [];
         $this->absensiData = [];
@@ -160,6 +168,8 @@ class AbsensiHarianComponent extends Component
 
     public function updatedTanggal()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         if (! $this->kelasId) {
             return;
         }
@@ -181,19 +191,35 @@ class AbsensiHarianComponent extends Component
             return;
         }
 
-        try {
-            // Validasi context
-            $this->service->validateContext($this->tahunAjaranId, $this->semesterId, $this->kelasId, $this->tanggal);
+        $user = auth()->user();
 
-            // Load siswa aktif
-            $kelassiswa = $this->service->getSiswaAktif($this->kelasId);
-            $this->siswaList = $kelassiswa->map(fn ($ks) => [
-                'idsiswa' => $ks->siswa->idsiswa,
-                'nama' => $ks->siswa->nama,
+        try {
+            $this->service->validateContext(
+                (int) $this->tahunAjaranId,
+                (int) $this->semesterId,
+                (int) $this->kelasId,
+                (string) $this->tanggal,
+                $user
+            );
+
+            $kelassiswa = $this->service->getSiswaAktif(
+                (int) $this->kelasId,
+                $user,
+                (int) $this->tahunAjaranId,
+                (int) $this->semesterId
+            );
+            $this->siswaList = $kelassiswa->map(fn ($item) => [
+                'idsiswa' => $item->siswa->idsiswa,
+                'nama' => $item->siswa->nama,
             ])->toArray();
 
-            // Load absensi yang sudah ada
-            $absensiRecords = $this->service->getAbsensiKelasHari($this->kelasId, $this->tanggal);
+            $absensiRecords = $this->service->getAbsensiKelasHari(
+                (int) $this->tahunAjaranId,
+                (int) $this->semesterId,
+                (int) $this->kelasId,
+                (string) $this->tanggal,
+                $user
+            );
             $this->absensiData = [];
 
             foreach ($this->siswaList as $siswa) {
@@ -201,14 +227,14 @@ class AbsensiHarianComponent extends Component
                 $this->absensiData[$siswa['idsiswa']] = [
                     'status' => $record?->status ?? 'hadir',
                     'catatan' => $record?->catatan ?? '',
-                    'idabsensi_harian' => $record?->idabsensi_harian ?? null,
+                    'idabsensi_harian' => $record?->idabsensi_harian,
                 ];
             }
 
             $this->isLoaded = true;
             $this->errorMessage = '';
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
+        } catch (DomainException $exception) {
+            $this->errorMessage = $exception->getMessage();
             $this->isLoaded = false;
             $this->siswaList = [];
             $this->absensiData = [];
@@ -227,76 +253,68 @@ class AbsensiHarianComponent extends Component
 
         $user = auth()->user();
 
-        // Cek akses guru
-        if ($user->level === 'guru' && ! $this->service->checkGuruAccess($user, $this->kelasId)) {
-            $this->errorMessage = 'Anda tidak berwenang mengakses kelas ini.';
-
-            return;
-        }
-
-        // Cek deadline edit (H+1)
-        if ($user->level === 'guru') {
-            $tanggalObj = Carbon::parse($this->tanggal);
-            $daysOld = Carbon::today()->diffInDays($tanggalObj, false);
-
-            if ($daysOld < -1 || $daysOld > 0) {
-                $this->errorMessage = 'Guru hanya dapat mencatat absensi untuk hari ini dan kemarin (H+1 deadline).';
-
-                return;
-            }
-        }
-
         try {
-            // Pisahkan data: baru dan update
-            $dataToCreate = [];
-            $dataToUpdate = [];
-
-            foreach ($this->absensiData as $siswaId => $data) {
-                $idabsensi = $data['idabsensi_harian'] ?? null;
-
-                if ($idabsensi) {
-                    $dataToUpdate[$idabsensi] = $data;
-                } else {
-                    $dataToCreate[$siswaId] = $data;
-                }
-            }
-
-            // Create new records
-            if (! empty($dataToCreate)) {
-                $result = $this->service->saveAbsensiMassal(
-                    $this->tahunAjaranId,
-                    $this->semesterId,
-                    $this->kelasId,
-                    $this->tanggal,
-                    $dataToCreate,
-                    $user->id,
-                    $user  // Pass user object untuk service-level validation
-                );
-            }
-
-            // Update existing records
-            foreach ($dataToUpdate as $idabsensi => $data) {
-                $absensi = AbsensiHarian::findOrFail($idabsensi);
-
-                // Cek akses edit (guru H+1 deadline)
-                if ($user->level === 'guru' && ! $this->service->checkEditDeadline($user, $absensi)) {
-                    throw new \Exception("Record absensi {$idabsensi} sudah melewati deadline edit.");
+            DB::transaction(function () use ($user) {
+                if (! is_array($this->absensiData)) {
+                    throw new DomainException('Data absensi tidak valid.');
                 }
 
-                $this->service->editAbsensi(
-                    $idabsensi,
-                    $data['status'],
-                    $data['catatan'],
-                    $user->id,
-                    $user  // Pass user object untuk service-level validation
-                );
-            }
+                $dataToCreate = [];
+                $dataToUpdate = [];
+
+                foreach ($this->absensiData as $siswaId => $data) {
+                    if (! is_array($data)) {
+                        throw new DomainException("Data absensi siswa {$siswaId} tidak valid.");
+                    }
+
+                    $absensiId = $data['idabsensi_harian'] ?? null;
+                    if ($absensiId) {
+                        $dataToUpdate[$absensiId] = $data;
+                    } else {
+                        $dataToCreate[$siswaId] = $data;
+                    }
+                }
+
+                if ($dataToCreate) {
+                    $this->service->saveAbsensiMassal(
+                        (int) $this->tahunAjaranId,
+                        (int) $this->semesterId,
+                        (int) $this->kelasId,
+                        (string) $this->tanggal,
+                        $dataToCreate,
+                        (int) $user->getKey(),
+                        $user
+                    );
+                }
+
+                foreach ($dataToUpdate as $absensiId => $data) {
+                    $this->service->authorizeRecordForEdit(
+                        $user,
+                        (int) $absensiId,
+                        (int) $this->tahunAjaranId,
+                        (int) $this->semesterId,
+                        (int) $this->kelasId,
+                        (string) $this->tanggal
+                    );
+                    $this->service->editAbsensi(
+                        (int) $absensiId,
+                        $data['status'] ?? '',
+                        $data['catatan'] ?? null,
+                        (int) $user->getKey(),
+                        $user,
+                        (int) $this->tahunAjaranId,
+                        (int) $this->semesterId,
+                        (int) $this->kelasId,
+                        (string) $this->tanggal
+                    );
+                }
+            });
 
             $this->successMessage = 'Absensi berhasil disimpan.';
             $this->errorMessage = '';
             $this->loadSiswaAbsensi();
-        } catch (\Exception $e) {
-            $this->errorMessage = 'Error: '.$e->getMessage();
+        } catch (DomainException $exception) {
+            $this->errorMessage = 'Error: '.$exception->getMessage();
         }
     }
 
@@ -304,17 +322,40 @@ class AbsensiHarianComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
 
+        if (! is_numeric($absensiId) || (int) $absensiId < 1) {
+            abort(404);
+        }
+
         if ($this->isEditMode && $this->editAbsensiId === (int) $absensiId) {
             $this->isEditMode = false;
             $this->editAbsensiId = null;
-        } else {
-            $this->isEditMode = true;
-            $this->editAbsensiId = (int) $absensiId;
+
+            return;
         }
+
+        try {
+            $this->service->authorizeRecordForEdit(
+                auth()->user(),
+                (int) $absensiId,
+                (int) $this->tahunAjaranId,
+                (int) $this->semesterId,
+                (int) $this->kelasId,
+                (string) $this->tanggal
+            );
+        } catch (DomainException $exception) {
+            $this->errorMessage = $exception->getMessage();
+
+            return;
+        }
+
+        $this->isEditMode = true;
+        $this->editAbsensiId = (int) $absensiId;
     }
 
     public function resetForm()
     {
+        abort_unless(auth()->user()?->level === 'superadmin' || auth()->user()?->level === 'guru', 403);
+
         $this->absensiData = [];
         $this->errorMessage = '';
         $this->successMessage = '';

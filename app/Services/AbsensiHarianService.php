@@ -3,23 +3,55 @@
 namespace App\Services;
 
 use App\Models\AbsensiHarian;
+use App\Models\Guru;
+use App\Models\JadwalKelas;
 use App\Models\Kelas;
 use App\Models\Kelassiswa;
-use App\Models\Pengampu;
+use App\Models\Semester;
+use App\Models\Tahunajaran;
+use App\Models\User;
 use Carbon\Carbon;
+use DomainException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AbsensiHarianService
 {
-    /**
-     * Dapatkan siswa aktif di kelas untuk absensi.
-     * Hanya siswa dengan kelassiswa.status = 'aktif'
-     *
-     * @param  int  $kelasId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getSiswaAktif($kelasId)
+    private const VALID_STATUSES = ['hadir', 'sakit', 'izin', 'alpha'];
+
+    public function getKelasTersedia(User $user, int $tahunAjaranId, int $semesterId): Collection
     {
+        $this->validateAcademicContext($tahunAjaranId, $semesterId);
+        $query = Kelas::query()
+            ->where('tahunajaran_idtahunajaran', $tahunAjaranId);
+
+        if ($user->level === 'guru') {
+            $guru = $this->getGuruAktif($user);
+
+            if (! $guru) {
+                return $query->whereRaw('1 = 0')->get();
+            }
+
+            $query->whereExists(function ($subquery) use ($guru, $semesterId) {
+                $subquery->selectRaw('1')
+                    ->from('jadwalkelas as jk')
+                    ->join('jamhari as jh', 'jh.idjamhari', '=', 'jk.jamhari_idjamhari')
+                    ->whereColumn('jh.kelas_id', 'kelas.idkelas')
+                    ->where('jk.semester_idsemester', $semesterId)
+                    ->where('jk.guru_idguru', $guru->idguru)
+                    ->where('jh.jenis', 'pelajaran');
+            });
+        } elseif ($user->level !== 'superadmin') {
+            abort(403);
+        }
+
+        return $query->orderBy('nama')->get();
+    }
+
+    public function getSiswaAktif(int $kelasId, User $user, int $tahunAjaranId, int $semesterId): Collection
+    {
+        $this->authorizeClass($user, $tahunAjaranId, $semesterId, $kelasId);
+
         return Kelassiswa::query()
             ->where('kelas_idkelas', $kelasId)
             ->where('status', 'aktif')
@@ -28,53 +60,18 @@ class AbsensiHarianService
             ->get();
     }
 
-    /**
-     * Validasi konteks absensi: tahun, semester, kelas, tanggal.
-     *
-     * @param  int  $tahunAjaranId
-     * @param  int  $semesterId
-     * @param  int  $kelasId
-     * @param  string  $tanggal  (Y-m-d)
-     *
-     * @throws \Exception
-     */
-    public function validateContext($tahunAjaranId, $semesterId, $kelasId, $tanggal)
+    public function validateContext(int $tahunAjaranId, int $semesterId, int $kelasId, string $tanggal, User $user): void
     {
-        // Validasi tahun ajaran & semester exist dan related
-        $semester = \App\Models\Semester::findOrFail($semesterId);
-        if ((int) $semester->tahunajaran_idtahunajaran !== (int) $tahunAjaranId) {
-            throw new \Exception('Semester tidak sesuai dengan tahun ajaran.');
-        }
+        $this->validateAcademicContext($tahunAjaranId, $semesterId, $kelasId);
+        $this->validateDate($tanggal);
+        $this->authorizeClass($user, $tahunAjaranId, $semesterId, $kelasId);
 
-        // Validasi kelas exist
-        $kelas = Kelas::findOrFail($kelasId);
-        if ((int) $kelas->tahunajaran_idtahunajaran !== (int) $tahunAjaranId) {
-            throw new \Exception('Kelas tidak sesuai dengan tahun ajaran.');
-        }
-
-        // Validasi tanggal
-        if (! $this->isValidDate($tanggal)) {
-            throw new \Exception('Tanggal tidak valid.');
-        }
-
-        // Jangan izinkan absensi di masa depan
         if (Carbon::parse($tanggal)->isAfter(Carbon::today())) {
-            throw new \Exception('Tidak dapat mencatat absensi untuk hari di masa depan.');
+            throw new DomainException('Tidak dapat mencatat absensi untuk hari di masa depan.');
         }
     }
 
-    /**
-     * Cek apakah guru berwenang untuk kelas tertentu.
-     * Guru berwenang jika:
-     * 1. Superadmin
-     * 2. Wali kelas (kelas.guru_idguru)
-     * 3. Mengampu di kelas (pengampu relation)
-     *
-     * @param  \App\Models\User  $user
-     * @param  int  $kelasId
-     * @return bool
-     */
-    public function checkGuruAccess($user, $kelasId)
+    public function checkGuruAccess(User $user, int $tahunAjaranId, int $semesterId, int $kelasId): bool
     {
         if ($user->level === 'superadmin') {
             return true;
@@ -84,40 +81,29 @@ class AbsensiHarianService
             return false;
         }
 
-        $guru = $user->guru;
+        try {
+            $this->validateAcademicContext($tahunAjaranId, $semesterId, $kelasId);
+        } catch (DomainException $exception) {
+            return false;
+        }
+
+        $guru = $this->getGuruAktif($user);
         if (! $guru) {
             return false;
         }
 
-        $kelas = Kelas::find($kelasId);
-        if (! $kelas) {
-            return false;
-        }
-
-        // Cek wali kelas
-        if ((int) $kelas->guru_idguru === (int) $guru->idguru) {
-            return true;
-        }
-
-        // Cek pengampu (guru mengajar mapel di kelas ini)
-        $isPengampu = Pengampu::query()
-            ->where('kelas_idkelas', $kelasId)
+        return JadwalKelas::query()
+            ->where('semester_idsemester', $semesterId)
             ->where('guru_idguru', $guru->idguru)
+            ->whereHas('jamhari', function ($query) use ($kelasId, $tahunAjaranId) {
+                $query->where('kelas_id', $kelasId)
+                    ->where('jenis', 'pelajaran')
+                    ->whereHas('kelas', fn ($kelasQuery) => $kelasQuery->where('tahunajaran_idtahunajaran', $tahunAjaranId));
+            })
             ->exists();
-
-        return $isPengampu;
     }
 
-    /**
-     * Cek apakah user dapat mengedit absensi (H+1 deadline).
-     * Guru hanya boleh edit untuk hari ini dan kemarin.
-     * Superadmin boleh kapan saja.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\AbsensiHarian  $absensi
-     * @return bool
-     */
-    public function checkEditDeadline($user, $absensi)
+    public function checkEditDeadline(User $user, string $tanggal): bool
     {
         if ($user->level === 'superadmin') {
             return true;
@@ -127,30 +113,18 @@ class AbsensiHarianService
             return false;
         }
 
-        $daysOld = Carbon::today()->diffInDays(Carbon::parse($absensi->tanggal), false);
+        $daysOld = Carbon::today()->diffInDays(Carbon::parse($tanggal), false);
 
-        // Guru bisa edit untuk hari ini (daysOld = 0) dan kemarin (daysOld = -1)
         return $daysOld >= -1 && $daysOld <= 0;
     }
 
-    /**
-     * Cek duplikasi absensi untuk siswa per hari per kelas.
-     *
-     * @param  int  $tahunAjaranId
-     * @param  int  $semesterId
-     * @param  int  $kelasId
-     * @param  string  $tanggal
-     * @param  int  $siswaId
-     * @param  int  $excludeId  (optional, untuk update)
-     * @return bool true jika sudah ada (duplikasi), false jika belum ada
-     */
-    public function checkDuplicate($tahunAjaranId, $semesterId, $kelasId, $tanggal, $siswaId, $excludeId = null)
+    public function checkDuplicate(int $tahunAjaranId, int $semesterId, int $kelasId, string $tanggal, int $siswaId, ?int $excludeId = null): bool
     {
         $query = AbsensiHarian::query()
             ->where('tahunajaran_idtahunajaran', $tahunAjaranId)
             ->where('semester_idsemester', $semesterId)
             ->where('kelas_idkelas', $kelasId)
-            ->where('tanggal', $tanggal)
+            ->whereDate('tanggal', $tanggal)
             ->where('siswa_idsiswa', $siswaId);
 
         if ($excludeId) {
@@ -160,74 +134,67 @@ class AbsensiHarianService
         return $query->exists();
     }
 
-    /**
-     * Simpan absensi massal secara transaksional.
-     *
-     * @param  int  $tahunAjaranId
-     * @param  int  $semesterId
-     * @param  int  $kelasId
-     * @param  string  $tanggal
-     * @param  array  $absensiData  [ siswaId => ['status' => '...', 'catatan' => '...'], ... ]
-     * @param  int  $userId  (diinput_oleh)
-     * @param  \App\Models\User|null  $user  (untuk validasi akses guru)
-     * @return array ['success' => true, 'message' => '...', 'count' => N]
-     *
-     * @throws \Exception
-     */
-    public function saveAbsensiMassal($tahunAjaranId, $semesterId, $kelasId, $tanggal, $absensiData, $userId, $user = null)
-    {
-        return DB::transaction(function () use ($tahunAjaranId, $semesterId, $kelasId, $tanggal, $absensiData, $userId, $user) {
-            // T1 FIX: Validasi akses guru terhadap kelas (harus di service layer, bukan hanya component)
-            if ($user && $user->level === 'guru') {
-                if (! $this->checkGuruAccess($user, $kelasId)) {
-                    throw new \Exception('Anda tidak berwenang mengakses kelas ini.');
-                }
-            }
+    public function saveAbsensiMassal(
+        int $tahunAjaranId,
+        int $semesterId,
+        int $kelasId,
+        string $tanggal,
+        array $absensiData,
+        int $userId,
+        User $user
+    ): array {
+        abort_unless((int) $user->getKey() === $userId, 403);
 
-            // Validasi konteks: tahun ajaran, semester, kelas, tanggal
-            $this->validateContext($tahunAjaranId, $semesterId, $kelasId, $tanggal);
+        return DB::transaction(function () use ($tahunAjaranId, $semesterId, $kelasId, $tanggal, $absensiData, $user) {
+            $this->validateContext($tahunAjaranId, $semesterId, $kelasId, $tanggal, $user);
+            $this->assertEditDeadline($user, $tanggal);
 
-            // T2 FIX: Pre-load daftar siswa aktif di kelas untuk validasi
             $activeSiswaIds = Kelassiswa::query()
                 ->where('kelas_idkelas', $kelasId)
                 ->where('status', 'aktif')
                 ->pluck('siswa_idsiswa')
-                ->toArray();
+                ->map(fn ($id) => (string) $id)
+                ->all();
 
-            // Validasi semua siswaId dalam absensiData adalah siswa aktif di kelas
-            foreach (array_keys($absensiData) as $siswaId) {
-                if (! in_array($siswaId, $activeSiswaIds, true)) {
-                    throw new \Exception("Siswa {$siswaId} tidak terdaftar aktif di kelas ini.");
-                }
-            }
-
-            $validStatuses = ['hadir', 'sakit', 'izin', 'alpha'];
             $count = 0;
-
             foreach ($absensiData as $siswaId => $data) {
+                $siswaId = (string) $siswaId;
+                if (! ctype_digit($siswaId) || ! in_array($siswaId, $activeSiswaIds, true)) {
+                    throw new DomainException("Siswa {$siswaId} tidak terdaftar aktif di kelas ini.");
+                }
+
+                if (! is_array($data)) {
+                    throw new DomainException("Data absensi siswa {$siswaId} tidak valid.");
+                }
+
                 $status = $data['status'] ?? 'hadir';
                 $catatan = $data['catatan'] ?? null;
 
-                // Validasi status
-                if (! in_array($status, $validStatuses, true)) {
-                    throw new \Exception("Status '{$status}' tidak valid untuk siswa {$siswaId}.");
+                if (! is_string($status)) {
+                    throw new DomainException("Status absensi siswa {$siswaId} tidak valid.");
                 }
 
-                // Cek duplikasi
-                if ($this->checkDuplicate($tahunAjaranId, $semesterId, $kelasId, $tanggal, $siswaId)) {
-                    throw new \Exception("Absensi sudah tercatat untuk siswa {$siswaId} pada tanggal {$tanggal}.");
+                if (! in_array($status, self::VALID_STATUSES, true)) {
+                    throw new DomainException("Status '{$status}' tidak valid untuk siswa {$siswaId}.");
                 }
 
-                // Insert record
+                if ($catatan !== null && ! is_string($catatan)) {
+                    throw new DomainException("Catatan absensi siswa {$siswaId} tidak valid.");
+                }
+
+                if ($this->checkDuplicate($tahunAjaranId, $semesterId, $kelasId, $tanggal, (int) $siswaId)) {
+                    throw new DomainException("Absensi sudah tercatat untuk siswa {$siswaId} pada tanggal {$tanggal}.");
+                }
+
                 AbsensiHarian::create([
                     'tahunajaran_idtahunajaran' => $tahunAjaranId,
                     'semester_idsemester' => $semesterId,
                     'kelas_idkelas' => $kelasId,
                     'tanggal' => $tanggal,
-                    'siswa_idsiswa' => $siswaId,
+                    'siswa_idsiswa' => (int) $siswaId,
                     'status' => $status,
                     'catatan' => $catatan,
-                    'diinput_oleh' => $userId,
+                    'diinput_oleh' => $user->getKey(),
                 ]);
 
                 $count++;
@@ -241,71 +208,187 @@ class AbsensiHarianService
         });
     }
 
-    /**
-     * Edit absensi untuk siswa tertentu.
-     *
-     * @param  int  $absensiId
-     * @param  string  $status
-     * @param  string|null  $catatan
-     * @param  int  $userId  (diubah_oleh)
-     * @param  \App\Models\User|null  $user  (untuk validasi akses guru)
-     * @return \App\Models\AbsensiHarian
-     *
-     * @throws \Exception
-     */
-    public function editAbsensi($absensiId, $status, $catatan, $userId, $user = null)
-    {
-        $validStatuses = ['hadir', 'sakit', 'izin', 'alpha'];
+    public function authorizeRecordForEdit(
+        User $user,
+        int $absensiId,
+        int $tahunAjaranId,
+        int $semesterId,
+        int $kelasId,
+        string $tanggal
+    ): AbsensiHarian {
+        $this->validateContext($tahunAjaranId, $semesterId, $kelasId, $tanggal, $user);
 
-        if (! in_array($status, $validStatuses, true)) {
-            throw new \Exception("Status '{$status}' tidak valid.");
-        }
+        $absensi = AbsensiHarian::query()
+            ->where('idabsensi_harian', $absensiId)
+            ->where('tahunajaran_idtahunajaran', $tahunAjaranId)
+            ->where('semester_idsemester', $semesterId)
+            ->where('kelas_idkelas', $kelasId)
+            ->whereDate('tanggal', $tanggal)
+            ->firstOrFail();
 
-        $absensi = AbsensiHarian::findOrFail($absensiId);
-
-        // T1 FIX: Validasi akses guru terhadap kelas (harus di service layer)
-        if ($user && $user->level === 'guru') {
-            if (! $this->checkGuruAccess($user, $absensi->kelas_idkelas)) {
-                throw new \Exception('Anda tidak berwenang mengakses kelas ini.');
-            }
-        }
-
-        $absensi->update([
-            'status' => $status,
-            'catatan' => $catatan,
-            'diubah_oleh' => $userId,
-        ]);
+        $this->assertEditDeadline($user, $tanggal);
+        $this->assertActivePlacementForGuru($user, $absensi->kelas_idkelas, $absensi->siswa_idsiswa);
 
         return $absensi;
     }
 
-    /**
-     * Helper: validasi format date Y-m-d
-     */
-    private function isValidDate($date)
-    {
-        try {
-            Carbon::createFromFormat('Y-m-d', $date);
+    public function editAbsensi(
+        int $absensiId,
+        mixed $status,
+        mixed $catatan,
+        int $userId,
+        User $user,
+        int $tahunAjaranId,
+        int $semesterId,
+        int $kelasId,
+        string $tanggal
+    ): AbsensiHarian {
+        abort_unless((int) $user->getKey() === $userId, 403);
 
-            return true;
-        } catch (\Exception $e) {
-            return false;
+        if (! is_string($status)) {
+            throw new DomainException('Status absensi tidak valid.');
         }
+
+        if (! in_array($status, self::VALID_STATUSES, true)) {
+            throw new DomainException("Status '{$status}' tidak valid.");
+        }
+
+        if ($catatan !== null && ! is_string($catatan)) {
+            throw new DomainException('Catatan absensi tidak valid.');
+        }
+
+        return DB::transaction(function () use (
+            $absensiId,
+            $status,
+            $catatan,
+            $user,
+            $tahunAjaranId,
+            $semesterId,
+            $kelasId,
+            $tanggal
+        ) {
+            $absensi = AbsensiHarian::query()
+                ->where('idabsensi_harian', $absensiId)
+                ->where('tahunajaran_idtahunajaran', $tahunAjaranId)
+                ->where('semester_idsemester', $semesterId)
+                ->where('kelas_idkelas', $kelasId)
+                ->whereDate('tanggal', $tanggal)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $this->validateContext(
+                $tahunAjaranId,
+                $semesterId,
+                $kelasId,
+                $tanggal,
+                $user
+            );
+            $this->assertEditDeadline($user, $tanggal);
+            $this->assertActivePlacementForGuru($user, (int) $absensi->kelas_idkelas, (int) $absensi->siswa_idsiswa);
+
+            $absensi->update([
+                'status' => $status,
+                'catatan' => $catatan,
+                'diubah_oleh' => $user->getKey(),
+            ]);
+
+            return $absensi->refresh();
+        });
     }
 
-    /**
-     * Retrieve absensi untuk kelas & tanggal tertentu dengan relasi.
-     *
-     * @param  int  $kelasId
-     * @param  string  $tanggal
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAbsensiKelasHari($kelasId, $tanggal)
-    {
-        return AbsensiHarian::forKelas($kelasId)
-            ->forTanggal($tanggal)
+    public function getAbsensiKelasHari(
+        int $tahunAjaranId,
+        int $semesterId,
+        int $kelasId,
+        string $tanggal,
+        User $user
+    ): Collection {
+        $this->validateContext($tahunAjaranId, $semesterId, $kelasId, $tanggal, $user);
+
+        return AbsensiHarian::query()
+            ->where('tahunajaran_idtahunajaran', $tahunAjaranId)
+            ->where('semester_idsemester', $semesterId)
+            ->where('kelas_idkelas', $kelasId)
+            ->whereDate('tanggal', $tanggal)
             ->with(['siswa', 'userInput', 'userUbah'])
             ->orderBy('siswa_idsiswa')
             ->get();
+    }
+
+    private function validateAcademicContext(int $tahunAjaranId, int $semesterId, ?int $kelasId = null): void
+    {
+        if ($tahunAjaranId < 1 || $semesterId < 1 || ($kelasId !== null && $kelasId < 1)) {
+            throw new DomainException('Konteks tahun ajaran, semester, atau kelas tidak valid.');
+        }
+
+        $tahunAjaran = Tahunajaran::query()->findOrFail($tahunAjaranId);
+        $semester = Semester::query()->findOrFail($semesterId);
+
+        if ((int) $semester->tahunajaran_idtahunajaran !== (int) $tahunAjaran->idtahunajaran) {
+            throw new DomainException('Semester tidak sesuai dengan tahun ajaran.');
+        }
+
+        if ($kelasId !== null) {
+            $kelas = Kelas::query()->findOrFail($kelasId);
+            if ((int) $kelas->tahunajaran_idtahunajaran !== (int) $tahunAjaran->idtahunajaran) {
+                throw new DomainException('Kelas tidak sesuai dengan tahun ajaran.');
+            }
+        }
+    }
+
+    private function validateDate(string $tanggal): void
+    {
+        try {
+            $parsed = Carbon::createFromFormat('!Y-m-d', $tanggal);
+        } catch (\Throwable $exception) {
+            throw new DomainException('Tanggal tidak valid.', previous: $exception);
+        }
+
+        if (! $parsed || $parsed->format('Y-m-d') !== $tanggal) {
+            throw new DomainException('Tanggal tidak valid.');
+        }
+    }
+
+    private function authorizeClass(User $user, int $tahunAjaranId, int $semesterId, int $kelasId): void
+    {
+        if ($user->level === 'superadmin') {
+            return;
+        }
+
+        abort_unless(
+            $user->level === 'guru' && $this->checkGuruAccess($user, $tahunAjaranId, $semesterId, $kelasId),
+            403
+        );
+    }
+
+    private function getGuruAktif(User $user): ?Guru
+    {
+        return $user->guru()
+            ->where('status', 'aktif')
+            ->first();
+    }
+
+    private function assertEditDeadline(User $user, string $tanggal): void
+    {
+        if (! $this->checkEditDeadline($user, $tanggal)) {
+            throw new DomainException('Guru hanya dapat mencatat atau mengubah absensi untuk hari ini dan kemarin (H+1 deadline).');
+        }
+    }
+
+    private function assertActivePlacementForGuru(User $user, int $kelasId, int $siswaId): void
+    {
+        if ($user->level !== 'guru') {
+            return;
+        }
+
+        $isActive = Kelassiswa::query()
+            ->where('kelas_idkelas', $kelasId)
+            ->where('siswa_idsiswa', $siswaId)
+            ->where('status', 'aktif')
+            ->exists();
+
+        if (! $isActive) {
+            throw new DomainException("Siswa {$siswaId} tidak lagi memiliki penempatan aktif di kelas ini.");
+        }
     }
 }

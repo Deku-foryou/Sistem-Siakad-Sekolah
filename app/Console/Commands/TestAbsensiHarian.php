@@ -45,6 +45,10 @@ class TestAbsensiHarian extends Command
             // 3. Verify service
             $this->info('3. Verifying AbsensiHarianService...');
             $service = app(AbsensiHarianService::class);
+            $superadmin = User::where('level', 'superadmin')->first();
+            if (! $superadmin) {
+                throw new \Exception('Missing superadmin user for service verification');
+            }
             $this->line('   ✓ Service instantiated');
 
             // 4. Get test data
@@ -65,19 +69,34 @@ class TestAbsensiHarian extends Command
 
             // 5. Test getSiswaAktif
             $this->info('5. Testing getSiswaAktif()...');
-            $siswaList = $service->getSiswaAktif($kelas->idkelas);
+            $siswaList = $service->getSiswaAktif(
+                $kelas->idkelas,
+                $superadmin,
+                $tahunAjaran->idtahunajaran,
+                $semester->idsemester
+            );
             $this->line("   ✓ Retrieved {$siswaList->count()} active students");
 
             // 6. Test validateContext
             $this->info('6. Testing validateContext()...');
             $tanggalValid = Carbon::today()->format('Y-m-d');
-            $service->validateContext($tahunAjaran->idtahunajaran, $semester->idsemester, $kelas->idkelas, $tanggalValid);
+            $service->validateContext(
+                $tahunAjaran->idtahunajaran,
+                $semester->idsemester,
+                $kelas->idkelas,
+                $tanggalValid,
+                $superadmin
+            );
             $this->line('   ✓ Context validation passed');
 
             // 7. Test checkGuruAccess
             $this->info('7. Testing checkGuruAccess() for superadmin...');
-            $superadmin = User::where('level', 'superadmin')->first();
-            if ($service->checkGuruAccess($superadmin, $kelas->idkelas)) {
+            if ($service->checkGuruAccess(
+                $superadmin,
+                $tahunAjaran->idtahunajaran,
+                $semester->idsemester,
+                $kelas->idkelas
+            )) {
                 $this->line('   ✓ Superadmin has access');
             } else {
                 throw new \Exception('Superadmin should have access');
@@ -110,7 +129,8 @@ class TestAbsensiHarian extends Command
                 $kelas->idkelas,
                 $tanggalValid,
                 $absensiData,
-                $superadmin->id
+                $superadmin->id,
+                $superadmin
             );
 
             $this->line("   ✓ Saved {$result['count']} records");
@@ -134,14 +154,25 @@ class TestAbsensiHarian extends Command
                     $firstAbsensi->idabsensi_harian,
                     'sakit',
                     'Edited for test',
-                    $superadmin->id
+                    $superadmin->id,
+                    $superadmin,
+                    $tahunAjaran->idtahunajaran,
+                    $semester->idsemester,
+                    $kelas->idkelas,
+                    $tanggalValid
                 );
                 $this->line("   ✓ Updated record: {$updated->status}");
             }
 
             // 12. Test getAbsensiKelasHari
             $this->info('12. Testing getAbsensiKelasHari()...');
-            $absensiRecords = $service->getAbsensiKelasHari($kelas->idkelas, $tanggalValid);
+            $absensiRecords = $service->getAbsensiKelasHari(
+                $tahunAjaran->idtahunajaran,
+                $semester->idsemester,
+                $kelas->idkelas,
+                $tanggalValid,
+                $superadmin
+            );
             $this->line("   ✓ Retrieved {$absensiRecords->count()} records for kelas & hari");
 
             // 13. Verify menu

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\JadwalKelas;
+use App\Services\JadwalSiswaService;
 use App\Services\KonteksAkademikService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -35,11 +36,11 @@ class JadwalGuruComponent extends Component
                     $jadwalPerHari = collect();
                 } else {
                     $query->where('guru_idguru', $guru->idguru);
-                    $jadwalPerHari = $this->kelompokkanPerHari($query->get());
+                    $jadwalPerHari = app(JadwalSiswaService::class)->perHari($query->get());
                 }
             } else {
                 // Superadmin melihat seluruh jadwal.
-                $jadwalPerHari = $this->kelompokkanPerHari($query->get());
+                $jadwalPerHari = app(JadwalSiswaService::class)->perHari($query->get());
             }
         }
 
@@ -50,18 +51,5 @@ class JadwalGuruComponent extends Component
             'jadwalPerHari' => $jadwalPerHari,
             'namaHari' => \App\Support\Hari::NAMA,
         ]);
-    }
-
-    private function kelompokkanPerHari($jadwal)
-    {
-        // Urutkan berdasarkan hari, lalu jam_ke, lalu jam mulai.
-        return $jadwal
-            ->sortBy(fn ($j) => [
-                (int) $j->jamhari->hari,
-                (int) ($j->jamhari->jam_ke ?? 999),
-                (string) $j->jamhari->mulai,
-            ])
-            ->groupBy(fn ($j) => (int) $j->jamhari->hari)
-            ->sortKeys();
     }
 }

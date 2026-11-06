@@ -24,6 +24,9 @@ class BerandaUrl
             'guru' => '/berandaguru',
             'siswa' => '/berandasiswa',
             'walikelas' => '/setting',  // Level walikelas: redirect ke profil (not implemented yet)
+            // Portal wali belum diimplementasikan; per desain, tujuan wali adalah halaman status /wali-beranda.
+            // Route tersebut belum ada — lihat LAPORAN_IMPLEMENTASI_2B_7_3C.md.
+            'wali' => '/wali-beranda',
             default => abort(403, 'Unknown user level: '.$user->level),
         };
     }

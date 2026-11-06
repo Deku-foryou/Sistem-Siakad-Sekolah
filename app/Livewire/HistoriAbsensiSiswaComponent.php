@@ -6,6 +6,7 @@ use App\Models\AbsensiHarian;
 use App\Models\AbsensiPerjam;
 use App\Services\KonteksAkademikService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -125,7 +126,8 @@ class HistoriAbsensiSiswaComponent extends Component
         $ringkasanHarian = ['total' => 0, 'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
         $absensiPerJam = null;
         $ringkasanPerJam = ['total' => 0, 'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
-
+        $rekapHarian = ['total' => 0, 'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
+        $rekapPerJam = ['total' => 0, 'hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
         if ($siswa) {
             $this->guardTanggalDariHarian();
             $this->guardTanggalSampaiHarian();
@@ -135,7 +137,7 @@ class HistoriAbsensiSiswaComponent extends Component
             // ---- Tab Harian (absensi_harian) ----
             $baseHarian = $this->queryHarian($siswa->idsiswa, $konteks);
             $ringkasanHarian = $this->ringkasan($baseHarian, 'absensi_harian.status');
-            $absensiHarian = $baseHarian
+            $absensiHarian = (clone $baseHarian)
                 ->with(['kelas:idkelas,nama'])
                 ->orderByDesc('absensi_harian.tanggal')
                 ->orderByDesc('absensi_harian.idabsensi_harian')
@@ -144,7 +146,7 @@ class HistoriAbsensiSiswaComponent extends Component
             // ---- Tab Per Jam (absensi_perjam + snapshot jadwal_pertemuan) ----
             $basePerJam = $this->queryPerJam($siswa->idsiswa);
             $ringkasanPerJam = $this->ringkasan($basePerJam, 'absensi_perjam.status');
-            $absensiPerJam = $basePerJam
+            $absensiPerJam = (clone $basePerJam)
                 ->select(
                     'absensi_perjam.*',
                     'jp.tanggal',
@@ -161,7 +163,14 @@ class HistoriAbsensiSiswaComponent extends Component
                 ->orderByDesc('jp.jam_ke')
                 ->orderByDesc('jp.waktu_mulai')
                 ->paginate($this->perPage, ['*'], 'perJam');
+
+            // ---- Rekap semester aktif: selalu tanpa filter tanggal/status ----
+            $rekapHarian = $this->ringkasan($this->queryHarian($siswa->idsiswa, $konteks, true), 'absensi_harian.status');
+            $rekapPerJam = $this->ringkasan($this->queryPerJam($siswa->idsiswa, true), 'absensi_perjam.status');
         }
+
+        $persenHarian = $this->persen((int) $rekapHarian['hadir'], (int) $rekapHarian['total']);
+        $persenPerJam = $this->persen((int) $rekapPerJam['hadir'], (int) $rekapPerJam['total']);
 
         return view('livewire.histori-absensi-siswa-component', [
             'user' => $user,
@@ -179,17 +188,152 @@ class HistoriAbsensiSiswaComponent extends Component
             'tanggalSampai' => $this->tanggalSampai,
             'status' => $this->status,
             'perPage' => $this->perPage,
+            'konteks' => $konteks,
+            'persenHarian' => $persenHarian,
+            'persenPerJam' => $persenPerJam,
+            'rekapHarian' => $rekapHarian,
+            'rekapPerJam' => $rekapPerJam,
         ]);
     }
 
     /**
-     * Query dasar histori harian: hanya milik siswa login, semester & tahun ajaran aktif.
+     * Unduh rekap absensi (CSV, dipisah tanda titik koma, UTF-8 BOM).
+     * Hanya membaca data — tidak mengubah apa pun.
      */
-    private function queryHarian(int $siswaId, $konteks)
+    public function unduhRekap()
     {
-        $query = AbsensiHarian::query()
-            ->forSiswa($siswaId)
-            ->with(['kelas:idkelas,nama']);
+        abort_unless(auth()->user()?->level === 'siswa', 403);
+
+        $user = Auth::user();
+        $siswa = $user->siswa()->first();
+        abort_if(! $siswa, 404);
+
+        $konteks = KonteksAkademikService::ambil();
+
+        // Ekspor selalu mencakup rekap semester & tahun ajaran aktif penuh,
+        // tidak terpengaruh filter tanggal/status yang sedang tampil di halaman.
+        $baseHarian = AbsensiHarian::query()->forSiswa($siswa->idsiswa);
+        if ($konteks->valid() && $konteks->semester) {
+            $baseHarian->forSemester($konteks->semester->idsemester);
+        }
+        if ($konteks->valid() && $konteks->tahunAjaran) {
+            $baseHarian->forTahunajaran($konteks->tahunAjaran->idtahunajaran);
+        }
+        $basePerJam = $this->queryPerJam($siswa->idsiswa, true);
+
+        $ringkasanHarian = $this->ringkasan($baseHarian, 'absensi_harian.status');
+        $ringkasanPerJam = $this->ringkasan($basePerJam, 'absensi_perjam.status');
+        $daftarHarian = (clone $baseHarian)
+            ->with(['kelas:idkelas,nama'])
+            ->orderBy('absensi_harian.tanggal')
+            ->orderBy('absensi_harian.idabsensi_harian')
+            ->get();
+        $daftarPerJam = (clone $basePerJam)
+            ->select(
+                'absensi_perjam.status',
+                'absensi_perjam.keterangan',
+                'jp.tanggal',
+                'jp.jam_ke',
+                'jp.waktu_mulai',
+                'jp.waktu_selesai',
+                'k.nama as kelas_nama',
+                'm.nama as mapel_nama',
+                'g.nama as guru_nama'
+            )
+            ->orderBy('jp.tanggal')
+            ->orderBy('jp.jam_ke')
+            ->get();
+
+        $filename = 'rekap-absensi-'.Str::slug((string) $siswa->nama).'-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($siswa, $konteks, $daftarHarian, $daftarPerJam, $ringkasanHarian, $ringkasanPerJam) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // BOM agar dikenali Excel
+            $line = function (array $fields) use ($out) {
+                // Cegah CSV formula injection (=, +, -, @, tab, CR di awal sel).
+                $fields = array_map(function ($value) {
+                    $string = (string) $value;
+
+                    return preg_match('/^[=+\-@\t\r]/', $string) === 1 ? "'".$string : $string;
+                }, $fields);
+
+                fputcsv($out, $fields, ';');
+            };
+
+            $line(['Rekap Absensi Siswa']);
+            $line(['Nama', $siswa->nama]);
+            $line(['NIS', $siswa->nis ?: '-']);
+            $line(['NISN', $siswa->nisn ?: '-']);
+            $line(['Tahun Ajaran', $konteks->tahunAjaranNama() ?? '-']);
+            $line(['Semester', $konteks->semesterNama() ?? '-']);
+            $line([]);
+
+            $line(['REKAP ABSENSI HARIAN (SEMESTER AKTIF)']);
+            $line(['Hadir', $ringkasanHarian['hadir']]);
+            $line(['Sakit', $ringkasanHarian['sakit']]);
+            $line(['Izin', $ringkasanHarian['izin']]);
+            $line(['Alpha', $ringkasanHarian['alpha']]);
+            $line(['Total', $ringkasanHarian['total']]);
+            $line(['Persentase Kehadiran', $this->persen((int) $ringkasanHarian['hadir'], (int) $ringkasanHarian['total'])]);
+            $line([]);
+
+            $line(['REKAP ABSENSI PER JAM (RIWAYAT)']);
+            $line(['Hadir', $ringkasanPerJam['hadir']]);
+            $line(['Sakit', $ringkasanPerJam['sakit']]);
+            $line(['Izin', $ringkasanPerJam['izin']]);
+            $line(['Alpha', $ringkasanPerJam['alpha']]);
+            $line(['Total', $ringkasanPerJam['total']]);
+            $line(['Persentase Kehadiran', $this->persen((int) $ringkasanPerJam['hadir'], (int) $ringkasanPerJam['total'])]);
+            $line([]);
+
+            $line(['DAFTAR ABSENSI HARIAN']);
+            $line(['Tanggal', 'Kelas', 'Status', 'Catatan']);
+            foreach ($daftarHarian as $row) {
+                $line([
+                    $row->tanggal?->format('d/m/Y'),
+                    $row->kelas?->nama ?? '-',
+                    strtoupper((string) $row->status),
+                    $row->catatan ?: '',
+                ]);
+            }
+            $line([]);
+
+            $line(['DAFTAR ABSENSI PER JAM']);
+            $line(['Tanggal', 'Jam Ke', 'Kelas', 'Mapel', 'Guru', 'Status', 'Keterangan']);
+            foreach ($daftarPerJam as $row) {
+                $tanggal = isset($row->tanggal) ? substr((string) $row->tanggal, 0, 10) : '-';
+                $line([
+                    $tanggal,
+                    $row->jam_ke ?? '-',
+                    $row->kelas_nama ?? '-',
+                    $row->mapel_nama ?? '-',
+                    $row->guru_nama ?? '-',
+                    strtoupper((string) $row->status),
+                    $row->keterangan ?: '',
+                ]);
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    private function persen(int $hadir, int $total): string
+    {
+        $persen = $total > 0 ? round($hadir / $total * 100, 1) : 0.0;
+
+        return number_format($persen, 1, ',', '').'%';
+    }
+
+    /**
+     * Query dasar histori harian: hanya milik siswa login, semester & tahun ajaran aktif.
+     *
+     * $abaikanFilter = true untuk rekap semester penuh (tanpa filter tanggal/status UI).
+     */
+    private function queryHarian(int $siswaId, $konteks, bool $abaikanFilter = false)
+    {
+        $query = AbsensiHarian::query()->forSiswa($siswaId);
 
         if ($konteks->valid() && $konteks->semester) {
             $query->forSemester($konteks->semester->idsemester);
@@ -197,6 +341,10 @@ class HistoriAbsensiSiswaComponent extends Component
 
         if ($konteks->valid() && $konteks->tahunAjaran) {
             $query->forTahunajaran($konteks->tahunAjaran->idtahunajaran);
+        }
+
+        if ($abaikanFilter) {
+            return $query;
         }
 
         if ($this->statusHarian !== '') {
@@ -217,8 +365,10 @@ class HistoriAbsensiSiswaComponent extends Component
     /**
      * Query dasar histori per jam: hanya milik siswa login.
      * Pertahankan hasil dan keamanan query sebelumnya (join snapshot jadwal_pertemuan).
+     *
+     * $abaikanFilter = true untuk ekspor rekap (selalu semester/periode penuh).
      */
-    private function queryPerJam(int $siswaId)
+    private function queryPerJam(int $siswaId, bool $abaikanFilter = false)
     {
         $query = AbsensiPerjam::query()
             ->join('jadwal_pertemuan as jp', 'jp.idjadwal_pertemuan', '=', 'absensi_perjam.jadwal_pertemuan_idjadwal_pertemuan')
@@ -226,6 +376,10 @@ class HistoriAbsensiSiswaComponent extends Component
             ->join('mapel as m', 'm.idmapel', '=', 'jp.mapel_idmapel')
             ->join('guru as g', 'g.idguru', '=', 'jp.guru_idguru')
             ->where('absensi_perjam.siswa_idsiswa', $siswaId);
+
+        if ($abaikanFilter) {
+            return $query;
+        }
 
         if ($this->status !== '') {
             $query->where('absensi_perjam.status', $this->status);

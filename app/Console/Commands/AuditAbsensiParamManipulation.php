@@ -39,7 +39,7 @@ class AuditAbsensiParamManipulation extends Command
 
             // TEST 1: Guru coba akses kelas yang bukan kewenangannya
             $this->line('1. TEST: Guru akses kelas di luar kewenangannya');
-            if (!$guru || !$guru->guru) {
+            if (! $guru || ! $guru->guru) {
                 $this->line('   ℹ️ Guru user tidak tersedia');
             } else {
                 $guruId = $guru->guru->idguru;
@@ -51,7 +51,12 @@ class AuditAbsensiParamManipulation extends Command
 
                 if ($kelasLain) {
                     $this->line("   Guru mencoba akses kelas: {$kelasLain->namakelas}");
-                    $hasAccess = $service->checkGuruAccess($guru, $kelasLain->idkelas);
+                    $hasAccess = $service->checkGuruAccess(
+                        $guru,
+                        $tahunAjaran->idtahunajaran,
+                        $semester->idsemester,
+                        $kelasLain->idkelas
+                    );
                     $this->line('   Result: '.($hasAccess ? 'AKSES DIBERIKAN ⚠️' : 'AKSES DITOLAK ✓'));
 
                     if ($hasAccess) {
@@ -85,7 +90,7 @@ class AuditAbsensiParamManipulation extends Command
                             $siswaLain->siswa->idsiswa => [
                                 'status' => 'hadir',
                                 'catatan' => 'Manipulasi siswa',
-                            ]
+                            ],
                         ];
 
                         $result = $service->saveAbsensiMassal(
@@ -94,10 +99,11 @@ class AuditAbsensiParamManipulation extends Command
                             $kelas->idkelas,
                             $tanggalHari,
                             $absensiData,
-                            $superadmin->id
+                            $superadmin->id,
+                            $superadmin
                         );
 
-                        $this->error("   MASALAH: Absensi siswa dari kelas lain diterima!");
+                        $this->error('   MASALAH: Absensi siswa dari kelas lain diterima!');
                         $this->line("   Result: {$result['message']}");
 
                         // Check FK constraint
@@ -128,7 +134,7 @@ class AuditAbsensiParamManipulation extends Command
                     ->first();
 
                 if ($kelasLain) {
-                    $this->line("   Guru coba simpan absensi untuk kelas bukan kewenangannya");
+                    $this->line('   Guru coba simpan absensi untuk kelas bukan kewenangannya');
                     $this->line("   Kelas: {$kelasLain->namakelas}");
 
                     $siswaKelasLain = Kelassiswa::where('kelas_idkelas', $kelasLain->idkelas)
@@ -140,7 +146,7 @@ class AuditAbsensiParamManipulation extends Command
                             $absensiData = [
                                 $siswaKelasLain->siswa->idsiswa => [
                                     'status' => 'hadir',
-                                ]
+                                ],
                             ];
 
                             $result = $service->saveAbsensiMassal(
@@ -149,11 +155,12 @@ class AuditAbsensiParamManipulation extends Command
                                 $kelasLain->idkelas,
                                 $tanggalHari,
                                 $absensiData,
-                                $guru->id
+                                $guru->id,
+                                $guru
                             );
 
-                            $this->error("   MASALAH: Guru dapat submit absensi kelas bukan kewenangannya!");
-                            $this->line("   (Service tidak cek akses guru di saveAbsensiMassal)");
+                            $this->error('   MASALAH: Guru dapat submit absensi kelas bukan kewenangannya!');
+                            $this->line('   (Service tidak cek akses guru di saveAbsensiMassal)');
                         } catch (\Exception $e) {
                             $this->line("   ✓ Ditolak: {$e->getMessage()}");
                         }
@@ -166,12 +173,13 @@ class AuditAbsensiParamManipulation extends Command
             $this->line('4. TEST: Negative/Zero ID injection');
 
             try {
-                $this->line("   Coba validate context dengan kelasId = -1...");
+                $this->line('   Coba validate context dengan kelasId = -1...');
                 $service->validateContext(
                     $tahunAjaran->idtahunajaran,
                     $semester->idsemester,
                     -1,
-                    $tanggalHari
+                    $tanggalHari,
+                    $superadmin
                 );
                 $this->error('   MASALAH: Negative ID diterima!');
             } catch (\Exception $e) {
@@ -188,7 +196,8 @@ class AuditAbsensiParamManipulation extends Command
                     $tahunAjaran->idtahunajaran,
                     $semester->idsemester,
                     'abc',
-                    $tanggalHari
+                    $tanggalHari,
+                    $superadmin
                 );
                 $this->error('   MASALAH: String ID diterima!');
             } catch (\Exception $e) {
@@ -207,7 +216,7 @@ class AuditAbsensiParamManipulation extends Command
                         $siswaAktif->siswa->idsiswa => [
                             'status' => 'hadir',
                             'catatan' => 'Audit test',
-                        ]
+                        ],
                     ];
 
                     $result = $service->saveAbsensiMassal(
@@ -216,7 +225,8 @@ class AuditAbsensiParamManipulation extends Command
                         $kelas->idkelas,
                         $tanggalAudit,
                         $absensiData,
-                        $superadmin->id
+                        $superadmin->id,
+                        $superadmin
                     );
 
                     $record = AbsensiHarian::where('siswa_idsiswa', $siswaAktif->siswa->idsiswa)
@@ -231,7 +241,17 @@ class AuditAbsensiParamManipulation extends Command
                     }
 
                     // Test edit
-                    $service->editAbsensi($record->idabsensi_harian, 'sakit', 'Edited', $guru->id);
+                    $service->editAbsensi(
+                        $record->idabsensi_harian,
+                        'sakit',
+                        'Edited',
+                        $guru->id,
+                        $guru,
+                        $record->tahunajaran_idtahunajaran,
+                        $record->semester_idsemester,
+                        $record->kelas_idkelas,
+                        $record->tanggal
+                    );
                     $record->refresh();
 
                     if ($record->diubah_oleh == $guru->id) {
@@ -257,7 +277,7 @@ class AuditAbsensiParamManipulation extends Command
                         $siswaAktif->siswa->idsiswa => [
                             'status' => 'hadir',
                             'catatan' => $sqlPayload,
-                        ]
+                        ],
                     ];
 
                     $result = $service->saveAbsensiMassal(
@@ -266,7 +286,8 @@ class AuditAbsensiParamManipulation extends Command
                         $kelas->idkelas,
                         $tanggalInjection,
                         $absensiData,
-                        $superadmin->id
+                        $superadmin->id,
+                        $superadmin
                     );
 
                     // Check table still exists
