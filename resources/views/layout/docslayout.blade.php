@@ -7,9 +7,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
-    <meta name="author" content="Łukasz Holeczek">
-    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
+    <meta name="description" content="SIAKAD Template - Dokumentasi Aplikasi Sistem Informasi Akademik">
+    <meta name="author" content="SIAKAD">
+    <meta name="keyword" content="SIAKAD,Template,Dokumentasi,Sistem Informasi Akademik,Sekolah">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <title>Dokumentasi Aplikasi | @yield('title')</title>
 
     @include('assets.style')

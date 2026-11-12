@@ -26,8 +26,8 @@ class JadwalSiswaMenuSeeder extends Seeder
 
         $menus = [];
         foreach ([
-            ['label' => 'Jadwal Pelajaran', 'url' => 'jadwalsiswa', 'icon' => 'fa-solid fa-calendar-week', 'urut' => 10],
-            ['label' => 'Histori Absensi', 'url' => 'absensi-siswa', 'icon' => 'fa-solid fa-clipboard-list', 'urut' => 11],
+            ['label' => 'Jadwal Siswa', 'url' => 'jadwalsiswa', 'icon' => 'fa-solid fa-calendar-week', 'urut' => 12],
+            ['label' => 'Histori Absensi', 'url' => 'absensi-siswa', 'icon' => 'fa-solid fa-clipboard-list', 'urut' => 13],
         ] as $definition) {
             $menu = Appmenunew::unguarded(fn () => Appmenunew::firstOrCreate(
                 ['url' => $definition['url']],
@@ -38,6 +38,14 @@ class JadwalSiswaMenuSeeder extends Seeder
                     'appmenucat_idappmenucat' => $kategori->idappmenucat,
                 ]
             ));
+
+            // Selaraskan nilai kanonik pada menu yang sudah ada.
+            Appmenunew::unguarded(fn () => $menu->update([
+                'appmenunew' => $definition['label'],
+                'icon' => $definition['icon'],
+                'urut' => $definition['urut'],
+                'appmenucat_idappmenucat' => $kategori->idappmenucat,
+            ]));
 
             $menus[$definition['url']] = $menu;
         }

@@ -64,4 +64,39 @@ class Semester extends Model
     {
         return $this->hasMany(JadwalKelas::class, 'semester_idsemester', 'idsemester');
     }
+
+    public function penugasanMengajar()
+    {
+        return $this->hasMany(PenugasanMengajar::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function komponenNilai()
+    {
+        return $this->hasMany(KomponenNilai::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function kktpMapel()
+    {
+        return $this->hasMany(KktpMapel::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function nilaiSiswa()
+    {
+        return $this->hasMany(NilaiSiswa::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function nilaiAkhir()
+    {
+        return $this->hasMany(NilaiAkhir::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function finalisasiRapor()
+    {
+        return $this->hasMany(FinalisasiRapor::class, 'semester_idsemester', 'idsemester');
+    }
+
+    public function catatanRapor()
+    {
+        return $this->hasMany(CatatanRapor::class, 'semester_idsemester', 'idsemester');
+    }
 }

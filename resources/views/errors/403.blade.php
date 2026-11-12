@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tidak Mempunyai Akses</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 </head>
 <!-- Style 1-->
 <link rel="stylesheet" href="{{ asset('css/main.css') }}">
@@ -26,7 +27,8 @@
 
 
                         <a class="btn bsb-btn-5xl text-white fw-medium rounded-pill px-5 fs-6 m-0"
-                            style="background: #359387" href="#!" role="button" onclick="goBack()">Kembali ke
+                            style="background: #359387" role="button"
+                            href="{{ auth()->check() ? \App\Support\BerandaUrl::untuk(auth()->user()) : '/login' }}">Kembali ke
                             Halaman
                             Awal</a>
                     </div>
@@ -35,11 +37,5 @@
         </div>
     </section>
 </body>
-
-<script>
-    function goBack() {
-        window.history.back();
-    }
-</script>
 
 </html>

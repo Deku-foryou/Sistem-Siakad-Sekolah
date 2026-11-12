@@ -103,7 +103,7 @@
 
             <!-- Navbar -->
             <!-- Your existing header content goes here -->
-            <a href="/dashboard" class="btn btn-outline-secondary text-black mb-3"><i
+            <a href="{{ \App\Support\BerandaUrl::untuk(auth()->user()) }}" class="btn btn-outline-secondary text-black mb-3"><i
                     class="fa-solid fa-arrow-left me-2"></i>Kembali ke Dashboard</a>
             <!-- Navbar -->
 
@@ -116,7 +116,7 @@
                     <i class="fa-solid fa-house-fire me-2"></i>Dokumentasi</a>
             </li>
 
-            @if (auth()->user()->level == 'superadmin')
+            @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                 <li class="nav-item"><a class="nav-link " href="/docscat">
                         <i class="fa-solid fa-folder-tree me-2"></i> Kategori Dokumentasi</a>
                 </li>

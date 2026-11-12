@@ -1,49 +1,54 @@
-<div class="container-fluid p-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+@section('title', 'Absensi Per Jam')
+
+<div class="container-fluid px-3 px-lg-4 py-3">
+    @include('assets.akademik')
+
+    {{-- Page header --}}
+    <div class="sa-head">
         <div>
-            <h4 class="mb-0 text-primary">Absensi Per Jam</h4>
-            <small class="text-muted">Kelola absensi siswa per pertemuan jadwal &mdash; {{ $guruNama ?? 'Guru' }}</small>
+            <h1 class="sa-title"><i class="fa-solid fa-user-clock me-2 text-success" aria-hidden="true"></i>Absensi Per Jam</h1>
+            <p class="sa-sub">Kelola kehadiran siswa per pertemuan jadwal &mdash; {{ $guruNama ?? 'Guru' }}</p>
         </div>
     </div>
 
-    <!-- Alert Messages -->
+    {{-- Feedback --}}
     @if ($errorMessage)
-        <div class="alert alert-danger py-2 d-flex justify-content-between align-items-center" role="alert">
-            <span>{{ $errorMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup"></button>
+        <div class="alert alert-danger d-flex justify-content-between align-items-center gap-2 py-2" role="alert">
+            <span><i class="fa-solid fa-circle-exclamation me-2" aria-hidden="true"></i>{{ $errorMessage }}</span>
+            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup pesan error"></button>
         </div>
     @endif
     @if ($successMessage)
-        <div class="alert alert-success py-2 d-flex justify-content-between align-items-center" role="alert">
-            <span>{{ $successMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup"></button>
+        <div class="alert alert-success d-flex justify-content-between align-items-center gap-2 py-2" role="status">
+            <span><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{{ $successMessage }}</span>
+            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup pesan sukses"></button>
         </div>
     @endif
 
-    <!-- Filter tanggal -->
-    <div class="card card-body shadow-sm mb-3">
+    {{-- Filter tanggal --}}
+    <div class="sa-card sa-filter mb-3">
         <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label for="tanggal-pertemuan" class="form-label mb-1 small fw-semibold">Tanggal pertemuan</label>
-                <input type="date" id="tanggal-pertemuan" wire:model.live="tanggal" class="form-control form-control-sm">
+            <div class="col-sm-6 col-md-4">
+                <label for="tanggal-pertemuan" class="form-label">Tanggal pertemuan</label>
+                <input type="date" id="tanggal-pertemuan" wire:model.live="tanggal" class="form-control">
             </div>
-            <div class="col-md-8">
-                <div class="form-text">Pertemuan pada tanggal terpilih akan digenerate otomatis dari jadwal aktif bila belum tersedia.</div>
+            <div class="col-sm-6 col-md-8">
+                <p class="sa-hint mb-0"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Pertemuan pada tanggal terpilih digenerate otomatis dari jadwal aktif bila belum tersedia.</p>
             </div>
         </div>
     </div>
 
-    <!-- Daftar pertemuan hari ini -->
-    <div class="card shadow-sm mb-3">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
-            <h6 class="mb-0">Pertemuan Hari Ini ({{ count($pertemuanList) }})</h6>
+    {{-- Daftar pertemuan --}}
+    <div class="sa-card mb-3">
+        <div class="sa-card-head">
+            <h2 class="sa-card-title"><i class="fa-solid fa-list-ol" aria-hidden="true"></i>Pertemuan Terjadwal</h2>
+            <span class="sa-count">{{ count($pertemuanList) }} pertemuan</span>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover table-sm mb-0">
-                <thead class="table-light">
+            <table class="table sa-table mb-0">
+                <thead>
                     <tr>
-                        <th class="text-center" style="width: 50px;">Jam Ke</th>
+                        <th class="text-center" style="width: 70px;">Jam Ke</th>
                         <th>Waktu</th>
                         <th>Kelas</th>
                         <th>Mata Pelajaran</th>
@@ -53,71 +58,66 @@
                 </thead>
                 <tbody>
                     @forelse ($pertemuanList as $p)
-                        <tr class="{{ (int) $p['idjadwal_pertemuan'] === (int) $pertemuanId ? 'table-success' : '' }}">
-                            <td class="text-center">{{ $p['jam_ke'] ?? '-' }}</td>
-                            <td>{{ $p['waktu_mulai'] }}&ndash;{{ $p['waktu_selesai'] }}</td>
-                            <td>{{ $p['kelas_nama'] }}</td>
+                        <tr class="{{ (int) $p['idjadwal_pertemuan'] === (int) $pertemuanId ? 'sa-row-active' : '' }}">
+                            <td class="text-center fw-semibold">{{ $p['jam_ke'] ?? '-' }}</td>
+                            <td class="sa-cell-muted">{{ $p['waktu_mulai'] }}&ndash;{{ $p['waktu_selesai'] }}</td>
+                            <td class="fw-semibold">{{ $p['kelas_nama'] }}</td>
                             <td>{{ $p['mapel_nama'] }}</td>
                             <td class="text-center">
                                 @if ($p['status'] === 'terjadwal')
-                                    <span class="badge bg-success">Terjadwal</span>
+                                    <span class="sa-badge sa-aktif">Terjadwal</span>
                                 @elseif ($p['status'] === 'batal')
-                                    <span class="badge bg-danger">Batal</span>
+                                    <span class="sa-badge sa-alpha">Batal</span>
                                 @else
-                                    <span class="badge bg-secondary">Selesai</span>
+                                    <span class="sa-badge sa-netral">Selesai</span>
                                 @endif
                             </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-outline-primary" wire:click="pilihPertemuan({{ $p['idjadwal_pertemuan'] }})">
-                                    Isi Absensi
+                                    <i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i>Isi Absensi
                                 </button>
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-3">Tidak ada pertemuan untuk tanggal ini pada penugasan Anda.</td>
-                        </tr>
+                        <tr><td colspan="6"><div class="sa-empty"><i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i><p class="sa-empty-title">Tidak ada pertemuan</p><p class="sa-empty-text">Tidak ada pertemuan untuk tanggal ini pada penugasan Anda.</p></div></td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Panel absensi pertemuan terpilih -->
+    {{-- Panel absensi terpilih --}}
     @if ($pertemuanTerpilih)
-        <div class="card shadow-sm">
-            <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
+        <div class="sa-card">
+            <div class="sa-card-head">
                 <div>
-                    <h6 class="mb-0">
-                        {{ $pertemuanTerpilih['kelas_nama'] }} &mdash; {{ $pertemuanTerpilih['mapel_nama'] }}
-                        <span class="text-muted fw-normal">({{ $pertemuanTerpilih['tanggal'] }}, jam ke-{{ $pertemuanTerpilih['jam_ke'] ?? '-' }})</span>
-                    </h6>
-                    <small class="text-muted">{{ $pertemuanTerpilih['waktu_mulai'] }}&ndash;{{ $pertemuanTerpilih['waktu_selesai'] }}</small>
+                    <h2 class="sa-card-title"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>{{ $pertemuanTerpilih['kelas_nama'] }} &mdash; {{ $pertemuanTerpilih['mapel_nama'] }}</h2>
+                    <div class="sa-hint mt-1">{{ $pertemuanTerpilih['tanggal'] }} &middot; jam ke-{{ $pertemuanTerpilih['jam_ke'] ?? '-' }} &middot; {{ $pertemuanTerpilih['waktu_mulai'] }}&ndash;{{ $pertemuanTerpilih['waktu_selesai'] }}</div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     @if ($pertemuanTerpilih['status'] !== 'terjadwal')
-                        <span class="badge bg-danger">Pertemuan {{ $pertemuanTerpilih['status'] }} &mdash; tidak dapat diabsen</span>
+                        <span class="sa-badge sa-alpha">Pertemuan {{ $pertemuanTerpilih['status'] }} &mdash; tidak dapat diabsen</span>
                     @elseif ($pertemuanTerpilih['deadline_lewat'])
-                        <span class="badge bg-warning text-dark">Batas edit guru (H+1) terlewat</span>
+                        <span class="sa-badge sa-sakit">Batas edit guru (H+1) terlewat</span>
                     @else
-                        <span class="badge bg-success">Dapat diabsen</span>
+                        <span class="sa-badge sa-aktif">Dapat diabsen</span>
                     @endif
-                    <button class="btn btn-sm btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled"
+                    <button class="btn btn-sm btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi"
                         @if ($pertemuanTerpilih['status'] !== 'terjadwal' || $pertemuanTerpilih['deadline_lewat']) disabled @endif>
-                        <span wire:loading.remove>Simpan</span>
-                        <span wire:loading>Menyimpan...</span>
+                        <span wire:loading.remove wire:target="simpanAbsensi"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</span>
+                        <span wire:loading wire:target="simpanAbsensi">Menyimpan&hellip;</span>
                     </button>
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-hover table-sm mb-0">
-                    <thead class="table-light">
+                <table class="table sa-table mb-0">
+                    <thead>
                         <tr>
-                            <th class="text-center" style="width: 50px;">No</th>
+                            <th class="text-center" style="width: 52px;">No</th>
                             <th>Nama Siswa</th>
-                            <th style="width: 170px;">Status</th>
+                            <th style="width: 190px;">Status</th>
                             <th>Keterangan</th>
-                            <th class="text-center" style="width: 90px;">Data</th>
+                            <th class="text-center" style="width: 110px;">Data</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -130,10 +130,10 @@
                                 $rowStatus = $record['status'] ?? '';
                             @endphp
                             <tr>
-                                <td class="text-center">{{ $index + 1 }}</td>
-                                <td>{{ $siswa['nama'] }}</td>
+                                <td class="text-center sa-cell-muted">{{ $index + 1 }}</td>
+                                <td class="fw-semibold">{{ $siswa['nama'] }}</td>
                                 <td>
-                                    <select wire:model="absensiData.{{ $sId }}.status" class="form-select form-select-sm" @if ($disabled) disabled @endif>
+                                    <select wire:model="absensiData.{{ $sId }}.status" class="form-select form-select-sm sa-focus" aria-label="Status kehadiran {{ $siswa['nama'] }}" @if ($disabled) disabled @endif>
                                         <option value="">&mdash; Belum diabsen</option>
                                         <option value="hadir">Hadir</option>
                                         <option value="sakit">Sakit</option>
@@ -142,39 +142,40 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" wire:model="absensiData.{{ $sId }}.keterangan" placeholder="-" class="form-control form-control-sm" @if ($disabled) disabled @endif>
+                                    <input type="text" wire:model="absensiData.{{ $sId }}.keterangan" placeholder="-" class="form-control form-control-sm sa-focus" aria-label="Keterangan {{ $siswa['nama'] }}" @if ($disabled) disabled @endif>
                                 </td>
                                 <td class="text-center">
                                     @if ($record && $record['idabsensi_perjam'])
                                         @if ($rowStatus === 'hadir')
-                                            <span class="badge bg-success">Hadir</span>
+                                            <span class="sa-badge sa-hadir">Hadir</span>
                                         @elseif ($rowStatus === 'sakit')
-                                            <span class="badge bg-warning text-dark">Sakit</span>
+                                            <span class="sa-badge sa-sakit">Sakit</span>
                                         @elseif ($rowStatus === 'izin')
-                                            <span class="badge bg-info text-dark">Izin</span>
+                                            <span class="sa-badge sa-izin">Izin</span>
                                         @elseif ($rowStatus === 'alpha')
-                                            <span class="badge bg-danger">Alpha</span>
+                                            <span class="sa-badge sa-alpha">Alpha</span>
                                         @else
-                                            <span class="badge bg-secondary">Tersimpan</span>
+                                            <span class="sa-badge sa-netral">Tersimpan</span>
                                         @endif
                                     @else
-                                        <span class="badge bg-light text-dark border">Baru</span>
+                                        <span class="sa-badge sa-netral">Baru</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center text-muted py-3">Tidak ada siswa dengan penempatan aktif pada kelas ini.</td></tr>
+                            <tr><td colspan="5"><div class="sa-empty"><i class="fa-solid fa-user-slash" aria-hidden="true"></i><p class="sa-empty-title">Tidak ada siswa</p><p class="sa-empty-text">Tidak ada siswa dengan penempatan aktif pada kelas ini.</p></div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
             @if ($pertemuanTerpilih['status'] === 'terjadwal' && ! $pertemuanTerpilih['deadline_lewat'])
-                <div class="card-footer bg-white text-muted small py-2">
-                    Baris dengan status kosong berarti belum diabsen. Hanya siswa dengan penempatan aktif yang ditampilkan. Batas edit guru: H+1 tanggal pertemuan.
+                <div class="sa-card-foot">
+                    <span><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Baris kosong berarti belum diabsen. Hanya siswa dengan penempatan aktif yang ditampilkan.</span>
+                    <span><strong>Batas edit guru:</strong> H+1 tanggal pertemuan</span>
                 </div>
             @endif
         </div>
     @else
-        <div class="alert alert-secondary py-2">Pilih pertemuan di atas untuk menampilkan daftar siswa dan mengisi absensi.</div>
+        <div class="sa-card"><div class="sa-card-body sa-empty"><i class="fa-regular fa-hand-pointer" aria-hidden="true"></i><p class="sa-empty-title">Pilih pertemuan</p><p class="sa-empty-text">Klik &ldquo;Isi Absensi&rdquo; pada salah satu pertemuan di atas untuk menampilkan daftar siswa.</p></div></div>
     @endif
 </div>

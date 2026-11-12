@@ -118,6 +118,7 @@ class SiswaComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,lulus,pindah,keluar',
+            'foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         $data = [
@@ -203,6 +204,7 @@ class SiswaComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,lulus,pindah,keluar',
+            'foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         DB::transaction(function () {

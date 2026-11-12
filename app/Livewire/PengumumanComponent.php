@@ -179,6 +179,9 @@ class PengumumanComponent extends Component
             $this->dispatch('close-pengumuman-modal');
             $this->reset(['editId', 'judul', 'isi', 'kategori', 'prioritas', 'target', 'berlakuDari', 'berlakuSampai', 'jurusanIds', 'kelasIds', 'siswaIds']);
             $this->alert('success', $pesan);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validasi di level service (mis. target jurusan tanpa pilihan) — tampilkan pesan, bukan 500.
+            $this->alert('error', $e->validator->errors()->first());
         } catch (DomainException $e) {
             $this->alert('error', $e->getMessage());
         }
@@ -261,6 +264,8 @@ class PengumumanComponent extends Component
                     'targets.jurusan:idjurusan,nama',
                     'targets.kelas:idkelas,nama',
                     'targets.siswa:idsiswa,nama',
+                    'pembuat:id,username',
+                    'pengubah:id,username',
                     'baca.siswa:idsiswa,nama',
                 ])
                 ->withCount('baca')

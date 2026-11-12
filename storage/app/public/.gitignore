@@ -1,0 +1,3 @@
+# 2B.20: isi direktori upload publik di-ignore; file .gitignore ini tetap dilacak.
+*
+!.gitignore

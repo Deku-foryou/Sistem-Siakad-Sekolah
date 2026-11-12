@@ -6,6 +6,7 @@ use App\Exceptions\FinalisasiException;
 use App\Services\FinalisasiNilaiService;
 use App\Services\KonteksAkademikService;
 use DomainException;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 /**
@@ -54,6 +55,12 @@ class FinalisasiRaporComponent extends Component
                 ? 'Pemeriksaan selesai. Rapor kelas ini siap difinalisasi.'
                 : null;
         } catch (DomainException $exception) {
+            Log::warning('finalisasi-rapor: periksa gagal', [
+                'user_id' => (int) auth()->id(),
+                'kelas_id' => (int) $this->kelasId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }
@@ -71,9 +78,22 @@ class FinalisasiRaporComponent extends Component
 
             $this->sukses = 'Rapor berhasil difinalisasi pada '.$row->difinalisasi_pada?->format('d/m/Y H:i').'.';
         } catch (FinalisasiException $exception) {
+            Log::warning('finalisasi-rapor: finalisasi ditolak', [
+                'user_id' => (int) auth()->id(),
+                'kelas_id' => (int) $this->kelasId,
+                'exception' => get_class($exception),
+                'jumlah_kesalahan' => count($exception->daftarKesalahan),
+                'kesalahan' => $exception->daftarKesalahan,
+            ]);
             $this->daftarKesalahan = $exception->daftarKesalahan;
             $this->galat = 'Finalisasi dibatalkan. Perbaiki seluruh poin berikut.';
         } catch (DomainException $exception) {
+            Log::warning('finalisasi-rapor: finalisasi gagal', [
+                'user_id' => (int) auth()->id(),
+                'kelas_id' => (int) $this->kelasId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }

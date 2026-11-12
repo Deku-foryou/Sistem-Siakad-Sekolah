@@ -1,22 +1,23 @@
 @section('title', 'Jam Pelajaran')
 
 <div>
-<div class="container-fluid mb-5 px-3 px-md-4" style="margin-top: 20px">
+<div class="container-fluid mb-5 px-3 px-lg-4 py-3">
+    @include('assets.akademik')
+
 
     {{-- Header halaman --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div class="sa-head">
         <div>
-            <h3 class="fw-bold mb-1">Jam Pelajaran</h3>
-            <p class="text-body-secondary mb-0">Atur jam pelajaran dan istirahat per hari untuk kelas aktif.</p>
+            <h1 class="sa-title"><i class="fa-solid fa-clock me-2 text-success" aria-hidden="true"></i>Jam Pelajaran</h1>
+            <p class="sa-sub">Atur jam pelajaran dan istirahat per hari untuk kelas aktif.</p>
         </div>
-        <button class="btn btn-success" wire:click="openAdd" @if(!$filterKelas) disabled @endif>
+        <button class="btn btn-primary" wire:click="openAdd" @if(!$filterKelas) disabled @endif>
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Jam
         </button>
     </div>
 
     {{-- Filter --}}
-    <div class="card border mb-3">
-        <div class="card-body">
+    <div class="sa-card sa-filter mb-3">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label for="jamhari-jurusan" class="form-label">Jurusan</label>
@@ -39,17 +40,16 @@
                 </div>
                 <div class="col-md-4">
                     @if($kelasTerpilih)
-                        <div class="border rounded px-3 py-2 bg-light">
-                            <div class="small text-body-secondary">Kelas terpilih</div>
+                        <div class="border rounded px-3 py-2" style="background: var(--sa-green-faint); border-color: var(--sa-border) !important;">
+                            <div class="sa-hint">Kelas terpilih</div>
                             <strong>{{ $kelasTerpilih->nama }}</strong>
-                            <span class="text-body-secondary">&middot; Tingkat {{ $kelasTerpilih->tingkat }}</span>
+                            <span class="sa-cell-muted">&middot; Tingkat {{ $kelasTerpilih->tingkat }}</span>
                         </div>
                     @else
-                        <div class="text-body-secondary small pb-2">Pilih kelas untuk melihat dan mengatur jam pelajaran.</div>
+                        <div class="sa-hint pb-2">Pilih kelas untuk melihat dan mengatur jam pelajaran.</div>
                     @endif
                 </div>
             </div>
-        </div>
     </div>
 
     {{-- Tab hari --}}
@@ -57,7 +57,7 @@
         @foreach($hariNama as $h => $nama)
             <li class="nav-item">
                 <button class="nav-link {{ $hari == $h ? 'active' : '' }}" wire:click="$set('hari', {{ $h }})" @if(!$filterKelas) disabled @endif>
-                    {{ $nama }} <span class="badge bg-secondary ms-1">{{ $jumlah[$h] ?? '-' }}</span>
+                    {{ $nama }} <span class="sa-count ms-1">{{ $jumlah[$h] ?? '-' }}</span>
                 </button>
             </li>
         @endforeach
@@ -66,13 +66,13 @@
     <div class="row g-3">
         {{-- Tabel jam --}}
         <div class="col-12 col-xl-8">
-            <div class="card border h-100">
-                <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
-                    <h6 class="mb-0 fw-semibold">Jam hari {{ $hariNama[$hari] }}</h6>
+            <div class="sa-card h-100">
+                <div class="sa-card-head">
+                    <h2 class="sa-card-title"><i class="fa-solid fa-table-rows" aria-hidden="true"></i>Jam hari {{ $hariNama[$hari] }}</h2>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0">
-                        <thead class="table-light">
+                    <table class="table sa-table table-bordered mb-0">
+                        <thead>
                             <tr>
                                 <th class="text-center" style="width: 48px;">No</th>
                                 <th>Jenis</th>
@@ -86,8 +86,8 @@
                         <tbody>
                             @forelse($jam as $index => $j)
                                 <tr>
-                                    <td class="text-center text-body-secondary">{{ $index + 1 }}</td>
-                                    <td><span class="badge {{ $j->jenis == 'pelajaran' ? 'bg-success' : 'bg-secondary' }}">{{ ucfirst($j->jenis) }}</span></td>
+                                    <td class="text-center sa-cell-muted">{{ $index + 1 }}</td>
+                                    <td><span class="sa-badge {{ $j->jenis == 'pelajaran' ? 'sa-hadir' : 'sa-netral' }}">{{ ucfirst($j->jenis) }}</span></td>
                                     <td class="text-center">{{ $j->jam_ke ?? '-' }}</td>
                                     <td>{{ substr($j->mulai, 0, 5) }}</td>
                                     <td>{{ substr($j->selesai, 0, 5) }}</td>
@@ -99,15 +99,17 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <i class="fa-regular fa-clock fs-3 d-block mb-2 text-body-secondary" aria-hidden="true"></i>
-                                        @if(!$filterKelas)
-                                            <div class="fw-semibold">Belum ada kelas dipilih</div>
-                                            <div class="text-body-secondary small">Pilih jurusan dan kelas aktif di atas untuk menampilkan jam pelajaran.</div>
-                                        @else
-                                            <div class="fw-semibold">Belum ada jam untuk hari {{ $hariNama[$hari] }}</div>
-                                            <div class="text-body-secondary small">Klik tombol Tambah Jam untuk menambahkan jam pelajaran atau istirahat.</div>
-                                        @endif
+                                    <td colspan="7">
+                                        <div class="sa-empty">
+                                            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                            @if(!$filterKelas)
+                                                <p class="sa-empty-title">Belum ada kelas dipilih</p>
+                                                <p class="sa-empty-text">Pilih jurusan dan kelas aktif di atas untuk menampilkan jam pelajaran.</p>
+                                            @else
+                                                <p class="sa-empty-title">Belum ada jam untuk hari {{ $hariNama[$hari] }}</p>
+                                                <p class="sa-empty-text">Klik tombol Tambah Jam untuk menambahkan jam pelajaran atau istirahat.</p>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -119,12 +121,12 @@
 
         {{-- Salin hari --}}
         <div class="col-12 col-xl-4">
-            <div class="card border h-100">
-                <div class="card-header bg-white py-2">
-                    <h6 class="mb-0 fw-semibold">Salin jam hari {{ $hariNama[$hari] }}</h6>
+            <div class="sa-card h-100">
+                <div class="sa-card-head">
+                    <h2 class="sa-card-title"><i class="fa-regular fa-copy" aria-hidden="true"></i>Salin jam hari {{ $hariNama[$hari] }}</h2>
                 </div>
-                <div class="card-body">
-                    <p class="text-body-secondary small">Gandakan seluruh jam hari {{ $hariNama[$hari] }} ke hari lain pada kelas yang sama. Hari yang sudah memiliki jam akan ditolak.</p>
+                <div class="sa-card-body">
+                    <p class="sa-hint">Gandakan seluruh jam hari {{ $hariNama[$hari] }} ke hari lain pada kelas yang sama. Hari yang sudah memiliki jam akan ditolak.</p>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         @foreach($hariNama as $h => $nama)
                             @if($hari != $h)

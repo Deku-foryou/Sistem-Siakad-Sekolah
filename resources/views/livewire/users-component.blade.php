@@ -235,6 +235,7 @@
                                 <select name="level" class="form-select" wire:model="level">
                                     <option value="" selected>Pilih Akses Level Menu</option>
                                     <option value="superadmin">Superadmin</option>
+                                    <option value="admin">Admin</option>
                                 </select>
 
                                 @error('level')
@@ -356,6 +357,7 @@
                                 <select name="level" class="form-select" wire:model="level">
                                     <option value="" selected>Pilih Akses Level Menu</option>
                                     <option value="superadmin">Superadmin</option>
+                                    <option value="admin">Admin</option>
                                 </select>
 
                                 @error('level')

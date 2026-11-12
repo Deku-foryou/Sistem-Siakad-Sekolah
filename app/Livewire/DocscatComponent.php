@@ -35,6 +35,11 @@ class DocscatComponent extends Component
 
     public $perPage = 10;
 
+    private function pastikanBolehKelola(): void
+    {
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+    }
+
     public function mount()
     {
         $this->tglstart = now()->firstOfMonth()->format('Y-m-d');
@@ -70,10 +75,12 @@ class DocscatComponent extends Component
 
     public function storeDocscat()
     {
+        $this->pastikanBolehKelola();
+
         $this->validate([
             // 'iddocscat' => 'required ',
-            'docscat' => 'required ',
-            'urut' => 'required | unique:docscat,urut',
+            'docscat' => 'required|string|max:255|unique:docscat,docscat',
+            'urut' => 'required|integer|min:1|unique:docscat,urut',
         ]);
 
         $docscat = new Docscat;
@@ -101,7 +108,9 @@ class DocscatComponent extends Component
 
     public function editDocscat($iddocscat)
     {
-        $docscat = Docscat::where('iddocscat', $iddocscat)->first();
+        $this->pastikanBolehKelola();
+
+        $docscat = Docscat::query()->findOrFail((int) $iddocscat);
 
         $this->iddocscat = $docscat->iddocscat;
         $this->docscat = $docscat->docscat;
@@ -114,16 +123,29 @@ class DocscatComponent extends Component
 
     public function updateDocscat()
     {
+        $this->pastikanBolehKelola();
+
         $this->validate([
             // 'iddocscat' => 'required ',
-            'docscat' => 'required ',
-            'urut' => 'required',
+            'docscat' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('docscat', 'docscat')->ignore((int) $this->iddocscat, 'iddocscat'),
+            ],
+            'urut' => [
+                'required',
+                'integer',
+                'min:1',
+                \Illuminate\Validation\Rule::unique('docscat', 'urut')->ignore((int) $this->iddocscat, 'iddocscat'),
+            ],
         ]);
-        $docscat = Docscat::where('iddocscat', $this->iddocscat)->first();
-        $docscat->iddocscat = $this->iddocscat;
-        $docscat->docscat = $this->docscat;
-        $docscat->urut = $this->urut;
-        $docscat->save();
+
+        $docscat = Docscat::query()->findOrFail((int) $this->iddocscat);
+        $docscat->fill([
+            'docscat' => $this->docscat,
+            'urut' => (int) $this->urut,
+        ])->save();
 
         $this->close();
 
@@ -136,14 +158,27 @@ class DocscatComponent extends Component
 
     public function deleteConfirmationDocscat($iddocscat)
     {
+        $this->pastikanBolehKelola();
+
         $this->iddocscat = $iddocscat;
         $this->dispatch('show-delete-confirmation-docscat-modal');
     }
 
     public function deleteDocscat()
     {
-        $docscat = Docscat::where('iddocscat', $this->iddocscat)->first();
+        $this->pastikanBolehKelola();
+
+        $docscat = Docscat::query()->findOrFail((int) $this->iddocscat);
         try {
+            // Kategori yang masih memiliki dokumen tidak dapat dihapus (RESTRICT FK).
+            if ($docscat->docs()->exists()) {
+                $this->alert('error', 'Kategori masih memiliki dokumen. Pindahkan atau hapus dokumennya terlebih dahulu.');
+                $this->dispatch('close-docscat-modal');
+                $this->iddocscat = '';
+
+                return;
+            }
+
             $docscat->delete();
             $this->alert('success', 'Data docscat Berhasil Di hapus');
         } catch (\Throwable) {
@@ -155,6 +190,7 @@ class DocscatComponent extends Component
 
     public function exportToExcel()
     {
+        $this->pastikanBolehKelola();
         $queryResult = $this->dataDocscat();
         $data = [['iddocscat', 'docscat', 'urut']];
         foreach ($queryResult as $result) {
@@ -163,15 +199,19 @@ class DocscatComponent extends Component
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($data, null, 'A1');
-        $writer = new Xlsx($spreadsheet);
         $filename = 'exported-docscat-data.xlsx';
-        $writer->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function exportToPdf()
     {
+        $this->pastikanBolehKelola();
         $headers = ['iddocscat', 'docscat', 'urut'];
         $title = 'Export Data Docscat';
         $queryResult = $this->dataDocscat();
@@ -192,11 +232,11 @@ class DocscatComponent extends Component
         $result = Docscat::get();
         $options = '';
         foreach ($result as $row) {
-            $options .= '<option value='.$row->iddocscat.'';
+            $options .= '<option value="'.(int) $row->iddocscat.'"';
             if ($id == $row->iddocscat) {
                 $options .= ' selected';
             }
-            $options .= '>'.$row->docscat.'</option>';
+            $options .= '>'.e($row->docscat).'</option>';
         }
 
         return $options;

@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Kelassiswa;
+use App\Models\Notifikasi;
 use App\Models\Pengumuman;
 use App\Models\PengumumanBaca;
 use App\Models\PengumumanTarget;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Services\WalimuridService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -156,6 +158,69 @@ class PengumumanService
                 'waktu_terbit' => now(),
                 'diperbarui_oleh' => $penerbit->id,
             ]);
+
+            // Notifikasi ke siswa pada snapshot penerima (2B.6.3), dalam transaksi yang sama.
+            $penerimaUserIds = Siswa::query()
+                ->whereIn('idsiswa', $penerimaIds->all())
+                ->pluck('user_iduser')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            if ($penerimaUserIds !== []) {
+                NotifikasiService::buat(
+                    $penerimaUserIds,
+                    [
+                        'judul' => 'Pengumuman: '.$pengumuman->judul,
+                        'isi' => $pengumuman->judul.' — pengumuman baru diterbitkan.',
+                        'jenis' => Notifikasi::JENIS_PENGUMUMAN,
+                        'prioritas' => 'sedang',
+                        'sumber_tabel' => 'pengumuman',
+                        'sumber_id' => $pengumuman->idpengumuman,
+                        'link' => '/pengumuman-siswa/'.$pengumuman->idpengumuman,
+                    ],
+                    $penerbit
+                );
+            }
+
+            // Notifikasi wali murid (2B.12, D2/D3/D8/D9/D10): hanya wali anak pada snapshot target aktual.
+            // Prioritas: mendesak / kategori darurat dipetakan ke tinggi; lainnya tetap 3 tingkat.
+            if ($penerimaIds->isNotEmpty()) {
+                $namaSiswa = Siswa::query()
+                    ->whereIn('idsiswa', $penerimaIds->all())
+                    ->pluck('nama', 'idsiswa');
+
+                $relasiWali = WalimuridService::relasiWaliAktifSiswa($penerimaIds->all())
+                    ->groupBy('user_iduser');
+
+                $cuplikan = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $pengumuman->isi)));
+                $cuplikan = mb_strlen($cuplikan) > 150 ? mb_substr($cuplikan, 0, 150).'…' : $cuplikan;
+
+                $prioritasWali = match (true) {
+                    $pengumuman->prioritas === 'mendesak' || $pengumuman->kategori === 'darurat' => 'tinggi',
+                    in_array($pengumuman->prioritas, ['rendah', 'sedang', 'tinggi'], true) => $pengumuman->prioritas,
+                    default => 'sedang',
+                };
+
+                foreach ($relasiWali as $waliId => $relasi) {
+                    $anak = $relasi
+                        ->map(fn ($r) => $namaSiswa[$r->siswa_idsiswa] ?? ('siswa #'.$r->siswa_idsiswa))
+                        ->unique()
+                        ->implode(', ');
+
+                    NotifikasiService::buat(
+                        [(int) $waliId],
+                        [
+                            'judul' => 'Pengumuman: '.$pengumuman->judul,
+                            'isi' => 'Diterbitkan pengumuman untuk '.$anak.': '.$cuplikan,
+                            'jenis' => Notifikasi::JENIS_PENGUMUMAN,
+                            'prioritas' => $prioritasWali,
+                            'sumber_tabel' => 'pengumuman',
+                            'sumber_id' => $pengumuman->idpengumuman,
+                            'link' => '/wali-beranda',
+                        ],
+                        $penerbit
+                    );
+                }
+            }
 
             return $pengumuman->fresh();
         });

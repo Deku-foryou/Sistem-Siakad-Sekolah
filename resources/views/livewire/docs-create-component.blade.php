@@ -43,6 +43,31 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group mb-2">
+                                    <label for="docscat_iddocscat" class=" fw-bold mb-2 mb-lg-0">Kategori</label>
+                                    <div class="mt-2 mb-2">
+                                        <select id="docscat_iddocscat" class="form-select" wire:model="docscat_iddocscat">
+                                            <option value="">-- Pilih Kategori --</option>
+                                            @foreach ($kategori as $item)
+                                                <option value="{{ $item->iddocscat }}">{{ $item->docscat }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('docscat_iddocscat')
+                                            <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label for="urut" class=" fw-bold mb-2 mb-lg-0">Urutan</label>
+                                    <div class="mt-2 mb-2">
+                                        <input type="number" min="1" id="urut" class="form-control" wire:model="urut">
+                                        @error('urut')
+                                            <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div class="form-group row mb-2">
                                     <label for="content" class=" fw-bold mb-2 mb-lg-0">Isi (Dokumentasi)</label>
                                     <div class="mt-2">
@@ -51,7 +76,7 @@
                                         </div> --}}
                                         <div>
                                             <input type="file" class=" form-control" id="content"
-                                                wire:model="content">
+                                                wire:model="content" accept="application/pdf,.pdf">
                                         </div>
                                         @error('content')
                                             <span class="text-danger" style="font-size: 11.5px;">{{ $message }}</span>

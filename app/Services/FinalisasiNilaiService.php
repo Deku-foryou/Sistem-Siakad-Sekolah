@@ -14,6 +14,7 @@ use App\Models\Notifikasi;
 use App\Models\PenugasanMengajar;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Services\WalimuridService;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
@@ -242,6 +243,31 @@ class FinalisasiNilaiService
                 }
             }
 
+            // Notifikasi wali murid (2B.12, D1/D3/D10): satu notifikasi per anak per wali.
+            // Hanya relasi verified + periode berlaku + akun wali aktif; tanpa nilai/data sensitif.
+            $relasiWali = WalimuridService::relasiWaliAktifSiswa($siswaList->pluck('idsiswa')->all())
+                ->groupBy('siswa_idsiswa');
+
+            foreach ($siswaList as $siswa) {
+                $waliIds = ($relasiWali->get($siswa->idsiswa) ?? collect())->pluck('user_iduser')->map(fn ($id) => (int) $id)->unique()->all();
+
+                foreach ($waliIds as $waliId) {
+                    NotifikasiService::buat(
+                        [$waliId],
+                        [
+                            'judul' => 'Rapor difinalisasi: '.$kelas->nama,
+                            'isi' => 'Rapor '.$siswa->nama.' pada kelas '.$kelas->nama.' untuk semester aktif telah difinalisasi. Lihat detail di portal Wali.',
+                            'jenis' => Notifikasi::JENIS_RAPOR,
+                            'prioritas' => 'tinggi',
+                            'sumber_tabel' => 'finalisasi_rapor',
+                            'sumber_id' => $row->idfinalisasi_rapor,
+                            'link' => '/wali-akademik',
+                        ],
+                        $user
+                    );
+                }
+            }
+
             return $row->fresh(['waliKelas', 'difinalisasiOleh']);
         });
     }
@@ -418,10 +444,18 @@ class FinalisasiNilaiService
                 $errors[] = 'Total bobot komponen aktif mata pelajaran "'.$namaMapel.'" adalah '.number_format($totalBobot, 2, ',', '.').'%, harus tepat 100%.';
             }
 
-            $kktp = KktpMapel::query()
+            // Pada finalisasi ($lockRows=true): kunci baris KKTP agar transaksi
+            // koreksi KKTP (yang mengunci baris yang sama lebih dulu) dihormati,
+            // dan koreksi yang tiba setelah bacaan ini menunggu finalisasi selesai.
+            $kktpQuery = KktpMapel::query()
                 ->where('semester_idsemester', $semester->idsemester)
-                ->where('mapel_idmapel', $mapelId)
-                ->first();
+                ->where('mapel_idmapel', $mapelId);
+
+            if ($lockRows) {
+                $kktpQuery->lockForUpdate();
+            }
+
+            $kktp = $kktpQuery->first();
 
             if (! $kktp) {
                 $errors[] = 'KKTP untuk mata pelajaran "'.$namaMapel.'" belum dikonfigurasi.';

@@ -204,11 +204,14 @@ class AppmenunewComponent extends Component
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($data, null, 'A1');
-        $writer = new Xlsx($spreadsheet);
         $filename = 'exported-appmenu-data.xlsx';
-        $writer->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function exportToPdf()
@@ -234,11 +237,11 @@ class AppmenunewComponent extends Component
         $result = Appmenunew::get();
         $options = '';
         foreach ($result as $row) {
-            $options .= '<option value='.$row->idappmenunew.'';
+            $options .= '<option value="'.(int) $row->idappmenunew.'"';
             if ($id == $row->idappmenunew) {
                 $options .= ' selected';
             }
-            $options .= '>'.$row->appmenunew.'</option>';
+            $options .= '>'.e($row->appmenunew).'</option>';
         }
 
         return $options;
@@ -260,11 +263,11 @@ class AppmenunewComponent extends Component
         $result = Appmenucat::get();
         $options = '';
         foreach ($result as $row) {
-            $options .= '<option value='.$row->idappmenucat.'';
+            $options .= '<option value="'.(int) $row->idappmenucat.'"';
             if ($id == $row->idappmenucat) {
                 $options .= ' selected';
             }
-            $options .= '>'.$row->appmenucat.'</option>';
+            $options .= '>'.e($row->appmenucat).'</option>';
         }
 
         return $options;

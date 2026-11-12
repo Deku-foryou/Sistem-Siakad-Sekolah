@@ -106,6 +106,7 @@ class GuruComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
+            'foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'mapel_ids' => 'nullable|array',
             'mapel_ids.*' => 'exists:mapel,idmapel',
         ]);
@@ -133,8 +134,8 @@ class GuruComponent extends Component
                 }
             });
         } catch (\Throwable $e) {
-            \Log::error('GuruService::buat error', ['exception' => $e]);
-            $this->alert('error', 'Terjadi kesalahan saat menambah guru: ' . $e->getMessage());
+            \Log::error('GuruService::buat error', ['exception' => get_class($e), 'message' => $e->getMessage()]);
+            $this->alert('error', 'Terjadi kesalahan saat menambah guru: '.$e->getMessage());
 
             return;
         }
@@ -185,6 +186,7 @@ class GuruComponent extends Component
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
+            'foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'mapel_ids' => 'nullable|array',
             'mapel_ids.*' => 'exists:mapel,idmapel',
         ]);

@@ -2,42 +2,54 @@
 
 namespace Database\Seeders;
 
+use App\Models\Appmenucat;
 use App\Models\Appmenunew;
-use App\Models\Usermenu;
 use App\Models\User;
+use App\Models\Usermenu;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Seeder menu untuk SISTEM JADWAL BARU: manajemen jadwal kelas.
+ *
+ * - Manajemen jadwal kelas -> /jadwalkelas -> JadwalKelasComponent
+ * - Label menu: "Jadwal Kelas", khusus superadmin.
+ *
+ * Idempoten: firstOrCreate + update nilai kanonik, aman dijalankan berulang.
+ */
 class JadwalKelasMenuSeeder extends Seeder
 {
     public function run(): void
     {
         DB::transaction(function () {
-            // Update menu lama
-            $menuJadwal = Appmenunew::where('url', 'jadwal')->first();
-            if ($menuJadwal) {
-                $menuJadwal->update(['appmenunew' => 'Jadwal (lama)']);
-            }
+            $category = Appmenucat::firstOrCreate(
+                ['appmenucat' => 'Jadwal Pelajaran'],
+                ['urut' => -2]
+            );
 
-            // Tambah menu baru
-            $menuBaru = Appmenunew::firstOrCreate(
+            $menu = Appmenunew::unguarded(fn () => Appmenunew::firstOrCreate(
                 ['url' => 'jadwalkelas'],
                 [
                     'appmenunew' => 'Jadwal Kelas',
                     'icon' => 'fa-solid fa-calendar-days',
-                    'appmenucat_idappmenucat' => DB::table('appmenucat')->where('appmenucat', 'Jadwal Pelajaran')->value('idappmenucat') ?? 1,
-                    'urut' => DB::table('appmenunew')->max('urut') + 1,
+                    'urut' => 2,
+                    'appmenucat_idappmenucat' => $category->idappmenucat,
                 ]
-            );
+            ));
 
-            // Tambah ke superadmin
+            // Selaraskan nilai kanonik pada menu yang sudah ada.
+            Appmenunew::unguarded(fn () => $menu->update([
+                'appmenunew' => 'Jadwal Kelas',
+                'icon' => 'fa-solid fa-calendar-days',
+                'urut' => 2,
+                'appmenucat_idappmenucat' => $category->idappmenucat,
+            ]));
+
             $adminIds = User::where('level', 'superadmin')->pluck('id');
             foreach ($adminIds as $userId) {
                 Usermenu::firstOrCreate([
                     'user_iduser' => $userId,
-                    'appmenunew_idappmenunew' => $menuBaru->idappmenunew,
-                ], [
-                    'idusermenu' => DB::table('usermenu')->max('idusermenu') + 1,
+                    'appmenunew_idappmenunew' => $menu->idappmenunew,
                 ]);
             }
         });

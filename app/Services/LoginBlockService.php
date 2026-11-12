@@ -15,10 +15,12 @@ class LoginBlockService
     {
         return match ($user->level) {
             'superadmin' => true,
-            'admin' => true,
+            'admin' => $user->status_akun === 'aktif',
             'guru' => $user->guru()->where('status', 'aktif')->exists(),
             'siswa' => $user->siswa()->where('status', 'aktif')->exists(),
             'walikelas' => false,  // Level walikelas belum diimplementasikan
+            // Wali: hanya akun yang masih aktif. Relasi/verifikasi diperiksa pada guard lain (desain §6, §7.4).
+            'wali' => $user->status_akun === 'aktif',
             default => false,  // Unknown level: reject akses (safe default)
         };
     }

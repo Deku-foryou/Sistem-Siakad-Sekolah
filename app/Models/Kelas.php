@@ -61,4 +61,24 @@ class Kelas extends Model
     {
         return $this->belongsToMany(Siswa::class, 'kelassiswa', 'kelas_idkelas', 'siswa_idsiswa');
     }
+
+    public function penugasanMengajar()
+    {
+        return $this->hasMany(PenugasanMengajar::class, 'kelas_idkelas', 'idkelas');
+    }
+
+    public function nilaiSiswa()
+    {
+        return $this->hasMany(NilaiSiswa::class, 'kelas_idkelas', 'idkelas');
+    }
+
+    public function nilaiAkhir()
+    {
+        return $this->hasMany(NilaiAkhir::class, 'kelas_idkelas', 'idkelas');
+    }
+
+    public function finalisasiRapor()
+    {
+        return $this->hasMany(FinalisasiRapor::class, 'kelas_idkelas', 'idkelas');
+    }
 }

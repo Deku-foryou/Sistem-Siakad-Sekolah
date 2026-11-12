@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Services\KonteksAkademikService;
 use App\Services\NilaiSiswaService;
 use DomainException;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 /**
@@ -37,6 +38,11 @@ class InputNilaiComponent extends Component
                 $this->muat();
             }
         } catch (DomainException $exception) {
+            Log::warning('input-nilai: muat awal gagal', [
+                'user_id' => (int) auth()->id(),
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }
@@ -73,6 +79,12 @@ class InputNilaiComponent extends Component
                 }
             }
         } catch (DomainException $exception) {
+            Log::warning('input-nilai: muat matriks gagal', [
+                'user_id' => (int) auth()->id(),
+                'penugasan_id' => (int) $this->penugasanId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->penugasanId = '';
             $this->nilai = [];
             $this->galat = $exception->getMessage();
@@ -99,6 +111,12 @@ class InputNilaiComponent extends Component
 
             $this->muat();
         } catch (DomainException $exception) {
+            Log::warning('input-nilai: simpan gagal', [
+                'user_id' => (int) auth()->id(),
+                'penugasan_id' => (int) $this->penugasanId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }

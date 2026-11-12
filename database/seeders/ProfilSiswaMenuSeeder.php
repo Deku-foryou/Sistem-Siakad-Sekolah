@@ -29,10 +29,18 @@ class ProfilSiswaMenuSeeder extends Seeder
             [
                 'appmenunew' => 'Profil Saya',
                 'icon' => 'fa-solid fa-id-card',
-                'urut' => 12,
+                'urut' => 14,
                 'appmenucat_idappmenucat' => $kategori->idappmenucat,
             ]
         ));
+
+        // Selaraskan nilai kanonik pada menu yang sudah ada.
+        Appmenunew::unguarded(fn () => $menu->update([
+            'appmenunew' => 'Profil Saya',
+            'icon' => 'fa-solid fa-id-card',
+            'urut' => 14,
+            'appmenucat_idappmenucat' => $kategori->idappmenucat,
+        ]));
 
         $paket = Rolecat::firstOrCreate(['rolecat' => 'Siswa']);
 

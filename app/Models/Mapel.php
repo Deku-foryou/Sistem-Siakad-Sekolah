@@ -37,4 +37,24 @@ class Mapel extends Model
     {
         return $this->hasMany(JadwalKelas::class, 'mapel_idmapel', 'idmapel');
     }
+
+    public function penugasanMengajar()
+    {
+        return $this->hasMany(PenugasanMengajar::class, 'mapel_idmapel', 'idmapel');
+    }
+
+    public function komponenNilai()
+    {
+        return $this->hasMany(KomponenNilai::class, 'mapel_idmapel', 'idmapel');
+    }
+
+    public function kktpMapel()
+    {
+        return $this->hasMany(KktpMapel::class, 'mapel_idmapel', 'idmapel');
+    }
+
+    public function nilaiAkhir()
+    {
+        return $this->hasMany(NilaiAkhir::class, 'mapel_idmapel', 'idmapel');
+    }
 }

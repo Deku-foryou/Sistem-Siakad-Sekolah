@@ -48,14 +48,29 @@ CRITICAL: DUAL SCHEDULING SYSTEMS
 **Key difference:** Jadwal is global (semester-wide), JadwalKelas is per-class.
 Do NOT mix APIs or import between these systems.
 
+**Konsolidasi pembacaan jadwal (2B.4.7F):**
+`JadwalSiswaService` adalah sumber tunggal untuk jadwal baru di portal:
+- `kelasAktif($siswaId, $konteks)` — penempatan kelassiswa aktif, tahun ajaran aktif.
+- `jadwal($konteks, $kelasIds, ?$hari)` — jadwal kelas pada semester aktif (TA aktif), jam pelajaran.
+- `urutkan($jadwal)` / `perHari($jadwal)` — transformasi murni (dipakai juga oleh JadwalGuruComponent & JadwalSiswaComponent; bukan query siswa).
+Components (BerandasiswaComponent, JadwalSiswaComponent, JadwalGuruComponent) tidak menulis ulang query jadwal — memanggil service ini.
+Histori absensi siswa: tab Harian terfilter semester/TA aktif; tab Per Jam memakai snapshot `jadwal_pertemuan` dan tidak dibatasi semester (riwayat lengkap) — sengaja dipertahankan.
+
+**Portal Siswa (2B.4.8):**
+- Rekap kehadiran semester/TA aktif: `HistoriAbsensiSiswaComponent` menghitung `rekapHarian`/`rekapPerJam` dari query **tanpa filter UI**; badge ringkasan daftar tetap mengikuti filter tanggal/status.
+- Ekspor rekap: `unduhRekap()` → CSV (UTF-8 BOM, delimiter `;`), berisi rekap harian (semester aktif), rekap per jam (riwayat), dan daftar detail. Sel berawalan `= + - @` dinetralkan (anti formula injection). Livewire 3 mendukung `StreamedResponse` dari action (SupportFileDownloads).
+- `ProfilSiswaComponent` memakai `JadwalSiswaService::kelasAktif()` (bukan query duplikat) dan tetap read-only (hanya `render()`).
+- `JadwalSiswaComponent` punya filter hari (`filterHari`), ringkasan hari ini dari jadwal penuh (`jadwalPerHari`), daftar terfilter (`jadwalTampil`), serta tampilan cetak `@media print` + `print-header`.
+
 # ================================================
 MIGRATION & SEEDER NOTES
 
 **Usermenu table:**
 - Created by migration 2026_10_28_140832_create_usermenu_table.php
-- Key fields: idusermenu (PK, not auto-increment), appmenunew_idappmenunew (FK), user_iduser (FK)
+- Key fields: idusermenu (PK, AUTO_INCREMENT since 2026_10_28_150000_add_auto_increment_to_usermenu), appmenunew_idappmenunew (FK), user_iduser (FK)
 - Constraint: RESTRICT on delete
 - Used by: sidebar view composer in AppServiceProvider
+- Menu rows (appmenunew) are mass-assigned only for columns in $fillable; the label column 'appmenunew' is NOT fillable (fillable lists 'appmenumew'), so label changes MUST use Appmenunew::unguarded(). Seeders in this project follow this pattern.
 
 **Seeder execution order (DatabaseSeeder.php):**
 1. PaketDefaultSeeder — rolecat (Siswa, Guru)
@@ -63,16 +78,35 @@ MIGRATION & SEEDER NOTES
 3. BerandaMenuSeeder — Beranda category + menus
 4. DataIndukMenuSeeder — Data Induk menus
 5. IkonMenuSeeder — Icon updates for appmenunew
-6. JadwalMenuSeeder — Jadwal category (Jam Pelajaran, Pengampu, Jadwal)
-7. PolajamCleanupSeeder — Cleanup old Pola Jam menu (if exists)
+6. JadwalMenuSeeder — Legacy 'Jadwal Pelajaran' category: Pengampu, Jadwal (Lama)
+7. JadwalKelasMenuSeeder — New system: 'Jadwal Kelas' (/jadwalkelas, urut 2)
+8. JamhariMenuSeeder — New system: 'Jam Pelajaran' (/jamhari, urut 1)
+9. JampelajaranCleanupSeeder — Removes dead 'jampelajaran' menu rows (legacy)
+10. SemesterMenuCleanupSeeder — Cleanup old Semester menu (if exists)
+11. PolajamCleanupSeeder — Cleanup old Pola Jam menu (if exists)
+12. AbsensiHarianMenuSeeder — 'Jadwal & Absensi' category: Absensi Harian (guru, urut 10)
+13. JadwalGuruMenuSeeder — 'Jadwal Guru' menu (/jadwalguru, Guru paket + superadmin, urut 11)
+14. JadwalSiswaMenuSeeder — Siswa paket: Jadwal Siswa (/jadwalsiswa, urut 12), Histori Absensi (urut 13)
+15. ProfilSiswaMenuSeeder — Siswa paket: Profil Saya (urut 14)
+16. MenuLabelSettingCleanupSeeder — Normalize 'setting' menu label
+17. PengumumanMenuSeeder — pengumuman (superadmin, urut 15), pengumuman-siswa (urut 16)
 
-**After all seeders:** DatabaseSeeder creates admin user (admin@sekolah.id / rahasia123 / superadmin) and assigns all 15 menus.
+**After all seeders:** DatabaseSeeder creates admin user (admin@sekolah.id / rahasia123 / superadmin) and assigns all menus.
+
+**Canonical jadwal menu mapping (2B.4.7E):**
+- /jamhari → JamhariComponent — superadmin, menu 'Jam Pelajaran' (urut 1)
+- /jadwalkelas → JadwalKelasComponent — superadmin, menu 'Jadwal Kelas' (urut 2)
+- /jadwal → JadwalComponent (legacy, menu 'Jadwal (Lama)', via dynamic route + menu.access). Menu TIDAK tampil di sidebar operasional superadmin: disembunyikan via `$menuDisembunyikanSuperadmin` di sidebar.blade.php (bukan dihapus; usermenu tetap ada agar superadmin bisa membuka langsung). Menu dihapus dari sidebar, route tetap hidup hanya untuk superadmin.
+- /jadwalguru → JadwalGuruComponent — guru+superadmin, menu 'Jadwal Guru' (Guru paket)
+- /jadwalsiswa → JadwalSiswaComponent — siswa, menu 'Jadwal Siswa' (Siswa paket)
+- /jampelajaran → redirect ke /jamhari (route lama dipertahankan agar tautan tidak rusak; menu legacy dihapus JampelajaranCleanupSeeder)
+- /pengampu → PengampuComponent — superadmin, legacy (menu 'Pengampu', urut 3)
 
 **Cleanup seeder pattern:**
-Use JampelajaranCleanupSeeder and PolajamCleanupSeeder as templates when removing deprecated menus:
+Use JampelajaranCleanupSeeder and PolajamCleanupSeeder as templates when removing deprecated menus. Seeder pembersihan menu selalu menghapus semua baris dengan url yang ditargetkan (bukan hanya satu).
 ```php
-$menu = Appmenunew::where('url', 'menu_url')->first();
-if ($menu) {
+$menus = Appmenunew::where('url', 'menu_url')->get();
+foreach ($menus as $menu) {
     DB::table('usermenu')->where('appmenunew_idappmenunew', $menu->idappmenunew)->delete();
     DB::table('role')->where('appmenunew_idappmenunew', $menu->idappmenunew)->delete();
     $menu->delete();
@@ -111,7 +145,7 @@ COMMON PITFALLS
 
 1. **Routes are partially dynamic**
    - routes/web.php lines 92-102: Loop generates routes for all appmenunew.url values NOT in $explicitUrls
-   - Explicit routes (like /jadwalkelas, /polajam) are hardcoded before this loop
+   - Explicit routes (like /jadwalkelas, /jamhari, /jampelajaran) are hardcoded before this loop
    - If a menu route won't load: check if URL is in appmenunew + route loop includes it + component exists
 
 2. **Grid/Hari generation depends on correct source**
@@ -145,7 +179,7 @@ VERIFICATION STEPS
 After changes to Jadwal, JadwalKelas, or menu systems:
 
 1. `php artisan migrate:status` — all migrations [1] Ran
-2. `php artisan route:list` — check /jadwal, /jadwalkelas, /jampelajaran routes present
+2. `php artisan route:list` — check /jadwal, /jadwalkelas, /jamhari, /jadwalguru, /jadwalsiswa routes present (dan /jampelajaran sebagai redirect ke /jamhari)
 3. `php artisan test` — run test suite (at least unit tests should pass)
 4. Check no Polajam references in JadwalService/JadwalComponent (except in comments)
 5. Check no Jamhari references in Jadwal system
@@ -172,7 +206,7 @@ ATURAN KERJA (WAJIB)
 
 - **Jangan membuat file tes permanen di tests/.** Skrip uji ditaruh di storage/app/tmp-uji, dijalankan dalam DB::beginTransaction() + rollBack() di finally, lalu dihapus.
 
-- **Git hanya baca** (status, diff, log, show). Jangan add/commit/push/checkout/reset/stash/clean.
+- **Git checkpoint lokal diperbolehkan** setelah persetujuan eksplisit pemilik proyek. Periksa status dan diff sebelum commit. Push wajib mendapat persetujuan terpisah. Jangan reset, checkout, stash, atau clean untuk membuang perubahan tanpa persetujuan.
 
 - **Shell PowerShell, path berspasi:** Mulai dengan `Set-Location -LiteralPath "C:\project-reyhan\template web"`. Panggil `php ...` dan `php vendor/bin/pint <file-spesifik>`.
 

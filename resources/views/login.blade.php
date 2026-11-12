@@ -6,7 +6,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>WakibotaCraft | Login</title>
+    <title>SIAKAD Template | Login</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <!-- Vendors styles-->
     <link rel="stylesheet" href="{{ asset('css/simplebar.css') }}">
     <!-- Main styles for this application-->
@@ -31,7 +32,7 @@
                         <div class="card-body p-3 p-md-4 p-xl-5">
                             <div class="text-center mb-3">
                                 <div>
-                                    <h3 class="fw-bold">WakibotaCraft</h3>
+                                    <img src="{{ asset('img/brand/siakad-logo.svg') }}" alt="SIAKAD Template" height="64" style="width:auto; height:64px;">
                                 </div>
                             </div>
                             <h2 class="fs-6 fw-normal text-center text-secondary mb-4">Sign in to your account</h2>

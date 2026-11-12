@@ -19,3 +19,11 @@ yarn-error.log
 /.vscode
 
 templatedb.sql
+
+# 2B.20: artefak database/data sensitif (backup/dump/bak)
+*.sql
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+backup-*/

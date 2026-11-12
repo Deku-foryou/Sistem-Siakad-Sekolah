@@ -14,10 +14,12 @@
                         mengelola data Buat Dokumentasi, termasuk menambahkan atau mengubah informasi.
                     </div>
                 </div>
+                @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                 <div>
                     <button class="btn btn-primary" wire:click="$dispatch('show-add-docs-modal')"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -48,6 +50,7 @@
 
                 <!-- Action Buttons -->
                 <div class="d-flex flex-wrap align-items-center gap-2">
+                    @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
                         style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
@@ -60,6 +63,7 @@
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
+                    @endif
                 </div>
 
             </div>
@@ -93,12 +97,14 @@
                                             <tr class="px-4">
                                                 <td class="text-center">{{ $docss->firstItem() + $key }} </td>
                                                 <td style="min-width: 90px;text-align: center">
+                                                    @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                                                     <button class="btn btn-sm btn-warning text-dark"
                                                         wire:click="editDocs('{{ $datas->iddocs }}')"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
                                                     <button class="btn btn-sm btn-danger text-white"
                                                         wire:click="deleteConfirmationDocs('{{ $datas->iddocs }}')"><i
                                                             class="fa-solid fa-trash-can"></i></button>
+                                                    @endif
                                                 </td>
                                                 <td>{{ $datas->title }}</td>
                                                 <td>

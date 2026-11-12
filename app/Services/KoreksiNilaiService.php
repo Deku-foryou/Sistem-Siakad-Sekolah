@@ -11,6 +11,7 @@ use App\Models\NilaiSiswa;
 use App\Models\Notifikasi;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Services\WalimuridService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -174,6 +175,26 @@ class KoreksiNilaiService
                 );
             }
 
+            // Notifikasi wali murid (2B.12, D1/D3/D10): relasi verified + periode berlaku + akun aktif.
+            $kelasLabel = WalimuridService::labelKelasSiswa([$nilai->siswa_idsiswa])[(int) $nilai->siswa_idsiswa] ?? '-';
+            $waliIds = WalimuridService::penerimaWaliVerifiedAktif([$nilai->siswa_idsiswa]);
+
+            foreach ($waliIds as $waliId) {
+                NotifikasiService::buat(
+                    [$waliId],
+                    [
+                        'judul' => 'Nilai dikoreksi: '.$komponen->mapel->nama,
+                        'isi' => 'Nilai '.$nilai->siswa->nama.' pada mata pelajaran '.$komponen->mapel->nama.' di kelas '.$kelasLabel.' telah diperbarui melalui koreksi resmi. Lihat detail di portal Wali.',
+                        'jenis' => Notifikasi::JENIS_KOREKSI,
+                        'prioritas' => 'tinggi',
+                        'sumber_tabel' => 'nilai_siswa',
+                        'sumber_id' => $nilai->idnilai_siswa,
+                        'link' => '/wali-akademik',
+                    ],
+                    $aktor
+                );
+            }
+
             return $nilai->fresh(['komponenNilai', 'siswa']);
         });
     }
@@ -225,6 +246,37 @@ class KoreksiNilaiService
                 ->pluck('user_iduser')
                 ->map(fn ($id) => (int) $id)
                 ->all();
+
+            // Notifikasi wali murid (2B.12, D1/D3/D10): wali verified per siswa terdampak.
+            if ($siswaTerdampak !== []) {
+                $namaSiswa = Siswa::query()
+                    ->whereIn('idsiswa', $siswaTerdampak)
+                    ->pluck('nama', 'idsiswa');
+
+                $relasiWali = WalimuridService::relasiWaliAktifSiswa($siswaTerdampak)
+                    ->groupBy('siswa_idsiswa');
+
+                foreach ($relasiWali as $siswaId => $relasi) {
+                    $nama = $namaSiswa[$siswaId] ?? ('siswa #'.$siswaId);
+                    $waliIds = $relasi->pluck('user_iduser')->map(fn ($id) => (int) $id)->unique()->all();
+
+                    foreach ($waliIds as $waliId) {
+                        NotifikasiService::buat(
+                            [$waliId],
+                            [
+                                'judul' => 'KKTP dikoreksi: '.$kktp->mapel->nama,
+                                'isi' => 'Nilai akhir '.$nama.' ikut terdampak koreksi KKTP mata pelajaran '.$kktp->mapel->nama.'. Lihat detail di portal Wali.',
+                                'jenis' => Notifikasi::JENIS_KOREKSI,
+                                'prioritas' => 'tinggi',
+                                'sumber_tabel' => 'kktp_mapel',
+                                'sumber_id' => $kktp->idkktp_mapel,
+                                'link' => '/wali-akademik',
+                            ],
+                            $aktor
+                        );
+                    }
+                }
+            }
 
             if ($siswaUserIds !== []) {
                 NotifikasiService::buat(

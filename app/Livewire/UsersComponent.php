@@ -6,6 +6,7 @@ use App\Models\Guru;
 use App\Models\Siswa;
 use App\Models\User;
 use App\Services\AkunService;
+use App\Services\PaketMenuService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -78,10 +79,12 @@ class UsersComponent extends Component
         $users->name = $this->name;
         $users->email = $this->email;
         $users->level = $this->level;
+        $users->status_akun = 'aktif';
         $users->password = Hash::make($this->password);
         $users->wajib_ganti_password = true;
 
         $users->save();
+        PaketMenuService::terapkanDefault($users);
         $this->reset();
 
         $this->resetPage('pageLOV');
@@ -124,6 +127,7 @@ class UsersComponent extends Component
             'level' => 'required ',
         ]);
         $users = User::where('id', $this->id)->first();
+        $levelLama = $users->level;
         $users->username = $this->username;
         $users->name = $this->name;
         $users->email = $this->email;
@@ -140,6 +144,10 @@ class UsersComponent extends Component
         }
 
         $users->save();
+
+        if ($levelLama !== $this->level) {
+            PaketMenuService::terapkanDefault($users);
+        }
 
         $this->reset();
 
@@ -186,11 +194,14 @@ class UsersComponent extends Component
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($data, null, 'A1');
-        $writer = new Xlsx($spreadsheet);
         $filename = 'exported-users-data.xlsx';
-        $writer->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function exportToPdf()

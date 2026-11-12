@@ -40,9 +40,24 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // hanya bisa di akses pada sidebar view
+        // Tahan kegagalan agar halaman non-Docs tidak pernah 500
+        // akibat data/tabel Docs yang belum siap.
         view()->composer(['assets.docs_sidebar'], function ($view) {
-            $docsCat = Docscat::orderBy('urut', 'asc')->get();
-            $sidebarDocs = Docs::orderBy('urut', 'asc')->get();
+            try {
+                $docsCat = \Illuminate\Support\Facades\Schema::hasTable('docscat')
+                    ? Docscat::orderBy('urut', 'asc')->get()
+                    : collect();
+                $sidebarDocs = \Illuminate\Support\Facades\Schema::hasTable('docs')
+                    ? Docs::orderBy('urut', 'asc')->get()
+                    : collect();
+            } catch (\Throwable $exception) {
+                \Illuminate\Support\Facades\Log::warning('docs_sidebar: gagal memuat kategori/dokumen', [
+                    'exception' => get_class($exception),
+                ]);
+                $docsCat = collect();
+                $sidebarDocs = collect();
+            }
+
             $view->with('docsCat', $docsCat);
             $view->with('sidebarDocs', $sidebarDocs);
         });

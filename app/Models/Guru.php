@@ -64,4 +64,24 @@ class Guru extends Model
     {
         return $this->hasMany(JadwalKelas::class, 'guru_idguru', 'idguru');
     }
+
+    public function penugasanMengajar()
+    {
+        return $this->hasMany(PenugasanMengajar::class, 'guru_idguru', 'idguru');
+    }
+
+    public function nilaiSiswa()
+    {
+        return $this->hasMany(NilaiSiswa::class, 'guru_idguru', 'idguru');
+    }
+
+    public function catatanRapor()
+    {
+        return $this->hasMany(CatatanRapor::class, 'guru_idguru', 'idguru');
+    }
+
+    public function finalisasiRaporSebagaiWali()
+    {
+        return $this->hasMany(FinalisasiRapor::class, 'wali_kelas_idguru', 'idguru');
+    }
 }

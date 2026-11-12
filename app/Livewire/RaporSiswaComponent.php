@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Services\RaporSiswaService;
+use App\Support\NamaFile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 /**
@@ -45,6 +47,11 @@ class RaporSiswaComponent extends Component
             [$semesterId, $kelasId] = $this->raporTerpilih();
             $data = RaporSiswaService::detail(auth()->user(), $semesterId, $kelasId);
         } catch (DomainException $exception) {
+            Log::warning('rapor-siswa: gagal menyiapkan PDF', [
+                'user_id' => (int) auth()->id(),
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
 
             return null;
@@ -54,7 +61,8 @@ class RaporSiswaComponent extends Component
             ->setPaper('a4', 'portrait')
             ->setOption('isRemoteEnabled', false);
 
-        $namaFile = 'rapor-'.($data['siswa']->nis ?: $data['siswa']->idsiswa).'-'.$kelasId.'-'.$semesterId.'.pdf';
+        $nisSegmen = NamaFile::aman((string) ($data['siswa']->nis ?: $data['siswa']->idsiswa), 'siswa');
+        $namaFile = 'rapor-'.$nisSegmen.'-'.(int) $kelasId.'-'.(int) $semesterId.'.pdf';
 
         return response()->streamDownload(fn () => print ($pdf->output()), $namaFile);
     }

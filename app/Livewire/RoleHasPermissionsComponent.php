@@ -114,11 +114,14 @@ class RoleHasPermissionsComponent extends Component
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($data, null, 'A1');
-        $writer = new Xlsx($spreadsheet);
         $filename = 'exported-role_has_permissions-data.xlsx';
-        $writer->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function exportToPdf()

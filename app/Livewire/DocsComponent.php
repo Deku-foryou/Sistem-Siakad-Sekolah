@@ -42,6 +42,11 @@ class DocsComponent extends Component
 
     public $perPage = 10;
 
+    private function pastikanBolehKelola(): void
+    {
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+    }
+
     public function mount()
     {
         $this->tglstart = now()->firstOfMonth()->format('Y-m-d');
@@ -77,34 +82,48 @@ class DocsComponent extends Component
 
     public function storeDocs()
     {
+        $this->pastikanBolehKelola();
+
         $this->validate([
             // 'iddocs' => 'required ',
-            'title' => 'required ',
+            'title' => 'required|string|max:255',
             'content' => 'required|file|mimes:pdf|max:10000',
             'urut' => [
                 'required',
-                'numeric',
+                'integer',
+                'min:1',
                 Rule::unique('docs', 'urut')->where(function ($query) {
                     return $query->where('docscat_iddocscat', $this->docscat_iddocscat);
                 }),
             ],
-            'docscat_iddocscat' => 'required ',
+            'docscat_iddocscat' => 'required|integer|exists:docscat,iddocscat',
         ]);
 
-        $docs = new Docs;
-        $docs->iddocs = $this->iddocs;
-        $docs->title = $this->title;
-        // $docs->content = $this->content;
+        $namaFile = 'docs_'.now()->format('YmdHis').'_'.uniqid('', true).'.'.$this->content->extension();
 
-        if ($this->content) {
-            $namaFile = 'docs'.now()->format('YmdHis').'.'.$this->content->extension();
-            $this->content->storeAs('tutorial-website', $namaFile);
-            $docs->content = $namaFile;
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($namaFile) {
+                $docs = new Docs;
+                $docs->title = $this->title;
+
+                $this->content->storeAs('tutorial-website', $namaFile);
+                $docs->content = $namaFile;
+
+                $docs->urut = (int) $this->urut;
+                $docs->docscat_iddocscat = (int) $this->docscat_iddocscat;
+                $docs->save();
+            });
+        } catch (\Throwable $e) {
+            // Jangan meninggalkan file yatim bila transaksi gagal.
+            try {
+                Storage::delete('tutorial-website/'.$namaFile);
+            } catch (\Throwable) {
+                \Illuminate\Support\Facades\Log::warning('docs-store: gagal menghapus file yatim', ['nama' => $namaFile]);
+            }
+
+            throw $e;
         }
 
-        $docs->urut = $this->urut;
-        $docs->docscat_iddocscat = $this->docscat_iddocscat;
-        $docs->save();
         $this->close();
 
         $this->resetPage('pageLOV');
@@ -113,7 +132,6 @@ class DocsComponent extends Component
 
         $this->dispatch('close-docs-modal');
         $this->js('window.location.reload();');
-
     }
 
     public function close()
@@ -127,7 +145,9 @@ class DocsComponent extends Component
 
     public function editDocs($iddocs)
     {
-        $docs = Docs::where('iddocs', $iddocs)->first();
+        $this->pastikanBolehKelola();
+
+        $docs = Docs::query()->findOrFail((int) $iddocs);
 
         $this->iddocs = $docs->iddocs;
         $this->title = $docs->title;
@@ -142,45 +162,69 @@ class DocsComponent extends Component
 
     public function updateDocs()
     {
+        $this->pastikanBolehKelola();
 
-        // Validate title as required
+        // Validasi hanya bila ada file baru; nilai string lama bukan UploadedFile.
         $this->validate([
-            'iddocs' => 'required ',
-            'title' => 'required ',
-            'urut' => 'required ',
-            'docscat_iddocscat' => 'required ',
+            'iddocs' => 'required|integer',
+            'title' => 'required|string|max:255',
+            'docscat_iddocscat' => 'required|integer|exists:docscat,iddocscat',
+            'urut' => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::unique('docs', 'urut')
+                    ->where(fn ($query) => $query->where('docscat_iddocscat', $this->docscat_iddocscat))
+                    ->ignore($this->iddocs, 'iddocs'),
+            ],
         ]);
 
-        $docs = Docs::where('iddocs', $this->iddocs)->first();
-        $docs->iddocs = $this->iddocs;
-        $docs->title = $this->title;
-
-        // Check if content is being updated
-        if ($this->content != $docs->content) {
-
-            // Validate the content file if it's being updated
-            $this->validate([
-                'content' => 'nullable|file|mimes:pdf|max:10000',
-            ]);
-
-            // Delete the old content if it exists
-            if (! is_null($docs->content)) {
-                Storage::delete('tutorial-website/'.$docs->content);
-            }
-
-            // Generate new filename and store the updated content
-            $namaFile = 'docs_'.now()->format('YmdHis').'.'.$this->content->extension();
-            $this->content->storeAs('tutorial-website', $namaFile);
-
-            // Update content field
-            $docs->content = $namaFile;
+        if ($this->content instanceof \Illuminate\Http\UploadedFile) {
+            $this->validate(['content' => 'file|mimes:pdf|max:10000']);
         }
 
-        $docs->urut = $this->urut;
-        $docs->docscat_iddocscat = $this->docscat_iddocscat;
+        $docs = Docs::query()->findOrFail((int) $this->iddocs);
 
-        // Save the updated document
-        $docs->save();
+        $baru = [
+            'title' => $this->title,
+            'urut' => (int) $this->urut,
+            'docscat_iddocscat' => (int) $this->docscat_iddocscat,
+        ];
+
+        $namaLama = $docs->content;
+        $namaBaru = null;
+
+        if ($this->content instanceof \Illuminate\Http\UploadedFile) {
+            $namaBaru = 'docs_'.now()->format('YmdHis').'_'.uniqid('', true).'.'.$this->content->extension();
+            $baru['content'] = $namaBaru;
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($docs, $baru, $namaBaru) {
+                if ($namaBaru !== null) {
+                    $this->content->storeAs('tutorial-website', $namaBaru);
+                }
+                $docs->fill($baru)->save();
+            });
+        } catch (\Throwable $e) {
+            if ($namaBaru !== null) {
+                try {
+                    Storage::delete('tutorial-website/'.$namaBaru);
+                } catch (\Throwable) {
+                    \Illuminate\Support\Facades\Log::warning('docs-update: gagal menghapus file yatim', ['nama' => $namaBaru]);
+                }
+            }
+
+            throw $e;
+        }
+
+        if ($namaBaru !== null && $namaLama) {
+            try {
+                Storage::delete('tutorial-website/'.$namaLama);
+            } catch (\Throwable) {
+                \Illuminate\Support\Facades\Log::warning('docs-update: gagal menghapus file lama', ['nama' => $namaLama]);
+            }
+        }
 
         $this->close();
 
@@ -195,18 +239,27 @@ class DocsComponent extends Component
 
     public function deleteConfirmationDocs($iddocs)
     {
+        $this->pastikanBolehKelola();
+
         $this->iddocs = $iddocs;
         $this->dispatch('show-delete-confirmation-docs-modal');
     }
 
     public function deleteDocs()
     {
-        $docs = Docs::where('iddocs', $this->iddocs)->first();
+        $this->pastikanBolehKelola();
+
+        $docs = Docs::query()->findOrFail((int) $this->iddocs);
         try {
+            $content = $docs->content;
             $docs->delete();
 
-            if (! is_null($docs->content)) {
-                Storage::delete('tutorial-website/'.$docs->content);
+            if (! is_null($content)) {
+                try {
+                    Storage::delete('tutorial-website/'.$content);
+                } catch (\Throwable) {
+                    \Illuminate\Support\Facades\Log::warning('docs-delete: gagal menghapus file', ['nama' => $content]);
+                }
             }
 
             $this->alert('success', 'Data docs Berhasil Di hapus');
@@ -219,6 +272,7 @@ class DocsComponent extends Component
 
     public function exportToExcel()
     {
+        $this->pastikanBolehKelola();
         $queryResult = $this->dataDocs();
         $data = [['iddocs', 'title', 'content', 'urut', 'docscat_iddocscat']];
         foreach ($queryResult as $result) {
@@ -227,15 +281,19 @@ class DocsComponent extends Component
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($data, null, 'A1');
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'exported-docs-data.xlsx';
-        $writer->save($filename);
 
-        return response()->download($filename)->deleteFileAfterSend(true);
+        // Spreadsheet di-stream dari output buffer; tidak ada file yang ditulis ke root proyek.
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 'exported-docs-data.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function exportToPdf()
     {
+        $this->pastikanBolehKelola();
         $headers = ['iddocs', 'title', 'content', 'urut', 'docscat_iddocscat'];
         $title = 'Export Data Docs';
         $queryResult = $this->dataDocs();
@@ -256,11 +314,11 @@ class DocsComponent extends Component
         $result = Docscat::get();
         $options = '';
         foreach ($result as $row) {
-            $options .= '<option value='.$row->iddocscat.'';
+            $options .= '<option value="'.(int) $row->iddocscat.'"';
             if ($id == $row->iddocscat) {
                 $options .= ' selected';
             }
-            $options .= '>'.$row->docscat.'</option>';
+            $options .= '>'.e($row->docscat).'</option>';
         }
 
         return $options;
@@ -271,11 +329,11 @@ class DocsComponent extends Component
         $result = Docs::get();
         $options = '';
         foreach ($result as $row) {
-            $options .= '<option value='.$row->iddocs.'';
+            $options .= '<option value="'.(int) $row->iddocs.'"';
             if ($id == $row->iddocs) {
                 $options .= ' selected';
             }
-            $options .= '>'.$row->docs.'</option>';
+            $options .= '>'.e($row->docs).'</option>';
         }
 
         return $options;

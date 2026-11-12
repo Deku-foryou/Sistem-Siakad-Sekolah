@@ -64,20 +64,19 @@
     <div class="padding_sidebar">
         <div class="sidebar-brand d-none d-md-flex justify-content-start px-lg-4 my-3 bg-white">
             <div class="d-flex align-items-center">
-                <i class="fa-solid fa-boxes-stacked fa-2x" style="color: #0E7D6A;"></i>
-                <div class="fw-bold mx-2" style="font-size: 18px; color: #111827;">
-                    Wakibota <span
-                        style="font-size: 11px; display: block; color: #0E7D6A; font-weight: 500;">Template</span>
-                </div>
+                <img src="{{ asset('img/brand/siakad-logo.svg') }}" alt="SIAKAD Template" height="42" style="width:auto; height:42px;">
             </div>
         </div>
 
         <div class="sidebar-menu" data-simplebar>
         <ul class="sidebar-nav p-0 mt-3" data-coreui="navigation">
             @php
-                // Menu khusus peran lain tidak relevan (dan 404) untuk superadmin.
-                $menuKhususRoleLain = ['berandaguru', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa', 'pengumuman-siswa'];
-                $sembunyikanMenuRoleLain = Auth::user()->level === 'superadmin';
+                // Menu yang disembunyikan dari sidebar superadmin.
+                // - Menu peran lain: tidak relevan (dan 404) untuk superadmin.
+                // - jadwal: menu legacy "Jadwal (Lama)", disembunyikan dari sidebar operasional;
+                //   route /jadwal tetap ada dan hanya bisa diakses superadmin (menu.access + usermenu).
+                $menuDisembunyikanSuperadmin = ['berandaguru', 'berandasiswa', 'jadwalsiswa', 'absensi-siswa', 'profil-siswa', 'pengumuman-siswa', 'jadwal', 'inputnilai', 'raporsiswa', 'notifikasi'];
+                $sembunyikanMenu = Auth::user()->level === 'superadmin';
             @endphp
 
             <li class="nav-title">Main</li>
@@ -90,14 +89,7 @@
                 </li>
             @endif
 
-            @if (in_array(Auth::user()?->level, ['guru', 'superadmin'], true))
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->is('jadwalguru') ? 'active' : '' }}" href="/jadwalguru">
-                        <i class="fa-solid fa-calendar-week me-3"></i> Jadwal Mengajar
-                    </a>
-                </li>
-            @endif
-
+            {{-- Jadwal Guru ditampilkan dari menu database (JadwalGuruMenuSeeder), bukan tautan permanen. --}}
             @if (Auth::user()?->level === 'guru')
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('absensi-perjam') ? 'active' : '' }}" href="/absensi-perjam">
@@ -146,7 +138,7 @@
                         @if ($datas->appmenunew->url === 'semester')
                             @continue
                         @endif
-                        @if ($sembunyikanMenuRoleLain && in_array($datas->appmenunew->url, $menuKhususRoleLain, true))
+                        @if ($sembunyikanMenu && in_array($datas->appmenunew->url, $menuDisembunyikanSuperadmin, true))
                             @continue
                         @endif
                         @if ($datas->appmenunew->appmenucat_idappmenucat == $items->idappmenucat)

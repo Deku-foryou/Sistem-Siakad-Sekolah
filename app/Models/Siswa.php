@@ -62,4 +62,24 @@ class Siswa extends Model
     {
         return $this->hasMany(Kelassiswa::class, 'siswa_idsiswa', 'idsiswa');
     }
+
+    public function nilaiSiswa()
+    {
+        return $this->hasMany(NilaiSiswa::class, 'siswa_idsiswa', 'idsiswa');
+    }
+
+    public function walimurid()
+    {
+        return $this->hasMany(Walimurid::class, 'siswa_idsiswa', 'idsiswa');
+    }
+
+    public function nilaiAkhir()
+    {
+        return $this->hasMany(NilaiAkhir::class, 'siswa_idsiswa', 'idsiswa');
+    }
+
+    public function catatanRapor()
+    {
+        return $this->hasMany(CatatanRapor::class, 'siswa_idsiswa', 'idsiswa');
+    }
 }

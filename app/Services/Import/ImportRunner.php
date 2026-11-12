@@ -86,7 +86,7 @@ class ImportRunner
                     });
                 } catch (QueryException $exception) {
                     if (! $this->uniqueViolation($exception)) {
-                        Log::error('Import gagal saat menyimpan satu baris.', ['exception' => $exception]);
+                        Log::error('Import gagal saat menyimpan satu baris.', ['exception' => get_class($exception), 'message' => $exception->getMessage()]);
                         $result = ['success' => false, 'errors' => ['Baris gagal disimpan karena kesalahan database.'], 'warnings' => []];
                     } else {
                         $result = ['success' => false, 'errors' => ['sudah terdaftar'], 'warnings' => []];
@@ -94,7 +94,7 @@ class ImportRunner
                 } catch (RowImportException $exception) {
                     $result = ['success' => false, 'errors' => [$exception->getMessage()], 'warnings' => []];
                 } catch (Throwable $exception) {
-                    Log::error('Import gagal saat memproses satu baris.', ['exception' => $exception]);
+                    Log::error('Import gagal saat memproses satu baris.', ['exception' => get_class($exception), 'message' => $exception->getMessage()]);
                     $result = ['success' => false, 'errors' => ['Baris gagal diproses karena kesalahan teknis.'], 'warnings' => []];
                 }
 
@@ -304,7 +304,7 @@ class ImportRunner
 
     private function catatBarisError(Throwable $exception): void
     {
-        Log::error('Import gagal saat memproses satu baris.', ['exception' => $exception]);
+        Log::error('Import gagal saat memproses satu baris.', ['exception' => get_class($exception), 'message' => $exception->getMessage()]);
     }
 
     private function uniqueViolation(QueryException $exception): bool

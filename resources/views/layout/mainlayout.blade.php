@@ -7,10 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
-    <meta name="author" content="Łukasz Holeczek">
-    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
-    <title>Livewire Spatie Master Auth Laravel Wakibota | @yield('title')</title>
+    <meta name="description" content="SIAKAD Template - Sistem Informasi Akademik untuk sekolah">
+    <meta name="author" content="SIAKAD">
+    <meta name="keyword" content="SIAKAD,Template,Sistem Informasi Akademik,Sekolah,Akademik">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <title>SIAKAD Template | @yield('title')</title>
 
     @include('assets.style')
 

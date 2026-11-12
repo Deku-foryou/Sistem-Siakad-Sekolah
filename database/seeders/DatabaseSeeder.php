@@ -23,13 +23,30 @@ class DatabaseSeeder extends Seeder
             DataIndukMenuSeeder::class,
             IkonMenuSeeder::class,
             JadwalMenuSeeder::class,
+            JadwalKelasMenuSeeder::class,
+            JamhariMenuSeeder::class,
+            JampelajaranCleanupSeeder::class,
             SemesterMenuCleanupSeeder::class,
             PolajamCleanupSeeder::class,
             AbsensiHarianMenuSeeder::class,
+            JadwalGuruMenuSeeder::class,
             JadwalSiswaMenuSeeder::class,
             ProfilSiswaMenuSeeder::class,
             MenuLabelSettingCleanupSeeder::class,
             PengumumanMenuSeeder::class,
+            PenilaianMenuSeeder::class,
+            InputNilaiMenuSeeder::class,
+            FinalisasiKoreksiMenuSeeder::class,
+            RaporWaliKelasMenuSeeder::class,
+            RaporSiswaMenuSeeder::class,
+            NotifikasiMenuSeeder::class,
+            WaliAkunMenuSeeder::class,
+            WaliBerandaMenuSeeder::class,
+            WaliRelasiMenuSeeder::class,
+            WaliAkademikMenuSeeder::class,
+            WaliAntrianMenuSeeder::class,
+            PembayaranMenuSeeder::class,
+            BayarTagihanMenuSeeder::class,
         ]);
 
         // Create default admin user
@@ -50,9 +67,12 @@ class DatabaseSeeder extends Seeder
             info('DatabaseSeeder: Superadmin user already exists, skipping creation.');
         }
 
-        // Populate usermenu for superadmin - assign all menus to superadmin
+        // Populate usermenu for superadmin - assign all menus to superadmin,
+        // kecuali menu self-service Portal Wali (hanya untuk level 'wali').
         // Superadmin should have access to all application menus
-        $menus = Appmenunew::query()->pluck('idappmenunew');
+        $menus = Appmenunew::query()
+            ->whereNotIn('url', ['wali-beranda', 'wali-relasi', 'wali-akademik', 'bayartagihan'])
+            ->pluck('idappmenunew');
         foreach ($menus as $menuId) {
             Usermenu::firstOrCreate(
                 ['user_iduser' => $admin->id, 'appmenunew_idappmenunew' => $menuId],

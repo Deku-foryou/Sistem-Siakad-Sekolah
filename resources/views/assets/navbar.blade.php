@@ -52,13 +52,9 @@
         <ul class="header-nav ms-auto d-flex align-items-center gap-3">
 
             <!-- Notification Bell -->
-            <div class="position-relative me-3" style="cursor: pointer;">
-                <i class="fa-regular fa-bell text-secondary" style="font-size: 18px;"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    style="font-size: 8px; border: 2px solid #fff;">
-                    2
-                </span>
-            </div>
+            @if (in_array(Auth::user()?->level, ['guru', 'siswa', 'wali'], true))
+                @livewire('notification-bell-component')
+            @endif
 
             <!-- Profile Dropdown -->
             <div class="dropdown">

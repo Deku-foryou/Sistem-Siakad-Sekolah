@@ -385,7 +385,7 @@
     <header class="mb-4">
         <nav aria-label="breadcrumb" class="academic-breadcrumb mb-3">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/dashboard">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ \App\Support\BerandaUrl::untuk(auth()->user()) }}">Beranda</a></li>
                 <li class="breadcrumb-item">Akademik</li>
                 <li class="breadcrumb-item active" aria-current="page">Manajemen Tahun Ajaran</li>
             </ol>

@@ -30,10 +30,18 @@ class PengumumanMenuSeeder extends Seeder
             [
                 'appmenunew' => 'Pengumuman',
                 'icon' => 'fa-solid fa-bullhorn',
-                'urut' => 13,
+                'urut' => 15,
                 'appmenucat_idappmenucat' => $kategori->idappmenucat,
             ]
         ));
+
+        // Selaraskan nilai kanonik pada menu yang sudah ada.
+        Appmenunew::unguarded(fn () => $menuSuperadmin->update([
+            'appmenunew' => 'Pengumuman',
+            'icon' => 'fa-solid fa-bullhorn',
+            'urut' => 15,
+            'appmenucat_idappmenucat' => $kategori->idappmenucat,
+        ]));
 
         User::where('level', 'superadmin')->get()->each(function (User $user) use ($menuSuperadmin) {
             Usermenu::firstOrCreate([
@@ -47,10 +55,18 @@ class PengumumanMenuSeeder extends Seeder
             [
                 'appmenunew' => 'Pengumuman',
                 'icon' => 'fa-solid fa-bullhorn',
-                'urut' => 13,
+                'urut' => 16,
                 'appmenucat_idappmenucat' => $kategori->idappmenucat,
             ]
         ));
+
+        // Selaraskan nilai kanonik pada menu yang sudah ada.
+        Appmenunew::unguarded(fn () => $menuSiswa->update([
+            'appmenunew' => 'Pengumuman',
+            'icon' => 'fa-solid fa-bullhorn',
+            'urut' => 16,
+            'appmenucat_idappmenucat' => $kategori->idappmenucat,
+        ]));
 
         $paket = Rolecat::firstOrCreate(['rolecat' => 'Siswa']);
 

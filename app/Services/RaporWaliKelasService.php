@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\DB;
  * - Nilai akademik selalu dari `nilai_akhir` (snapshot 2B.5.6). Tidak ada
  *   perhitungan ulang nilai di service ini.
  * - Otorisasi kelas memakai `FinalisasiNilaiService::pastikanBolehAkses`
- *   (wali = `kelas.guru_idguru`; superadmin semua kelas TA aktif).
+ *   (wali = `kelas.guru_idguru`; superadmin semua kelas TA aktif) — dipanggil
+ *   di dalam setiap method yang mengakses data kelas (hardening 2B.13, K1).
  * - Rekap kehadiran: `absensi_harian` utama per tanggal; `absensi_perjam`
  *   hanya mengisi tanggal tanpa catatan harian; prioritas per tanggal
  *   alpha > izin > sakit > hadir; difilter semester + kelas rapor aktif.
@@ -39,15 +40,6 @@ use Illuminate\Support\Facades\DB;
 class RaporWaliKelasService
 {
     public const PRIORITAS_STATUS = ['alpha', 'izin', 'sakit', 'hadir'];
-
-    /**
-     * Guard pertahanan berlapis untuk method baca tanpa parameter user:
-     * hanya guru/superadmin yang boleh memanggil via auth() aktif.
-     */
-    private static function pastikanLevel(): void
-    {
-        abort_unless(in_array(auth()->user()?->level, ['guru', 'superadmin'], true), 403);
-    }
 
     /**
      * @return Collection<int, Kelas>
@@ -85,16 +77,25 @@ class RaporWaliKelasService
             ->get();
     }
 
-    public static function statusFinalisasi(int $kelasId): ?FinalisasiRapor
+    /**
+     * Guard kepemilikan kelas untuk pemanggil berbasis user (2B.13, K1).
+     * Guru hanya boleh kelas yang menjadi tanggung jawabnya; superadmin semua kelas TA aktif.
+     */
+    private static function pastikanAksesKelas(User $user, int $kelasId): Kelas
     {
-        self::pastikanLevel();
+        return self::pastikanBolehAkses($user, $kelasId);
+    }
+
+    public static function statusFinalisasi(User $user, int $kelasId): ?FinalisasiRapor
+    {
+        self::pastikanAksesKelas($user, $kelasId);
 
         return FinalisasiNilaiService::status($kelasId);
     }
 
-    public static function pastikanFinal(int $kelasId): FinalisasiRapor
+    public static function pastikanFinal(User $user, int $kelasId): FinalisasiRapor
     {
-        self::pastikanLevel();
+        self::pastikanAksesKelas($user, $kelasId);
         $konteks = KonteksAkademikService::ambil();
         $semesterId = $konteks->semester?->idsemester;
 
@@ -114,9 +115,9 @@ class RaporWaliKelasService
      * Nilai final snapshot per mapel untuk satu siswa pada kelas+semester aktif.
      * Kurang/tidak dikecualikan — hanya baris `nilai_akhir` yang dibaca.
      */
-    public static function nilaiFinal(int $kelasId, int $siswaId): Collection
+    public static function nilaiFinal(User $user, int $kelasId, int $siswaId): Collection
     {
-        self::pastikanLevel();
+        self::pastikanAksesKelas($user, $kelasId);
 
         $konteks = KonteksAkademikService::ambil();
 
@@ -152,9 +153,9 @@ class RaporWaliKelasService
      *
      * @return array{hadir: int, sakit: int, izin: int, alpha: int, total: int, per_tanggal: Collection<string, string>}
      */
-    public static function rekapKehadiran(int $kelasId, int $siswaId): array
+    public static function rekapKehadiran(User $user, int $kelasId, int $siswaId): array
     {
-        self::pastikanLevel();
+        self::pastikanAksesKelas($user, $kelasId);
 
         $konteks = KonteksAkademikService::ambil();
         $kosong = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'total' => 0, 'per_tanggal' => collect()];
@@ -217,10 +218,9 @@ class RaporWaliKelasService
 
     // ---- Catatan rapor ----
 
-    public static function catatan(int $siswaId): ?CatatanRapor
+    public static function catatan(User $user, int $kelasId, int $siswaId): ?CatatanRapor
     {
-        self::pastikanLevel();
-
+        self::pastikanAksesKelas($user, $kelasId);
         $konteks = KonteksAkademikService::ambil();
 
         if (! $konteks->valid() || ! $konteks->semester) {
@@ -312,7 +312,7 @@ class RaporWaliKelasService
         }
 
         $konteks = KonteksAkademikService::ambil();
-        $final = self::statusFinalisasi($kelasId);
+        $final = self::statusFinalisasi($user, $kelasId);
         $isFinal = $final && $final->status === FinalisasiRapor::STATUS_FINAL;
 
         if ($wajibFinal && ! $isFinal) {
@@ -325,9 +325,9 @@ class RaporWaliKelasService
             'konteks' => $konteks,
             'finalisasi' => $final,
             'is_final' => (bool) $isFinal,
-            'nilai_final' => $isFinal ? self::nilaiFinal($kelasId, $siswaId) : collect(),
-            'rekap_kehadiran' => self::rekapKehadiran($kelasId, $siswaId),
-            'catatan' => self::catatan($siswaId),
+            'nilai_final' => $isFinal ? self::nilaiFinal($user, $kelasId, $siswaId) : collect(),
+            'rekap_kehadiran' => self::rekapKehadiran($user, $kelasId, $siswaId),
+            'catatan' => self::catatan($user, $kelasId, $siswaId),
             'nama_sekolah' => (string) config('app.name', 'SIAKAD'),
         ];
     }

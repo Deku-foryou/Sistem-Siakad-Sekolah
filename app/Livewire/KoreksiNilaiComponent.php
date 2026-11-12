@@ -11,6 +11,7 @@ use App\Models\PenugasanMengajar;
 use App\Services\KonteksAkademikService;
 use App\Services\KoreksiNilaiService;
 use DomainException;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 /**
@@ -103,6 +104,12 @@ class KoreksiNilaiComponent extends Component
             $this->alasan = '';
             $this->dispatch('close-koreksi-nilai-modal');
         } catch (DomainException $exception) {
+            Log::warning('koreksi-nilai: koreksi komponen gagal', [
+                'user_id' => (int) auth()->id(),
+                'target_nilai_id' => (int) $this->targetNilaiId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }
@@ -138,6 +145,12 @@ class KoreksiNilaiComponent extends Component
             $this->alasanKktp = '';
             $this->dispatch('close-koreksi-kktp-modal');
         } catch (DomainException $exception) {
+            Log::warning('koreksi-nilai: koreksi KKTP gagal', [
+                'user_id' => (int) auth()->id(),
+                'target_kktp_id' => (int) $this->targetKktpId,
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
             $this->galat = $exception->getMessage();
         }
     }

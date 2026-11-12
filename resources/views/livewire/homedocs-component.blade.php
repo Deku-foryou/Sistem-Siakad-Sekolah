@@ -15,7 +15,7 @@
                     bertujuan
                     untuk membantu pengguna dalam memahami dan memanfaatkan aplikasi secara optimal. Ingin kembali ke
                     halaman
-                    <a href="/dashboard">dashboard</a>.
+                    <a href="{{ \App\Support\BerandaUrl::untuk(auth()->user()) }}">dashboard</a>.
                 </p>
 
             </div>

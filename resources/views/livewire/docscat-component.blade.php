@@ -14,10 +14,12 @@
                         mengelola data Kategori Dokumentasi, termasuk menambahkan atau mengubah informasi.
                     </div>
                 </div>
+                @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                 <div>
                     <button class="btn btn-primary" wire:click="$dispatch('show-add-docscat-modal')"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -55,12 +57,14 @@
                                             <tr class="px-4">
                                                 <td class="text-center">{{ $docscats->firstItem() + $key }} </td>
                                                 <td style="min-width: 90px;text-align: center">
+                                                    @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                                                     <button class="btn btn-sm btn-warning text-dark"
                                                         wire:click="editDocscat('{{ $datas->iddocscat }}')"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
                                                     <button class="btn btn-sm btn-danger text-white"
                                                         wire:click="deleteConfirmationDocscat('{{ $datas->iddocscat }}')"><i
                                                             class="fa-solid fa-trash-can"></i></button>
+                                                    @endif
                                                 </td>
                                                 <td>{{ $datas->docscat }}</td>
                                                 <td>{{ $datas->urut }}</td>

@@ -6,8 +6,8 @@ use App\Models\Appmenucat;
 use App\Models\Appmenunew;
 use App\Models\Role;
 use App\Models\Rolecat;
-use App\Models\Usermenu;
 use App\Models\User;
+use App\Models\Usermenu;
 use Illuminate\Database\Seeder;
 
 class AbsensiHarianMenuSeeder extends Seeder
@@ -30,9 +30,17 @@ class AbsensiHarianMenuSeeder extends Seeder
                 'appmenucat_idappmenucat' => $category->idappmenucat,
                 'appmenunew' => 'Absensi Harian',
                 'urut' => 10,
-                'icon' => 'fas fa-clipboard-list',
+                'icon' => 'fa-solid fa-clipboard-list',
             ]
         );
+
+        // Selaraskan nilai kanonik pada menu yang sudah ada.
+        \App\Models\Appmenunew::unguarded(fn () => $menu->update([
+            'appmenucat_idappmenucat' => $category->idappmenucat,
+            'appmenunew' => 'Absensi Harian',
+            'urut' => 10,
+            'icon' => 'fa-solid fa-clipboard-list',
+        ]));
 
         // Assign menu ke guru melalui Role (permission-based access control)
         // ini digunakan oleh middleware check.level untuk validasi kewenangan

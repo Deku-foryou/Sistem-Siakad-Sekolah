@@ -55,6 +55,10 @@ class RaporSiswaService
     /**
      * Daftar rapor final milik siswa login.
      *
+     * Satu query untuk seluruh baris finalisasi yang relevan (dipasangkan
+     * per semester+kelas) dengan eager loading yang sama seperti sebelumnya,
+     * sehingga jumlah query tidak tumbuh linear terhadap banyaknya rapor.
+     *
      * @return Collection<int, array{semester: \App\Models\Semester, kelas: Kelas, finalisasi: FinalisasiRapor}>
      */
     public static function daftarRapor(User $user): Collection
@@ -67,15 +71,31 @@ class RaporSiswaService
             ->distinct()
             ->get();
 
+        if ($kunci->isEmpty()) {
+            return collect();
+        }
+
+        $pasangan = $kunci
+            ->map(fn ($baris) => [(int) $baris->semester_idsemester, (int) $baris->kelas_idkelas])
+            ->values();
+
+        $finals = FinalisasiRapor::query()
+            ->with(['waliKelas', 'difinalisasioleh', 'semester.tahunajaran', 'kelas.wali'])
+            ->where('status', FinalisasiRapor::STATUS_FINAL)
+            ->where(function ($query) use ($pasangan) {
+                foreach ($pasangan as [$semesterId, $kelasId]) {
+                    $query->orWhere(fn ($q) => $q
+                        ->where('semester_idsemester', $semesterId)
+                        ->where('kelas_idkelas', $kelasId));
+                }
+            })
+            ->get()
+            ->keyBy(fn (FinalisasiRapor $final) => $final->semester_idsemester.':'.$final->kelas_idkelas);
+
         $hasil = collect();
 
         foreach ($kunci as $baris) {
-            $final = FinalisasiRapor::query()
-                ->with(['waliKelas', 'difinalisasioleh', 'semester.tahunajaran', 'kelas.wali'])
-                ->where('semester_idsemester', $baris->semester_idsemester)
-                ->where('kelas_idkelas', $baris->kelas_idkelas)
-                ->where('status', FinalisasiRapor::STATUS_FINAL)
-                ->first();
+            $final = $finals->get($baris->semester_idsemester.':'.$baris->kelas_idkelas);
 
             if (! $final) {
                 continue;

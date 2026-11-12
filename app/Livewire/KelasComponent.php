@@ -186,7 +186,7 @@ class KelasComponent extends Component
         try {
             $result = KelasService::buat($data);
         } catch (\Throwable $e) {
-            \Log::error('KelasService::buat error', ['exception' => $e]);
+            \Log::error('KelasService::buat error', ['exception' => get_class($e), 'message' => $e->getMessage()]);
             $this->alert('error', 'Terjadi kesalahan saat menambah kelas. Silakan coba lagi.');
 
             return;

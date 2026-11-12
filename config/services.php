@@ -31,4 +31,24 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Midtrans (Snap)
+    |--------------------------------------------------------------------------
+    | Konfigurasi dibaca dari environment oleh aplikasi; file .env tidak dibaca
+    | di sini. Server Key dan Client Key HARUS diisi di .env lingkungan terkait
+    | (sandbox: app.sandbox.midtrans.com / api.sandbox.midtrans.com;
+    |  production: app.midtrans.com / api.midtrans.com).
+    |
+    | MIDTRANS_MODE: sandbox | production (default sandbox — aman).
+    | Selama MIDTRANS_SERVER_KEY / MIDTRANS_CLIENT_KEY kosong, gateway dianggap
+    | belum terkonfigurasi dan transaksi online tidak bisa dibuat (BLOCKED).
+    */
+    'midtrans' => [
+        'mode' => env('MIDTRANS_MODE', 'sandbox'),
+        'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+    ],
+
 ];
