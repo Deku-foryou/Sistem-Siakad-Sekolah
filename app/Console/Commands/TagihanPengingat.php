@@ -110,7 +110,7 @@ class TagihanPengingat extends Command
                 try {
                     $notifikasi = NotifikasiService::buat([$userId], [
                         'judul' => 'Pengingat tagihan ('.$tahap.')',
-                        'isi' => 'Tagihan '.strtoupper($tagihan->jenis).' '.$tagihan->periode.' sebesar Rp '.number_format($sisa, 0, ',', '.').' masih belum lunas. Jatuh tempo: '.\Carbon\Carbon::parse($tagihan->tanggal_jatuh_tempo)->format('d/m/Y').'.',
+                        'isi' => 'Tagihan '.strtoupper($tagihan->jenis).' '.$tagihan->periode.' sebesar Rp '.number_format((int) $sisa, 0, ',', '.').' masih belum lunas. Jatuh tempo: '.\Carbon\Carbon::parse($tagihan->tanggal_jatuh_tempo)->format('d/m/Y').'.',
                         'jenis' => $tipe,
                         'prioritas' => $tahap === 'H+1' || $tahap === 'H' ? 'tinggi' : 'sedang',
                         'sumber_tabel' => 'tagihan',

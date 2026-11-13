@@ -937,7 +937,7 @@ class WalimuridService
         }
 
         $persenValue = $rekap['total'] > 0 ? round($rekap['hadir'] / $rekap['total'] * 100, 1) : 0.0;
-        $rekap['persen'] = number_format($persenValue, 1, ',', '').'%';
+        $rekap['persen'] = number_format((float) $persenValue, 1, ',', '').'%';
 
         return $rekap;
     }

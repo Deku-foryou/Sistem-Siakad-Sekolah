@@ -381,8 +381,8 @@ class KoreksiKeuanganService
             if ($nominalRefund > $sumber['total']) {
                 throw new DomainException(sprintf(
                     'Nominal refund melebihi sumber dana yang tersedia (tagihan Rp %s, saldo Rp %s).',
-                    number_format($sumber['tagihan'], 0, ',', '.'),
-                    number_format($sumber['saldo'], 0, ',', '.')
+                    number_format((int) $sumber['tagihan'], 0, ',', '.'),
+                    number_format((int) $sumber['saldo'], 0, ',', '.')
                 ));
             }
 
@@ -798,7 +798,7 @@ class KoreksiKeuanganService
                     'reversal' => $saldoAkhir['reversal'],
                     'saldo_akhir' => $saldoAkhir['saldo'],
                 ]);
-                throw new DomainException(sprintf('Koreksi dibatalkan: hasil akhir akan membuat saldo siswa negatif (saldo akhir -Rp %s).', number_format(abs($saldoAkhir['saldo']), 0, ',', '.')));
+                throw new DomainException(sprintf('Koreksi dibatalkan: hasil akhir akan membuat saldo siswa negatif (saldo akhir -Rp %s).', number_format((int) abs($saldoAkhir['saldo']), 0, ',', '.')));
             }
 
             $koreksi->status = self::STATUS_TERPROSES;

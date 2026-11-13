@@ -175,34 +175,66 @@ class RekonsiliasiKeuanganService
     }
 
     /**
+     * Normalisasi kolom ringkasan hasil rekonsiliasi.
+     *
+     * Toleran terhadap:
+     * - array (cast 'array' aktif, alur normal),
+     * - JSON string valid (bila cast tidak aktif / data lama),
+     * - double-encoded JSON (nilai tersimpan berupa string berisi JSON, mis. hasil tulis salah),
+     * - null/kosong.
+     *
+     * @return array<string,mixed>
+     */
+    private static function normalisasiRingkasan(mixed $ringkasan): array
+    {
+        $value = $ringkasan;
+
+        // Decode berulang hingga stabil (maks 3 level) untuk kasus double/triple-encoded JSON.
+        for ($i = 0; $i < 3 && is_string($value); $i++) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return [];
+            }
+            $value = $decoded;
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
+    /**
      * Apakah hasil pemeriksaan ini terpotong (lebih dari BATAS_PER_KATEGORI temuan pada kategori tertentu)?
      *
      * @return array<string,int> kategori => total sebenarnya
      */
     public static function terpotongPada(RekonsiliasiHasil $hasil): array
     {
-        $ringkasan = (array) ($hasil->ringkasan ?? []);
+        $ringkasan = self::normalisasiRingkasan($hasil->ringkasan ?? null);
+        $terpotong = $ringkasan['terpotong'] ?? [];
 
-        return (array) ($ringkasan['terpotong'] ?? []);
+        // Nilai JSON bisa kembali sebagai string — normalkan ke int agar number_format aman.
+        return array_map(fn ($v) => (int) (is_numeric($v) ? $v : 0), (array) $terpotong);
     }
 
     public static function totalDitemukanPada(RekonsiliasiHasil $hasil): int
     {
-        $ringkasan = (array) ($hasil->ringkasan ?? []);
+        $ringkasan = self::normalisasiRingkasan($hasil->ringkasan ?? null);
 
         return (int) ($ringkasan['total_ditemukan'] ?? $hasil->jumlah_temuan);
     }
 
     /**
      * Hasil per kategori (jumlah ditemukan), aman untuk hasil lama yang hanya menyimpan map kategori=>jumlah.
+     *
+     * @return array<string,int> kategori => jumlah ditemukan
      */
     public static function perKategoriPada(RekonsiliasiHasil $hasil): array
     {
-        $ringkasan = (array) ($hasil->ringkasan ?? []);
+        $ringkasan = self::normalisasiRingkasan($hasil->ringkasan ?? null);
 
         $perKategori = $ringkasan['per_kategori'] ?? (array) $ringkasan; // fallback untuk format lama (kategori=>jumlah)
 
-        return (array) $perKategori;
+        // Nilai JSON (atau map kategori=>jumlah lama) bisa berupa string — normalkan ke int.
+        return array_map(fn ($v) => (int) (is_numeric($v) ? $v : 0), (array) $perKategori);
     }
 
     private static function basisPeriodeTanggal($query, string $kolom, ?string $periode)
@@ -756,13 +788,13 @@ class RekonsiliasiKeuanganService
      */
     public static function ringkasanExport(RekonsiliasiHasil $hasil): array
     {
-        $ringkasan = (array) ($hasil->ringkasan ?? []);
+        $ringkasan = self::normalisasiRingkasan($hasil->ringkasan ?? null);
 
         return [
             'total_ditemukan' => (int) ($ringkasan['total_ditemukan'] ?? $hasil->jumlah_temuan),
             'total_tersimpan' => (int) ($ringkasan['total_tersimpan'] ?? $hasil->jumlah_temuan),
             'per_kategori' => self::perKategoriPada($hasil),
-            'terpotong' => (array) ($ringkasan['terpotong'] ?? []),
+            'terpotong' => self::terpotongPada($hasil),
         ];
     }
 }

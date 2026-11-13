@@ -215,7 +215,7 @@ class BayarTagihanComponent extends Component
 
         $saldoTersedia = PaymentService::hitungSaldoTersedia($siswa->idsiswa);
         if ($jumlah > $saldoTersedia) {
-            $this->alert('error', 'Saldo tidak mencukupi (tersedia Rp '.number_format($saldoTersedia, 0, ',', '.').').');
+            $this->alert('error', 'Saldo tidak mencukupi (tersedia Rp '.number_format((int) $saldoTersedia, 0, ',', '.').').');
 
             return;
         }

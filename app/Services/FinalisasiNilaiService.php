@@ -14,7 +14,6 @@ use App\Models\Notifikasi;
 use App\Models\PenugasanMengajar;
 use App\Models\Siswa;
 use App\Models\User;
-use App\Services\WalimuridService;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
@@ -441,7 +440,7 @@ class FinalisasiNilaiService
             $totalBobot = round((float) $komponen->sum(fn (KomponenNilai $item) => (float) $item->bobot), 2);
 
             if (abs($totalBobot - 100.0) >= 0.005) {
-                $errors[] = 'Total bobot komponen aktif mata pelajaran "'.$namaMapel.'" adalah '.number_format($totalBobot, 2, ',', '.').'%, harus tepat 100%.';
+                $errors[] = 'Total bobot komponen aktif mata pelajaran "'.$namaMapel.'" adalah '.number_format((float) $totalBobot, 2, ',', '.').'%, harus tepat 100%.';
             }
 
             // Pada finalisasi ($lockRows=true): kunci baris KKTP agar transaksi
