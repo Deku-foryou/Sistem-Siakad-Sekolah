@@ -80,5 +80,10 @@ class DatabaseSeeder extends Seeder
         }
 
         info('DatabaseSeeder: Usermenu entries created for superadmin with '.count($menus).' menus.');
+
+        // Data DEMO sintetis (prefix DEMO-, idempoten, aditif) — seluruh modul.
+        // TIDAK mengubah data existing; aman dijalankan berulang.
+        // Lihat DOKUMENTASI_SEEDER_DEMO.md untuk kredensial & cara pakai.
+        $this->call(DemoSiakadSeeder::class);
     }
 }
