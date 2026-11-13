@@ -12,6 +12,44 @@ Legenda: **Selesai** · **Sedang berjalan** · **Direncanakan** (butuh persetuju
 - Beranda Siswa, Jadwal Siswa, Histori Absensi Siswa (+ ekspor CSV), Profil Siswa, Rapor Siswa, Pengumuman Siswa.
 - Sumber: `AGENTS.md` (Portal Siswa & 2B.4.7F), implementasi aktual di `routes/web.php`.
 
+### Tahap LOV reusable (P1) — 13 November 2026
+- Registry whitelist `App\Support\Lov` (hanya kunci terdaftar) + `App\Services\LovService` (search ≥2 char, aktif-only, maks 20/50 hasil, dedup, validasi ulang `selected`/`selectedMany`) + trait `LovSiswa` + partial `partials/lov-siswa`.
+- Pembayaran Manual: dropdown siswa → LOV (cari nama/NIS); reset tagihan saat ganti siswa; tagihan WAJIB milik siswa terpilih (fallback ke tagihan siswa lain yang keliru dihapus); `boot()` otorisasi per request.
+- Pengumuman: multi-select siswa → multi-LOV (chips, dedup, aktif-only, validasi `Rule::exists+status aktif` di komponen dan service).
+- Uji (rollback): 35 PASS / 0 FAIL; `php artisan test` 2 passed; browser UAT modal (pilih siswa, chips, reset tagihan) ✓.
+- Sumber: `LAPORAN_AUDIT_LOV_SIAKAD.md`, `LAPORAN_IMPLEMENTASI_LOV_P1.md`.
+
+### Tahap LOV P2 — Beasiswa assign & revoke — 13 November 2026
+- Tombol "Kelola Penerima" per beasiswa → modal: info beasiswa, penetapan siswa via LOV (cari nama/NIS), daftar penerima (aktif + histori berhenti), aksi Cabut dengan konfirmasi.
+- Integritas: siswa wajib AKTIF (validasi registry di `tambahPenerima`), ID palsu/non-aktif ditolak; duplikat penerima aktif ditolak; pencabutan hanya mengubah status (`berhenti` + `berlaku_sampai=hari ini`) — baris histori tidak dihapus; re-assign setelah revoke mengaktifkan kembali baris yang sama (unique beasiswa+siswa); `cabutPenerima` by primary key + anti-lintas-beasiswa.
+- Otorisasi: `boot()` per request (superadmin/admin); aksi assign/cabut ditolak 403 untuk peran lain.
+- Tagihan terbit & alokasi pembayaran tidak disentuh; diskon beasiswa hanya memengaruhi perhitungan masa depan (`beasiswaBerlaku`); tarif individu tetap mengesampingkan beasiswa (kebijakan tidak diubah).
+- Uji (rollback): 37 PASS / 0 FAIL; `php artisan test` 2 passed; browser UAT (tambah beasiswa UJILOV → assign Andre Santoso → revoked, histori tampil) ✓.
+- Sumber: `LAPORAN_IMPLEMENTASI_LOV_P1.md`, `LAPORAN_IMPLEMENTASI_LOV_P2.md`.
+
+### Tahap LOV P3 — Tarif individu & Data Tagihan — 13 November 2026
+- Tarif individu: dropdown siswa (load semua aktif) → LOV (cari nama/NIS); siswa nonaktif/palsu ditolak; edit modal menampilkan siswa terpilih; reset saat jenis berubah.
+- Data Tagihan (scope siswa): inline query `Siswa::…->limit(500)` di Blade dihapus → LOV single mode; `updatedScope()` membersihkan state siswa saat cakupan diganti; validasi registry (aktif) + exists kelas/siswa sesuai cakupan.
+- Uji (rollback): 34 PASS / 0 FAIL; `php artisan test` 2 passed; browser UAT (Tarif & Tagihan: cari `20260001` → Andre Santoso terpilih) ✓.
+- Sumber: `LAPORAN_IMPLEMENTASI_LOV_P1.md`, `LAPORAN_IMPLEMENTASI_LOV_P3.md`.
+
+### Tahap LOV P4 — Kelassiswa & icon picker — 13 November 2026
+- Kelassiswa: picker siswa (`<select multiple>` limit 50, cari nama/NISN saja) → LOV multi (cari nama/NIS/NISN, aktif-only, maks 20, chips dedup); backend validation: siswa wajib AKTIF, penempatan non-pindah pada TA yang sama ditolak (replika filter UI lama), kelas harus sesuai TA; ganti TA/kelas + setelah simpan membersihkan state LOV; `boot()` otorisasi superadmin per request (route `check.level:superadmin` tidak diubah).
+- Icon picker (`appmenunew`): pemindaian `File::files()` dari 1.395 ikon pada setiap render → cache `Cache::remember('appmenunew.icons.'.mtimeDir, 30 menit)` berisi array nama file saja; key memasukkan mtime direktori (invalidasi otomatis saat sumber berubah); view `icon-lov` tidak diubah.
+- Uji (rollback): 52 PASS / 0 FAIL; browser UAT (Kelassiswa assign/keluarkan, icon picker + filter "angle") ✓.
+- Sumber: `LAPORAN_IMPLEMENTASI_LOV_P4_P5.md`.
+
+### Tahap LOV P5 — Pembersihan scaffold LOV — 13 November 2026
+- 12 view `*-lov` dihapus (termasuk `users-lov` yang menampilkan kolom password/remember_token; `icon-lov` DIPERTAHANKAN); 2 trait mati (`PaginationLov`, `PaginationTrait`) dihapus; 11 properti `$searchlov`, 10 `updatingSearchlov()`, 9 method `xxxLOV()`, 5 placeholder `xxxLOV()` di HTTP controllers, komentar scaffold `@include`/JS dihapus; grep seluruh repo: 0 referensi.
+- Catatan: komponen scaffold non-LOV (Permissions/Roles/RoleHasPermissions) dipertahankan — tabel tidak ada di DB & tidak di-route; butuh keputusan pemilik untuk penghapusan penuh.
+- Sumber: `LAPORAN_IMPLEMENTASI_LOV_P4_P5.md`.
+
+### Pengampu — audit & penyembunyian menu (legacy) — 13 November 2026
+- Audit: fitur legacy (Jadwal lama); tidak ada modul aktif yang membacanya (nilai→`penugasan_mengajar`, jadwal→`jadwalkelas`; 0 hit di absensi/rapor/dashboard/keuangan); data `jadwal` kosong; route hidup & dipakai `JadwalComponent` + console audit; docs sudah menandai legacy.
+- Keputusan: SEMBUNYIKAN MENU, PERTAHANKAN IMPLEMENTASI — `'pengampu'` ditambahkan ke `$menuDisembunyikanSuperadmin` (pola identik `/jadwal`); route `/pengampu` tetap hidup untuk superadmin via URL langsung; implementasi, tabel (18 baris), usermenu, dan data dipertahankan.
+- UAT browser: sidebar superadmin tanpa "Pengampu"/"Jadwal (Lama)"/"Fitur Legacy"; menu lain utuh; `/pengampu` via URL 200 (superadmin); non-superadmin ditolak (halaman "Halaman Tidak Ditemukan", middleware tidak diubah).
+- Sumber: `LAPORAN_AUDIT_FITUR_PENGAMPU.md`, `LAPORAN_IMPLEMENTASI_PENYEMBUNYIAN_MENU_PENGAMPU.md`.
+
 ### 2B.7 — Portal Wali Murid (lengkap)
 - Akun wali (self-service), relasi wali–siswa, antrean verifikasi admin, pemutusan relasi (P5a langsung, P5b dengan persetujuan pihak).
 - Sumber: `LAPORAN_IMPLEMENTASI_2B_7_5B.md`, `LAPORAN_AUDIT_PENUTUPAN_2B_7.md`, `LAPORAN_SEEDER_DEMO_SIAKAD.md`.
