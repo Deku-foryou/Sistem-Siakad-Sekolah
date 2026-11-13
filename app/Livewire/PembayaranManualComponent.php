@@ -2,14 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LovSiswa;
 use App\Models\Kuitansi;
 use App\Models\Pembayaran;
 use App\Models\Siswa;
 use App\Models\Tagihan;
 use App\Models\Walimurid;
 use App\Services\Keuangan\KuitansiService;
+use App\Services\LovService;
 use App\Services\NotifikasiService;
 use App\Services\Payments\PaymentService;
+use App\Support\Lov;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +25,7 @@ use Livewire\WithPagination;
 
 class PembayaranManualComponent extends Component
 {
-    use LivewireAlert, WithFileUploads, WithPagination;
+    use LivewireAlert, LovSiswa, WithFileUploads, WithPagination;
 
     public string $tab = 'pending';
 
@@ -60,6 +63,12 @@ class PembayaranManualComponent extends Component
         $this->tanggal_pembayaran = now()->format('Y-m-d');
     }
 
+    public function boot(): void
+    {
+        // Livewire 3: dipanggil pada SETIAP request (termasuk update) — otorisasi tidak pernah terlewati.
+        $this->assertAdmin();
+    }
+
     private function assertAdmin(): void
     {
         abort_unless(in_array(Auth::user()?->level, ['superadmin', 'admin'], true), 403);
@@ -80,16 +89,21 @@ class PembayaranManualComponent extends Component
         $this->resetPage();
     }
 
-    public function pilihSiswa(): void
+    protected function setelahLovSiswaDipilih(Siswa $row): void
     {
-        $this->assertAdmin();
-        $this->tagihanId = '';
+        $this->tagihanId = ''; // Reset tagihan lama saat siswa diganti/dipilih
+    }
+
+    protected function setelahLovSiswaDihapus(): void
+    {
+        $this->tagihanId = ''; // Reset tagihan saat siswa dihapus dari pilihan
     }
 
     public function resetForm(): void
     {
         $this->assertAdmin();
-        $this->reset(['siswaId', 'tagihanId', 'nominal', 'nama_pembayar', 'referensi', 'catatan', 'bukti']);
+        $this->reset(['tagihanId', 'nominal', 'nama_pembayar', 'referensi', 'catatan', 'bukti']);
+        $this->lovReset();
         $this->metode = 'tunai';
         $this->tanggal_pembayaran = now()->format('Y-m-d');
     }
@@ -110,11 +124,25 @@ class PembayaranManualComponent extends Component
             'bukti' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $siswa = Siswa::findOrFail((int) $this->siswaId);
-        $tagihan = Tagihan::query()->where('idtagihan', (int) $this->tagihanId)->where('siswa_idsiswa', $siswa->idsiswa)->first();
+        // Validasi ulang siswa di backend — hanya siswa AKTIF (registry).
+        // ID palsu / siswa nonaktif / di luar scope => ditolak.
+        $siswa = LovService::selected(Lov::KEY_SISWA, $this->siswaId);
+        if (! $siswa instanceof Siswa) {
+            $this->alert('error', 'Siswa tidak ditemukan atau tidak aktif. Silakan pilih ulang melalui pencarian.');
+
+            return;
+        }
+
+        // Tagihan WAJIB milik siswa tersebut — tidak ada fallback ke tagihan siswa lain.
+        $tagihan = Tagihan::query()
+            ->whereKey((int) $this->tagihanId)
+            ->where('siswa_idsiswa', $siswa->idsiswa)
+            ->whereIn('status', ['belum_dibayar', 'dibayar_sebagian'])
+            ->first();
         if (! $tagihan) {
-            // fallback
-            $tagihan = Tagihan::findOrFail((int) $this->tagihanId);
+            $this->alert('error', 'Tagihan tidak ditemukan, bukan milik siswa ini, atau sudah lunas.');
+
+            return;
         }
 
         $nominal = (int) $this->nominal;
@@ -342,7 +370,6 @@ class PembayaranManualComponent extends Component
     {
         $this->assertAdmin();
 
-        $siswas = Siswa::where('status', 'aktif')->orderBy('nama')->get();
         $tagihanOptions = collect();
         if ($this->siswaId) {
             $tagihanOptions = Tagihan::where('siswa_idsiswa', (int) $this->siswaId)
@@ -375,7 +402,6 @@ class PembayaranManualComponent extends Component
         $pendingCount = Pembayaran::where('provider', 'manual')->whereIn('status', ['pending', 'review'])->count();
 
         return view('livewire.pembayaran-manual-component', [
-            'siswas' => $siswas,
             'tagihanOptions' => $tagihanOptions,
             'rows' => $rows,
             'pendingCount' => $pendingCount,

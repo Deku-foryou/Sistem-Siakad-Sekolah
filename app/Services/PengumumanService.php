@@ -9,11 +9,11 @@ use App\Models\PengumumanBaca;
 use App\Models\PengumumanTarget;
 use App\Models\Siswa;
 use App\Models\User;
-use App\Services\WalimuridService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -385,11 +385,11 @@ class PengumumanService
             'berlaku_dari' => ['nullable', 'date'],
             'berlaku_sampai' => ['nullable', 'date', 'after_or_equal:berlaku_dari'],
             'jurusan_ids' => ['nullable', 'array'],
-            'jurusan_ids.*' => ['integer', 'exists:jurusan,idjurusan'],
+            'jurusan_ids.*' => ['integer', Rule::exists('jurusan', 'idjurusan')],
             'kelas_ids' => ['nullable', 'array'],
-            'kelas_ids.*' => ['integer', 'exists:kelas,idkelas'],
+            'kelas_ids.*' => ['integer', Rule::exists('kelas', 'idkelas')],
             'siswa_ids' => ['nullable', 'array'],
-            'siswa_ids.*' => ['integer', 'exists:siswa,idsiswa'],
+            'siswa_ids.*' => ['integer', Rule::exists('siswa', 'idsiswa')->where('status', 'aktif')],
         ];
 
         $validator = Validator::make($data, $rules);
@@ -408,9 +408,9 @@ class PengumumanService
         }
 
         $target = $v['target'];
-        $jurusanIds = array_values(array_filter($v['jurusan_ids'] ?? []));
-        $kelasIds = array_values(array_filter($v['kelas_ids'] ?? []));
-        $siswaIds = array_values(array_filter($v['siswa_ids'] ?? []));
+        $jurusanIds = array_values(array_unique(array_filter($v['jurusan_ids'] ?? [])));
+        $kelasIds = array_values(array_unique(array_filter($v['kelas_ids'] ?? [])));
+        $siswaIds = array_values(array_unique(array_filter($v['siswa_ids'] ?? [])));
 
         // Tepat satu jenis target terisi sesuai jenis target.
         if ($target === 'jurusan') {

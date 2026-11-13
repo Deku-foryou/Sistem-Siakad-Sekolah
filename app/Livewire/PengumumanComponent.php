@@ -2,12 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LovSiswa;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Pengumuman;
 use App\Models\Siswa;
 use App\Services\PengumumanService;
 use DomainException;
+use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,6 +20,7 @@ use Livewire\WithPagination;
 class PengumumanComponent extends Component
 {
     use LivewireAlert;
+    use LovSiswa;
     use WithPagination;
 
     // Filter
@@ -59,6 +62,12 @@ class PengumumanComponent extends Component
 
     // Detail
     public ?int $detailId = null;
+
+    public function boot()
+    {
+        // Livewire 3: dipanggil pada SETIAP request (termasuk update) — otorisasi tidak pernah terlewati.
+        abort_unless(auth()->user()?->level === 'superadmin', 403);
+    }
 
     public function updatingSearch()
     {
@@ -103,6 +112,7 @@ class PengumumanComponent extends Component
         abort_unless(auth()->user()?->level === 'superadmin', 403);
 
         $this->reset(['editId', 'judul', 'isi', 'kategori', 'prioritas', 'target', 'berlakuDari', 'berlakuSampai', 'jurusanIds', 'kelasIds', 'siswaIds']);
+        $this->lovReset();
         $this->dispatch('show-pengumuman-modal');
     }
 
@@ -129,6 +139,8 @@ class PengumumanComponent extends Component
         $this->jurusanIds = $pengumuman->targets->pluck('jurusan_idjurusan')->filter()->values()->all();
         $this->kelasIds = $pengumuman->targets->pluck('kelas_idkelas')->filter()->values()->all();
         $this->siswaIds = $pengumuman->targets->pluck('siswa_idsiswa')->filter()->values()->all();
+        // Tampilkan hanya siswa AKTIF di chips; yang nonaktif tidak bisa dipilih ulang.
+        $this->isiTerpilihDariIds($this->siswaIds);
 
         $this->dispatch('show-pengumuman-modal');
     }
@@ -136,6 +148,9 @@ class PengumumanComponent extends Component
     public function storePengumuman()
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
+
+        // Deduplikat siswaIds dari client (Livewire bisa mengirim array); ID palsu ditolak via Rule::exists + status aktif.
+        $this->siswaIds = array_values(array_unique(array_filter($this->siswaIds, fn ($x): bool => is_numeric($x))));
 
         $this->validate([
             'judul' => ['required', 'string', 'max:255'],
@@ -146,11 +161,11 @@ class PengumumanComponent extends Component
             'berlakuDari' => ['nullable', 'date'],
             'berlakuSampai' => ['nullable', 'date', 'after_or_equal:berlakuDari'],
             'jurusanIds' => ['nullable', 'array'],
-            'jurusanIds.*' => ['integer', 'exists:jurusan,idjurusan'],
+            'jurusanIds.*' => ['integer', Rule::exists('jurusan', 'idjurusan')],
             'kelasIds' => ['nullable', 'array'],
-            'kelasIds.*' => ['integer', 'exists:kelas,idkelas'],
+            'kelasIds.*' => ['integer', Rule::exists('kelas', 'idkelas')],
             'siswaIds' => ['nullable', 'array'],
-            'siswaIds.*' => ['integer', 'exists:siswa,idsiswa'],
+            'siswaIds.*' => ['integer', Rule::exists('siswa', 'idsiswa')->where('status', 'aktif')],
         ]);
 
         $service = app(PengumumanService::class);
@@ -178,6 +193,7 @@ class PengumumanComponent extends Component
 
             $this->dispatch('close-pengumuman-modal');
             $this->reset(['editId', 'judul', 'isi', 'kategori', 'prioritas', 'target', 'berlakuDari', 'berlakuSampai', 'jurusanIds', 'kelasIds', 'siswaIds']);
+            $this->lovReset();
             $this->alert('success', $pesan);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Validasi di level service (mis. target jurusan tanpa pilihan) — tampilkan pesan, bukan 500.
@@ -277,7 +293,6 @@ class PengumumanComponent extends Component
             'detail' => $detail,
             'jurusanList' => Jurusan::orderBy('nama')->get(['idjurusan', 'nama']),
             'kelasList' => Kelas::orderBy('nama')->get(['idkelas', 'nama', 'jurusan_id']),
-            'siswaList' => Siswa::where('status', 'aktif')->orderBy('nama')->get(['idsiswa', 'nama', 'nisn']),
             'perPage' => $this->perPage,
             'search' => $this->search,
             'filterStatus' => $this->filterStatus,
