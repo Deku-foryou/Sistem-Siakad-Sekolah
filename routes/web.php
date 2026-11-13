@@ -98,9 +98,10 @@ Route::middleware([auth::class, 'cek.akun', 'force.password'])->group(
         Route::post('/profil/{id}', [AuthController::class, 'update'])->name('profil.edit');
 
         Route::get('dashboard', DashboardComponent::class)
-            ->middleware('check.level:superadmin');
+            ->middleware('check.level:superadmin,admin');
 
-        Route::get('welcome-docs', HomedocsComponent::class)->middleware('check.level:superadmin,admin,guru,siswa,wali');
+        Route::get('welcome-docs', HomedocsComponent::class)->middleware('check.level:superadmin,admin,guru,siswa,wali')->name('welcome-docs');
+        Route::get('welcome-docs/artikel/{slug}', HomedocsComponent::class)->middleware('check.level:superadmin,admin,guru,siswa,wali')->name('welcome-docs.artikel');
 
         // Docs: membaca terbuka untuk seluruh role pengguna aplikasi; pengelolaan (create/edit) khusus superadmin & admin.
         Route::get('docscat', DocscatComponent::class)->middleware('check.level:superadmin,admin,guru,siswa,wali');
