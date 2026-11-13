@@ -23,7 +23,7 @@
 
                 </div>
                 <div>
-                    <a class="btn btn-primary" href="/docs" style="background: #1464dc"><i
+                    <a class="btn btn-primary" href="/docs" style="background: #1464dc" data-bs-toggle="tooltip" data-bs-placement="top" title="Beranda" aria-label="Beranda"><i
                             class="fa-solid fa-house"></i></a>
                 </div>
             </div>
@@ -90,14 +90,14 @@
                         </div>
                         <div class="card-footer">
                             <button type="submit" id="my-submit" class="btn"
-                                style="background: #1464dc; color:white" wire:loading.attr="disabled">
+                                style="background: #1464dc; color:white" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                                 <span wire:loading.remove>
                                     Simpan
                                 </span>
                             </button>
-                            <a href="/docs" class=" btn-secondary btn">Close</a>
+                            <a href="/docs" class=" btn-secondary btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</a>
                         </div>
                         </form>
                     </div>

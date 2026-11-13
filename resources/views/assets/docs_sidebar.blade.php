@@ -103,7 +103,7 @@
 
             <!-- Navbar -->
             <!-- Your existing header content goes here -->
-            <a href="{{ \App\Support\BerandaUrl::untuk(auth()->user()) }}" class="btn btn-outline-secondary text-black mb-3"><i
+            <a href="{{ \App\Support\BerandaUrl::untuk(auth()->user()) }}" class="btn btn-outline-secondary text-black mb-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Kembali"><i
                     class="fa-solid fa-arrow-left me-2"></i>Kembali ke Dashboard</a>
             <!-- Navbar -->
 

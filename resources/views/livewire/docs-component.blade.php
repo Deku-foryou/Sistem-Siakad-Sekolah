@@ -16,7 +16,7 @@
                 </div>
                 @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-docs-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-docs-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
                 @endif
@@ -53,13 +53,13 @@
                     @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                         <i class="fa-solid fa-download"></i>
                         <span>Excel</span>
                     </button>
                     <!-- Tombol Export PDF -->
                     <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
@@ -99,10 +99,10 @@
                                                 <td style="min-width: 90px;text-align: center">
                                                     @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                                                     <button class="btn btn-sm btn-warning text-dark"
-                                                        wire:click="editDocs('{{ $datas->iddocs }}')"><i
+                                                        wire:click="editDocs('{{ $datas->iddocs }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
                                                     <button class="btn btn-sm btn-danger text-white"
-                                                        wire:click="deleteConfirmationDocs('{{ $datas->iddocs }}')"><i
+                                                        wire:click="deleteConfirmationDocs('{{ $datas->iddocs }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                             class="fa-solid fa-trash-can"></i></button>
                                                     @endif
                                                 </td>
@@ -225,7 +225,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -233,7 +233,7 @@
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -258,9 +258,9 @@
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteDocs()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteDocs()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                        aria-label="Close">Close</button>
+                        aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -335,7 +335,7 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Tunggu...</span>
                                 <span wire:loading.remove>
@@ -343,7 +343,7 @@
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                                aria-label="Close" wire:click="close()">Close</button>
+                                aria-label="Close" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -353,10 +353,6 @@
 
 
     </div>
-
-    {{--     @include('livewire.docs-lov') --}}
-
-
 </div>
 
 
@@ -367,27 +363,6 @@
         $('#editDocsModal').modal('hide');
         $('#deleteDocsModal').modal('hide');
     });
-
-
-    // copy dan aktifkan jika ingin menggunakan LOV  
-
-    //       window.addEventListener('close-modal-lov', event =>{ 
-    //          $('#docsModal').modal('hide'); 
-    //     }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btndocsModalLovAdd').click(function(){ 
-    //       $('#docsModal').modal('show'); 
-    //    }); 
-    //  }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btndocsModalLovEdit').click(function(){ 
-    //       $('#docsModal').modal('show'); 
-    //    }); 
-    //  }); 
 
 
     $('#addDocsModal').on('shown.bs.modal', function() {

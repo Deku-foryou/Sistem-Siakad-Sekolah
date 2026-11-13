@@ -16,7 +16,7 @@
                 </div>
                 @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-docscat-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-docscat-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
                 @endif
@@ -59,10 +59,10 @@
                                                 <td style="min-width: 90px;text-align: center">
                                                     @if (in_array(auth()->user()?->level, ['superadmin', 'admin'], true))
                                                     <button class="btn btn-sm btn-warning text-dark"
-                                                        wire:click="editDocscat('{{ $datas->iddocscat }}')"><i
+                                                        wire:click="editDocscat('{{ $datas->iddocscat }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
                                                     <button class="btn btn-sm btn-danger text-white"
-                                                        wire:click="deleteConfirmationDocscat('{{ $datas->iddocscat }}')"><i
+                                                        wire:click="deleteConfirmationDocscat('{{ $datas->iddocscat }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                             class="fa-solid fa-trash-can"></i></button>
                                                     @endif
                                                 </td>
@@ -152,7 +152,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -160,7 +160,7 @@
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -185,9 +185,9 @@
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteDocscat()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteDocscat()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                        aria-label="Close">Close</button>
+                        aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -234,7 +234,7 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Tunggu...</span>
                                 <span wire:loading.remove>
@@ -242,7 +242,7 @@
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                                aria-label="Close" wire:click="close()">Close</button>
+                                aria-label="Close" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -252,10 +252,6 @@
 
 
     </div>
-
-    {{--     @include('livewire.docscat-lov') --}}
-
-
 </div>
 
 
@@ -266,27 +262,6 @@
         $('#editDocscatModal').modal('hide');
         $('#deleteDocscatModal').modal('hide');
     });
-
-
-    // copy dan aktifkan jika ingin menggunakan LOV  
-
-    //       window.addEventListener('close-modal-lov', event =>{ 
-    //          $('#docscatModal').modal('hide'); 
-    //     }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btndocscatModalLovAdd').click(function(){ 
-    //       $('#docscatModal').modal('show'); 
-    //    }); 
-    //  }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btndocscatModalLovEdit').click(function(){ 
-    //       $('#docscatModal').modal('show'); 
-    //    }); 
-    //  }); 
 
 
     $('#addDocscatModal').on('shown.bs.modal', function() {
