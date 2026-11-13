@@ -102,27 +102,4 @@ class PermissionsController extends Controller
 
         return $options;
     }
-
-    public function permissionslov(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Permissions::select('*');
-
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '  
-                    <button type="button" class="pilihpermissions btn btn-success btn-sm"  id="'.$row->id.'" permissions="'.$row->permissions.'" ><i class="fas fa-check"></i></button>  
-                    </div> 
-                      
-                    ';
-
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('permissionslov');
-    }
 }

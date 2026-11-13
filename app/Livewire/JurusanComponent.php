@@ -2,10 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\HandlesImport;
 use App\Models\Jurusan;
 use Illuminate\Validation\Rule;
-use App\Livewire\Concerns\HandlesImport;
-use App\Livewire\Concerns\HandlesImport as HandleImportTrait;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithPagination;

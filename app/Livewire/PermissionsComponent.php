@@ -25,8 +25,6 @@ class PermissionsComponent extends Component
 
     public $permissionsName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -45,16 +43,9 @@ class PermissionsComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storePermissions()
@@ -69,8 +60,6 @@ class PermissionsComponent extends Component
         $permissions->guard_name = $this->guard_name;
         $permissions->save();
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Permissions has been added successfully');
 
@@ -91,7 +80,6 @@ class PermissionsComponent extends Component
         $this->id = $permissions->id;
         $this->name = $permissions->name;
         $this->guard_name = $permissions->guard_name;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->permissionsName = $permissions ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-permissions-modal');
@@ -109,8 +97,6 @@ class PermissionsComponent extends Component
         $permissions->save();
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data permissions has been added successfully');
 
@@ -188,22 +174,8 @@ class PermissionsComponent extends Component
         return $options;
     }
 
-    public function permissionsLOV($id)
-    {
-        $permissions = Permissions::where('id', $id)->first();
-        // $this->nama_relasi = $permissions ->id;
-        $this->permissionsName = $permissions->permissions;
-        $this->alert('success', 'Terpilih : '.$permissions->permissions);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $permissions = Permissions::latest()
             ->search($this->search)

@@ -117,12 +117,13 @@ class MapelComponent extends Component
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
         $mapel = Mapel::where('idmapel', $this->idmapel)->first();
-        
+
         $countGuru = $mapel->guru()->count();
         if ($countGuru > 0) {
             $this->alert('error', "Mapel masih diampu oleh {$countGuru} guru");
             $this->dispatch('close-mapel-modal');
             $this->idmapel = '';
+
             return;
         }
 

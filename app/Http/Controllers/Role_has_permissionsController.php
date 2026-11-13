@@ -101,27 +101,4 @@ class Role_has_permissionsController extends Controller
 
         return $options;
     }
-
-    public function role_has_permissionslov(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Role_has_permissions::select('*');
-
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '  
-                    <button type="button" class="pilihrole_has_permissions btn btn-success btn-sm"  idrole_has_permissions="'.$row->idrole_has_permissions.'" role_has_permissions="'.$row->role_has_permissions.'" ><i class="fas fa-check"></i></button>  
-                    </div> 
-                      
-                    ';
-
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('role_has_permissionslov');
-    }
 }

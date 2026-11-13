@@ -25,8 +25,6 @@ class AppmenucatComponent extends Component
 
     public $appmenucatName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -40,16 +38,9 @@ class AppmenucatComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeAppmenucat()
@@ -66,8 +57,6 @@ class AppmenucatComponent extends Component
         $appmenucat->urut = $this->urut;
         $appmenucat->save();
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'New appmenucat has been added successfully');
 
@@ -88,7 +77,6 @@ class AppmenucatComponent extends Component
         $this->idappmenucat = $appmenucat->idappmenucat;
         $this->appmenucat = $appmenucat->appmenucat;
         $this->urut = $appmenucat->urut;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->appmenucatName = $appmenucat ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-appmenucat-modal');
@@ -108,8 +96,6 @@ class AppmenucatComponent extends Component
         $appmenucat->save();
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data appmenucat has been added successfully');
 
@@ -194,22 +180,8 @@ class AppmenucatComponent extends Component
         return $options;
     }
 
-    public function appmenucatLOV($id)
-    {
-        $appmenucat = Appmenucat::where('idappmenucat', $id)->first();
-        // $this->nama_relasi = $appmenucat ->idappmenucat;
-        $this->appmenucatName = $appmenucat->appmenucat;
-        $this->alert('success', 'Terpilih : '.$appmenucat->appmenucat);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $appmenucat = Appmenucat::latest()
             ->search($this->search)

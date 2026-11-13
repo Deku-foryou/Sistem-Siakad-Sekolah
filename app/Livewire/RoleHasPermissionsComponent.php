@@ -28,8 +28,6 @@ class RoleHasPermissionsComponent extends Component
 
     public $role_has_permissionsName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -65,16 +63,9 @@ class RoleHasPermissionsComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeRole_has_permissions()
@@ -157,22 +148,8 @@ class RoleHasPermissionsComponent extends Component
         return $options;
     }
 
-    public function role_has_permissionsLOV($id)
-    {
-        $role_has_permissions = Role_has_permissions::where('idrole_has_permissions', $id)->first();
-        // $this->nama_relasi = $role_has_permissions ->idrole_has_permissions;
-        $this->role_has_permissionsName = $role_has_permissions->role_has_permissions;
-        $this->alert('success', 'Terpilih : '.$role_has_permissions->role_has_permissions);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $permissions = Permissions::get();
 

@@ -25,8 +25,6 @@ class RolesComponent extends Component
 
     public $rolesName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -45,16 +43,9 @@ class RolesComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeRoles()
@@ -69,8 +60,6 @@ class RolesComponent extends Component
         $roles->guard_name = $this->guard_name;
         $roles->save();
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'New roles has been added successfully');
 
@@ -93,7 +82,6 @@ class RolesComponent extends Component
         $this->id = $roles->id;
         $this->name = $roles->name;
         $this->guard_name = $roles->guard_name;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->rolesName = $roles ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-roles-modal');
@@ -111,8 +99,6 @@ class RolesComponent extends Component
         $roles->save();
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data roles has been added successfully');
 
@@ -192,22 +178,8 @@ class RolesComponent extends Component
         return $options;
     }
 
-    public function rolesLOV($id)
-    {
-        $roles = Roles::where('id', $id)->first();
-        // $this->nama_relasi = $roles ->id;
-        $this->rolesName = $roles->roles;
-        $this->alert('success', 'Terpilih : '.$roles->roles);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $roles = Roles::latest()
             ->search($this->search)

@@ -17,16 +17,21 @@ class WaliAntrianVerifikasiComponent extends Component
     use WithPagination;
 
     public $search = '';
+
     public $perpage = 10;
+
     public $tab = 'pending'; // 'pending' | 'aktif' | 'putus'
 
     // Aksi per-baris
     public $targetId = null;
+
     public $aksi = null; // 'verifikasi' | 'tolak' | 'putus'
 
     // Form verifikasi
     public $tanggalMulai = '';
+
     public $alasanPeriode = '';
+
     public $catatan = '';
 
     // Form penolakan / pemutusan
@@ -34,7 +39,9 @@ class WaliAntrianVerifikasiComponent extends Component
 
     // Permintaan putus (P5b) - admin
     public $targetPermintaanId = null;
+
     public $aksiPutus = null; // 'setujui' | 'tolak'
+
     public $catatanKeputusan = '';
 
     protected $rules = [];
@@ -62,6 +69,7 @@ class WaliAntrianVerifikasiComponent extends Component
                 // filter not applied to permintaan query beyond base; keep simple
             }
             $items = $query->paginate($this->perpage);
+
             return view('livewire.wali-antrian-verifikasi-component', ['items' => $items]);
         } else {
             $query = WalimuridService::antreanPending($this->search);
@@ -127,6 +135,7 @@ class WaliAntrianVerifikasiComponent extends Component
             } else {
                 if (trim($this->catatanKeputusan) === '') {
                     $this->addError('catatanKeputusan', 'Catatan penolakan wajib diisi.');
+
                     return;
                 }
                 WalimuridService::tolakPermintaanPutus($aktor, (int) $this->targetPermintaanId, $this->catatanKeputusan);
@@ -134,6 +143,7 @@ class WaliAntrianVerifikasiComponent extends Component
             }
         } catch (\Throwable $e) {
             $this->galat = $e->getMessage();
+
             return;
         }
         $this->reset('targetPermintaanId', 'aksiPutus', 'catatanKeputusan');
@@ -165,6 +175,7 @@ class WaliAntrianVerifikasiComponent extends Component
                 case 'tolak':
                     if (trim($this->alasan) === '') {
                         $this->addError('alasan', 'Alasan penolakan wajib diisi.');
+
                         return;
                     }
                     WalimuridService::tolakRelasi($aktor, $relasi->idwalimurid, $this->alasan);
@@ -174,6 +185,7 @@ class WaliAntrianVerifikasiComponent extends Component
                 case 'putus':
                     if (trim($this->alasan) === '') {
                         $this->addError('alasan', 'Alasan pemutusan wajib diisi.');
+
                         return;
                     }
                     WalimuridService::putusRelasiLangsung($aktor, $relasi->idwalimurid, $this->alasan);
@@ -183,8 +195,9 @@ class WaliAntrianVerifikasiComponent extends Component
                 default:
                     abort(404);
             }
-        } catch (\InvalidArgumentException | \DomainException $e) {
+        } catch (\InvalidArgumentException|\DomainException $e) {
             $this->addError('aksi', $e->getMessage());
+
             return;
         }
 

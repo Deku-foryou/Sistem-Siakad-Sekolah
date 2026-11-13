@@ -7,6 +7,7 @@ use App\Models\Appmenunew;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -40,8 +41,6 @@ class AppmenunewComponent extends Component
 
     public $appmenuName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -64,16 +63,9 @@ class AppmenunewComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeAppmenu()
@@ -106,8 +98,6 @@ class AppmenunewComponent extends Component
         $appmenu->save();
         $this->reset();
 
-        $this->resetPage('pageLOV');
-
         $this->alert('success', 'New appmenu has been added successfully');
 
         $this->dispatch('close-appmenu-modal');
@@ -132,7 +122,6 @@ class AppmenunewComponent extends Component
         $this->appmenucat_idappmenucat = $appmenu->appmenucat_idappmenucat;
         $this->created_by = $appmenu->created_by;
         $this->updated_by = $appmenu->updated_by;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->appmenuName = $appmenu ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-appmenu-modal');
@@ -161,8 +150,6 @@ class AppmenunewComponent extends Component
         $appmenu->save();
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data appmenu has been added successfully');
 
@@ -247,17 +234,6 @@ class AppmenunewComponent extends Component
         return $options;
     }
 
-    public function appmenuLOV($id)
-    {
-        $appmenu = Appmenunew::where('idappmenunew', $id)->first();
-        // $this->nama_relasi = $appmenu ->idappmenu;
-        $this->appmenuName = $appmenu->appmenunew;
-        $this->alert('success', 'Terpilih : '.$appmenu->appmenunew);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function appmenucatOption($id = null)
     {
         $result = Appmenucat::get();
@@ -286,18 +262,32 @@ class AppmenunewComponent extends Component
     {
 
         $appmenucatOption = $this->appmenucatOption();
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         // Icon LOV -------------------------------------------------------------------------
-        $packIcons = File::files(public_path('asset_offline/icon'));
+        // Daftar nama icon di-cache; key memasukkan mtime direktori sumber sehingga perubahan
+        // (file ditambah/dihapus) otomatis menghasilkan key baru â€” icon baru pasti muncul.
+        // Cache hanya menampung array<string> nama file (bukan state pengguna), TTL 30 menit.
+        $iconDir = public_path('asset_offline/icon');
+        $iconDirMtime = is_dir($iconDir) ? (string) @filemtime($iconDir) : 'missing';
+
+        $filenames = Cache::remember('appmenunew.icons.'.$iconDirMtime, now()->addMinutes(30), function () use ($iconDir) {
+            if (! is_dir($iconDir)) {
+                return [];
+            }
+
+            return collect(File::files($iconDir))
+                ->map(fn ($file) => $file->getFilename())
+                ->sort()
+                ->values()
+                ->all();
+        });
 
         if ($this->searchIcons) {
-            $items = collect($packIcons)->filter(function ($file) {
-                return stripos($file->getFilename(), $this->searchIcons) !== false;
-            });
+            $items = collect($filenames)->filter(function ($filename) {
+                return stripos($filename, $this->searchIcons) !== false;
+            })->values();
         } else {
-            $items = collect($packIcons);
+            $items = collect($filenames);
         }
 
         $currentPageIcons = Paginator::resolveCurrentPage('pageIcons') ?: 1;

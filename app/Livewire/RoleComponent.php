@@ -27,8 +27,6 @@ class RoleComponent extends Component
 
     public $roleName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';

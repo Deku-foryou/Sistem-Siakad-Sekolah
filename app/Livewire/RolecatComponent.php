@@ -23,8 +23,6 @@ class RolecatComponent extends Component
 
     public $rolecatName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -38,16 +36,9 @@ class RolecatComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeRolecat()
@@ -62,8 +53,6 @@ class RolecatComponent extends Component
         $rolecat->rolecat = $this->rolecat;
         $rolecat->save();
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'New rolecat has been added successfully');
 
@@ -83,7 +72,6 @@ class RolecatComponent extends Component
 
         $this->idrolecat = $rolecat->idrolecat;
         $this->rolecat = $rolecat->rolecat;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->rolecatName = $rolecat ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-rolecat-modal');
@@ -101,8 +89,6 @@ class RolecatComponent extends Component
         $rolecat->save();
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data rolecat has been added successfully');
 
@@ -186,22 +172,8 @@ class RolecatComponent extends Component
         return $options;
     }
 
-    public function rolecatLOV($id)
-    {
-        $rolecat = Rolecat::where('idrolecat', $id)->first();
-        // $this->nama_relasi = $rolecat ->idrolecat;
-        $this->rolecatName = $rolecat->rolecat;
-        $this->alert('success', 'Terpilih : '.$rolecat->rolecat);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $rolecat = Rolecat::latest()
             ->search($this->search)

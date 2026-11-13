@@ -111,27 +111,4 @@ class Model_has_rolesController extends Controller
 
         return $options;
     }
-
-    public function model_has_roleslov(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Model_has_roles::select('*');
-
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '  
-                    <button type="button" class="pilihmodel_has_roles btn btn-success btn-sm"  idmodel_has_roles="'.$row->idmodel_has_roles.'" model_has_roles="'.$row->model_has_roles.'" ><i class="fas fa-check"></i></button>  
-                    </div> 
-                      
-                    ';
-
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('model_has_roleslov');
-    }
 }

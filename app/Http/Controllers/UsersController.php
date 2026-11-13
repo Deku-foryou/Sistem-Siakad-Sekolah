@@ -128,27 +128,4 @@ class UsersController extends Controller
 
         return $options;
     }
-
-    public function userslov(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = User::select('*');
-
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '  
-                    <button type="button" class="pilihusers btn btn-success btn-sm"  id="'.$row->id.'" users="'.$row->users.'" ><i class="fas fa-check"></i></button>  
-                    </div> 
-                      
-                    ';
-
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('userslov');
-    }
 }

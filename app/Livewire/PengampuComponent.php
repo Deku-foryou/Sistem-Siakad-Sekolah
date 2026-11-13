@@ -115,10 +115,10 @@ class PengampuComponent extends Component
             ->when($this->filterKelas, fn ($q) => $q->where('kelas_idkelas', $this->filterKelas))
             ->orderBy('kelas_idkelas')
             ->get();
-        
-        $gurus = $this->mapel_idmapel 
+
+        $gurus = $this->mapel_idmapel
             ? Guru::where('status', 'aktif')
-                ->whereHas('mapel', fn($q) => $q->where('mapel.idmapel', $this->mapel_idmapel))
+                ->whereHas('mapel', fn ($q) => $q->where('mapel.idmapel', $this->mapel_idmapel))
                 ->orderBy('nama')->get()
             : Guru::where('status', 'aktif')->orderBy('nama')->get();
 

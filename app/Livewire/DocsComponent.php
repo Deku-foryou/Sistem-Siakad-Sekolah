@@ -32,8 +32,6 @@ class DocsComponent extends Component
 
     public $docsName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -68,16 +66,9 @@ class DocsComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeDocs()
@@ -126,8 +117,6 @@ class DocsComponent extends Component
 
         $this->close();
 
-        $this->resetPage('pageLOV');
-
         $this->alert('success', 'New docs has been added successfully');
 
         $this->dispatch('close-docs-modal');
@@ -154,7 +143,6 @@ class DocsComponent extends Component
         $this->content = $docs->content;
         $this->urut = $docs->urut;
         $this->docscat_iddocscat = $docs->docscat_iddocscat;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->docsName = $docs ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-docs-modal');
@@ -227,8 +215,6 @@ class DocsComponent extends Component
         }
 
         $this->close();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data docs has been added successfully');
 
@@ -339,17 +325,6 @@ class DocsComponent extends Component
         return $options;
     }
 
-    public function docsLOV($id)
-    {
-        $docs = Docs::where('iddocs', $id)->first();
-        // $this->nama_relasi = $docs ->iddocs;
-        $this->docsName = $docs->docs;
-        $this->alert('success', 'Terpilih : '.$docs->docs);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     // untuk mencetak data yang natinya akan di tampilkan di render (memidah dari render agar flexible)
     public function dataDocs()
     {
@@ -364,9 +339,6 @@ class DocsComponent extends Component
 
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->simplePaginate($this->perPage, ['*'], 'pageLOV');
 
         $docscatOption = $this->docscatOption();
 

@@ -33,8 +33,6 @@ class UsermenuComponent extends Component
 
     public $id;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -168,9 +166,6 @@ class UsermenuComponent extends Component
 
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $appMenuCat = Appmenucat::get();
         $appMenu = Appmenunew::with(['appmenucat'])->get();

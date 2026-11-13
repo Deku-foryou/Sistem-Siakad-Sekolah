@@ -130,27 +130,4 @@ class RolesController extends Controller
 
         return $options;
     }
-
-    public function roleslov(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Roles::select('*');
-
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '  
-                    <button type="button" class="pilihroles btn btn-success btn-sm"  id="'.$row->id.'" roles="'.$row->roles.'" ><i class="fas fa-check"></i></button>  
-                    </div> 
-                      
-                    ';
-
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-
-        return view('roleslov');
-    }
 }

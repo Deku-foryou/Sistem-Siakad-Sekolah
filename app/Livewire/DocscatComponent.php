@@ -25,8 +25,6 @@ class DocscatComponent extends Component
 
     public $docscatName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -61,16 +59,9 @@ class DocscatComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeDocscat()
@@ -89,8 +80,6 @@ class DocscatComponent extends Component
         $docscat->urut = $this->urut;
         $docscat->save();
         $this->close();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'New docscat has been added successfully');
 
@@ -115,7 +104,6 @@ class DocscatComponent extends Component
         $this->iddocscat = $docscat->iddocscat;
         $this->docscat = $docscat->docscat;
         $this->urut = $docscat->urut;
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->docscatName = $docscat ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-docscat-modal');
@@ -148,8 +136,6 @@ class DocscatComponent extends Component
         ])->save();
 
         $this->close();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data docscat has been added successfully');
 
@@ -242,17 +228,6 @@ class DocscatComponent extends Component
         return $options;
     }
 
-    public function docscatLOV($id)
-    {
-        $docscat = Docscat::where('iddocscat', $id)->first();
-        // $this->nama_relasi = $docscat ->iddocscat;
-        $this->docscatName = $docscat->docscat;
-        $this->alert('success', 'Terpilih : '.$docscat->docscat);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     // untuk mencetak data yang natinya akan di tampilkan di render (memidah dari render agar flexible)
     public function dataDocscat()
     {
@@ -267,9 +242,6 @@ class DocscatComponent extends Component
 
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->simplePaginate($this->perPage, ['*'], 'pageLOV');
 
         // mengambil data render dari function data
         $docscat = $this->dataDocscat();

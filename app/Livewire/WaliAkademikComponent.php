@@ -6,7 +6,6 @@ use App\Models\AbsensiHarian;
 use App\Models\AbsensiPerjam;
 use App\Models\CatatanRapor;
 use App\Models\FinalisasiRapor;
-use App\Models\NilaiAkhir;
 use App\Models\Siswa;
 use App\Services\JadwalSiswaService;
 use App\Services\KonteksAkademikService;
@@ -27,11 +26,14 @@ class WaliAkademikComponent extends Component
     use WithPagination;
 
     public $tab = 'nilai'; // nilai | rekap | ketidakhadiran | catatan | perkembangan | absensi_harian | absensi_perjam | jadwal
+
     public $siswaId = '';
 
     // Filter tab Ketidakhadiran (opsional)
     public $filterStatus = 'semua'; // semua | sakit | izin | alpha
+
     public $filterDari = '';
+
     public $filterSampai = '';
 
     public function boot(): void
@@ -128,7 +130,7 @@ class WaliAkademikComponent extends Component
         // Nama file hanya boleh berisi [a-z0-9-] lewat slug; aman untuk header.
         $filename = preg_replace('/[^A-Za-z0-9._-]/', '-', $filename) ?? 'rekap-kehadiran.csv';
 
-        return response()->streamDownload(function () use ($rows, $konteks) {
+        return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // BOM agar dikenali Excel
 

@@ -37,8 +37,6 @@ class UsersComponent extends Component
 
     public $usersName;
 
-    public $searchlov = '';
-
     public $search = '';
 
     public $tglstart = '';
@@ -52,16 +50,9 @@ class UsersComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingSearchlov()
-    {
-        $this->resetPage();
-        $this->resetPage('pageLOV');
-    }
-
     public function updatingPerpage()
     {
         $this->resetPage();
-        $this->resetPage('pageLOV');
     }
 
     public function storeUsers()
@@ -87,8 +78,6 @@ class UsersComponent extends Component
         PaketMenuService::terapkanDefault($users);
         $this->reset();
 
-        $this->resetPage('pageLOV');
-
         $this->alert('success', 'New users has been added successfully');
 
         $this->dispatch('close-users-modal');
@@ -111,7 +100,6 @@ class UsersComponent extends Component
         $this->email = $users->email;
         $this->level = $users->level;
         $this->password = '*****';
-        // untuk edit jika menggunakan LOV  isi  tabelName LOV
         // $this->usersName = $users ->nama_relasi_yang_di_jadikan_LOV;
 
         $this->dispatch('show-edit-users-modal');
@@ -150,8 +138,6 @@ class UsersComponent extends Component
         }
 
         $this->reset();
-
-        $this->resetPage('pageLOV');
 
         $this->alert('success', 'Update data users has been added successfully');
 
@@ -237,17 +223,6 @@ class UsersComponent extends Component
         return $options;
     }
 
-    public function usersLOV($id)
-    {
-        $users = User::where('id', $id)->first();
-        // $this->nama_relasi = $users ->id;
-        $this->usersName = $users->users;
-        $this->alert('success', 'Terpilih : '.$users->users);
-        $this->resetPage('pageLOV');
-
-        $this->dispatch('close-modal-lov');
-    }
-
     public function resetPasswordUser($id)
     {
         abort_unless(auth()->user()?->level === 'superadmin', 403);
@@ -285,9 +260,6 @@ class UsersComponent extends Component
 
     public function render()
     {
-
-        // aktifkan dan sesuaikan jika menggunakan LOV
-        //  $namalov = ModelLOV::search($this->searchlov)->paginate($this->perPage, ['*'], 'pageLOV');
 
         $users = User::latest()
             ->search($this->search)

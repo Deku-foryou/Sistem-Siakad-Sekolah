@@ -4,8 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Docs;
 use App\Models\Docscat;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
 use Livewire\WithFileUploads;
