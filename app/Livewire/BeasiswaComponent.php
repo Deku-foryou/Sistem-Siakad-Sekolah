@@ -2,8 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LovSiswa;
 use App\Models\Beasiswa;
 use App\Models\BeasiswaSiswa;
+use App\Models\Siswa;
+use App\Services\LovService;
+use App\Support\Lov;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
@@ -13,6 +17,10 @@ class BeasiswaComponent extends Component
     use LivewireAlert {
         alert as protected;
     }
+    use LovSiswa;
+
+    // siswaId & siswaLabel disediakan trait LovSiswa (mode single)
+    public string $siswaId = '';
 
     public $idbeasiswa;
 
@@ -32,10 +40,22 @@ class BeasiswaComponent extends Component
 
     public $filterStatus = 'aktif';
 
+    // --- Beasiswa yang sedang dikelola penerimanya (modal "Kelola Penerima") ---
+    public ?int $penerimaId = null;
+
+    /** Alasan penetapan (opsional) pada modal Kelola Penerima. */
+    public string $alasanPenerima = '';
+
     public function mount(): void
     {
         abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
         $this->berlaku_dari = date('Y-m-d');
+    }
+
+    public function boot(): void
+    {
+        // Livewire 3: dipanggil pada SETIAP request (termasuk update) — otorisasi tidak pernah terlewati.
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
     }
 
     public function render()
@@ -47,8 +67,24 @@ class BeasiswaComponent extends Component
             ->orderByDesc('idbeasiswa')
             ->get();
 
+        $penerimaBeasiswa = null;
+        $penerimaList = collect();
+        if ($this->penerimaId) {
+            $penerimaBeasiswa = Beasiswa::find($this->penerimaId);
+            if ($penerimaBeasiswa) {
+                $penerimaList = BeasiswaSiswa::with('siswa')
+                    ->where('beasiswa_idbeasiswa', $penerimaBeasiswa->idbeasiswa)
+                    ->orderByRaw("CASE WHEN status = 'aktif' THEN 0 ELSE 1 END")
+                    ->orderByDesc('berlaku_dari')
+                    ->orderByDesc('idbeasiswa_siswa')
+                    ->get();
+            }
+        }
+
         return view('livewire.beasiswa-component', [
             'beasiswas' => $beasiswas,
+            'penerimaBeasiswa' => $penerimaBeasiswa,
+            'penerimaList' => $penerimaList,
         ]);
     }
 
@@ -77,7 +113,7 @@ class BeasiswaComponent extends Component
                 'jenis' => $validated['jenis'],
                 'nilai' => (int) $validated['nilai'],
                 'berlaku_dari' => $validated['berlaku_dari'],
-                'berlaku_sampai' => $validated['berlaku_sampai'] ?? null,
+                'berlaku_sampai' => $validated['berlaku_sampai'] ?: null,
                 'alasan' => $validated['alasan'] ?? null,
                 'status' => 'aktif',
                 'dibuat_oleh' => auth()->id(),
@@ -123,7 +159,7 @@ class BeasiswaComponent extends Component
                 'jenis' => $validated['jenis'],
                 'nilai' => (int) $validated['nilai'],
                 'berlaku_dari' => $validated['berlaku_dari'],
-                'berlaku_sampai' => $validated['berlaku_sampai'] ?? null,
+                'berlaku_sampai' => $validated['berlaku_sampai'] ?: null,
                 'alasan' => $validated['alasan'] ?? null,
             ]);
         });
@@ -143,42 +179,116 @@ class BeasiswaComponent extends Component
         $this->alert('success', 'Status beasiswa diperbarui.');
     }
 
-    public function assignToSiswa(int $beasiswaId, int $siswaId): void
+    public function kelolaPenerima(int $id): void
     {
         abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
 
-        DB::transaction(function () use ($beasiswaId, $siswaId) {
-            BeasiswaSiswa::firstOrCreate(
-                ['beasiswa_idbeasiswa' => $beasiswaId, 'siswa_idsiswa' => $siswaId],
-                [
-                    'berlaku_dari' => now()->format('Y-m-d'),
-                    'berlaku_sampai' => null,
-                    'status' => 'aktif',
-                    'dibuat_oleh' => auth()->id(),
-                ]
-            );
-        });
-
-        $this->alert('success', 'Siswa berhasil ditambahkan ke beasiswa.');
+        $beasiswa = Beasiswa::findOrFail($id);
+        $this->penerimaId = $beasiswa->idbeasiswa;
+        $this->alasanPenerima = '';
+        $this->lovReset();
+        $this->dispatch('show-penerima-beasiswa-modal');
     }
 
-    public function revokeFromSiswa(int $beasiswaId, int $siswaId): void
+    public function tutupPenerima(): void
     {
         abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
 
-        DB::transaction(function () use ($beasiswaId, $siswaId) {
-            $row = BeasiswaSiswa::where('beasiswa_idbeasiswa', $beasiswaId)
-                ->where('siswa_idsiswa', $siswaId)
-                ->first();
+        $this->penerimaId = null;
+        $this->alasanPenerima = '';
+        $this->lovReset();
+        $this->dispatch('close-penerima-beasiswa-modal');
+    }
 
-            if ($row) {
-                $row->status = 'berhenti';
-                $row->berlaku_sampai = now()->format('Y-m-d');
-                $row->save();
+    public function tambahPenerima(): void
+    {
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+
+        if (! $this->penerimaId) {
+            $this->addError('siswaId', 'Beasiswa belum dipilih.');
+
+            return;
+        }
+
+        // Validasi ulang di backend — jangan percaya ID dari browser.
+        $siswa = LovService::selected(Lov::KEY_SISWA, $this->siswaId !== '' ? (int) $this->siswaId : null);
+        if (! $siswa instanceof Siswa) {
+            $this->addError('siswaId', 'Siswa tidak ditemukan atau tidak aktif.');
+
+            return;
+        }
+
+        $beasiswa = Beasiswa::findOrFail($this->penerimaId);
+
+        $existing = BeasiswaSiswa::where('beasiswa_idbeasiswa', $beasiswa->idbeasiswa)
+            ->where('siswa_idsiswa', $siswa->idsiswa)
+            ->first();
+
+        // Cegah penetapan duplikat (penerima AKTIF pada beasiswa yang sama).
+        if ($existing && $existing->status === 'aktif') {
+            $this->addError('siswaId', 'Siswa sudah terdaftar sebagai penerima aktif beasiswa ini.');
+
+            return;
+        }
+
+        DB::transaction(function () use ($beasiswa, $siswa, $existing) {
+            if ($existing) {
+                // Pernah dicabut lalu ditetapkan kembali: aktifkan kembali baris yang sama
+                // (unique beasiswa+siswa). Baris & kreator tidak dihapus; timestamp diperbarui.
+                $existing->update([
+                    'status' => 'aktif',
+                    'berlaku_dari' => now()->format('Y-m-d'),
+                    'berlaku_sampai' => null,
+                    'alasan' => $this->alasanPenerima !== '' ? $this->alasanPenerima : $existing->alasan,
+                    'dibuat_oleh' => auth()->id(),
+                ]);
+            } else {
+                BeasiswaSiswa::create([
+                    'beasiswa_idbeasiswa' => $beasiswa->idbeasiswa,
+                    'siswa_idsiswa' => $siswa->idsiswa,
+                    'berlaku_dari' => now()->format('Y-m-d'),
+                    'berlaku_sampai' => null,
+                    'alasan' => $this->alasanPenerima !== '' ? $this->alasanPenerima : null,
+                    'status' => 'aktif',
+                    'dibuat_oleh' => auth()->id(),
+                ]);
             }
         });
 
-        $this->alert('success', 'Siswa berhasil dicabut dari beasiswa.');
+        $this->alasanPenerima = '';
+        $this->lovReset();
+        $this->alert('success', 'Beasiswa berhasil ditetapkan kepada siswa.');
+    }
+
+    public function cabutPenerima(int $idbeasiswa_siswa): void
+    {
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+
+        $row = BeasiswaSiswa::where('idbeasiswa_siswa', $idbeasiswa_siswa)
+            ->where('status', 'aktif')
+            ->first();
+
+        if (! $row) {
+            $this->alert('warning', 'Siswa tidak terdaftar sebagai penerima aktif beasiswa ini.');
+
+            return;
+        }
+
+        // Cegah pencabutan lintas beasiswa yang bukan sedang dikelola.
+        if ($this->penerimaId && (int) $row->beasiswa_idbeasiswa !== (int) $this->penerimaId) {
+            $this->alert('warning', 'Penerima tidak cocok dengan beasiswa yang sedang dikelola.');
+
+            return;
+        }
+
+        DB::transaction(function () use ($row) {
+            // Pencabutan hanya mengubah status & tanggal berhenti — baris & histori TIDAK dihapus.
+            $row->status = 'berhenti';
+            $row->berlaku_sampai = now()->format('Y-m-d');
+            $row->save();
+        });
+
+        $this->alert('success', 'Beasiswa berhasil dicabut. Histori penetapan tetap tersimpan.');
     }
 
     public function close(): void
