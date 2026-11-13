@@ -7,7 +7,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-bullseye me-2 text-success" aria-hidden="true"></i>KKTP Mata Pelajaran</h1>
             <p class="sa-sub">Atur nilai minimal ketuntasan per semester dan mata pelajaran.</p>
         </div>
-        <button class="btn btn-primary" wire:click="$dispatch('show-add-kktp-modal')">
+        <button class="btn btn-primary" wire:click="$dispatch('show-add-kktp-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah KKTP
         </button>
     </div>
@@ -52,8 +52,8 @@
                             <td class="text-center fw-semibold">{{ number_format((float) $row->nilai_minimal, 2, ',', '.') }}</td>
                             <td>{{ $row->deskripsi ?: '-' }}</td>
                             <td class="text-center text-nowrap">
-                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idkktp_mapel }})" aria-label="Edit KKTP {{ $row->mapel->nama }}"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
-                                <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idkktp_mapel }})" aria-label="Hapus KKTP {{ $row->mapel->nama }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idkktp_mapel }})" aria-label="Edit KKTP {{ $row->mapel->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idkktp_mapel }})" aria-label="Hapus KKTP {{ $row->mapel->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     @empty
@@ -93,8 +93,8 @@
                         <textarea id="add-kktp-deskripsi" class="form-control" rows="3" wire:model="deskripsi"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
                     </div>
                 </form>
             </div>
@@ -128,8 +128,8 @@
                         <textarea id="edit-kktp-deskripsi" class="form-control" rows="3" wire:model="deskripsi"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -143,8 +143,8 @@
                 <div class="modal-header"><h5 class="modal-title" id="deleteKktpTitle"><i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>Hapus KKTP</h5></div>
                 <div class="modal-body">Hapus KKTP ini?</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button>
-                    <button class="btn btn-danger" wire:click="delete"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                    <button class="btn btn-danger" wire:click="delete" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button>
                 </div>
             </div>
         </div>

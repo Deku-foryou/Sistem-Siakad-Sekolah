@@ -22,11 +22,11 @@
         <ul class="nav nav-tabs mb-3" role="tablist" aria-label="Jenis pengumuman">
             <li class="nav-item" role="presentation">
                 <button type="button" role="tab" aria-selected="{{ $tab === 'aktif' ? 'true' : 'false' }}"
-                    class="nav-link {{ $tab === 'aktif' ? 'active' : '' }}" wire:click="gantiTab('aktif')">Pengumuman Aktif</button>
+                    class="nav-link {{ $tab === 'aktif' ? 'active' : '' }}" wire:click="gantiTab('aktif')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Pengumuman Aktif</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button type="button" role="tab" aria-selected="{{ $tab === 'riwayat' ? 'true' : 'false' }}"
-                    class="nav-link {{ $tab === 'riwayat' ? 'active' : '' }}" wire:click="gantiTab('riwayat')">Riwayat Pengumuman</button>
+                    class="nav-link {{ $tab === 'riwayat' ? 'active' : '' }}" wire:click="gantiTab('riwayat')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Riwayat Pengumuman</button>
             </li>
         </ul>
 
@@ -68,7 +68,7 @@
                                     @endif
                                 </div>
                                 <div class="mt-auto">
-                                    <button class="btn btn-sm btn-outline-success" wire:click="bukaDetail({{ $item->idpengumuman }})" aria-label="Baca pengumuman {{ $item->judul }}">Baca selengkapnya</button>
+                                    <button class="btn btn-sm btn-outline-success" wire:click="bukaDetail({{ $item->idpengumuman }})" aria-label="Baca pengumuman {{ $item->judul }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Baca selengkapnya</button>
                                 </div>
                             </div>
                         </div>
@@ -100,7 +100,7 @@
                 <div class="sa-card-body">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <h2 class="h5 fw-bold mb-0 text-break">{{ $detail->judul }}</h2>
-                        <button class="btn btn-sm btn-outline-secondary flex-shrink-0" wire:click="tutupDetail">Tutup</button>
+                        <button class="btn btn-sm btn-outline-secondary flex-shrink-0" wire:click="tutupDetail" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
                     </div>
                     <div class="d-flex flex-wrap gap-1 mb-3">
                         <span class="sa-badge sa-netral">{{ ucfirst($detail->kategori) }}</span>

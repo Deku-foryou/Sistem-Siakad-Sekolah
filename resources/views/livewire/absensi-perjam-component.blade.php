@@ -15,13 +15,13 @@
     @if ($errorMessage)
         <div class="alert alert-danger d-flex justify-content-between align-items-center gap-2 py-2" role="alert">
             <span><i class="fa-solid fa-circle-exclamation me-2" aria-hidden="true"></i>{{ $errorMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup pesan error"></button>
+            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup pesan error" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
     @if ($successMessage)
         <div class="alert alert-success d-flex justify-content-between align-items-center gap-2 py-2" role="status">
             <span><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{{ $successMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup pesan sukses"></button>
+            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup pesan sukses" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -73,7 +73,7 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="pilihPertemuan({{ $p['idjadwal_pertemuan'] }})">
+                                <button type="button" class="btn btn-sm btn-outline-primary" wire:click="pilihPertemuan({{ $p['idjadwal_pertemuan'] }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Isi absensi">
                                     <i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i>Isi Absensi
                                 </button>
                             </td>
@@ -103,7 +103,7 @@
                         <span class="sa-badge sa-aktif">Dapat diabsen</span>
                     @endif
                     <button class="btn btn-sm btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi"
-                        @if ($pertemuanTerpilih['status'] !== 'terjadwal' || $pertemuanTerpilih['deadline_lewat']) disabled @endif>
+                        @if ($pertemuanTerpilih['status'] !== 'terjadwal' || $pertemuanTerpilih['deadline_lewat']) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading.remove wire:target="simpanAbsensi"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</span>
                         <span wire:loading wire:target="simpanAbsensi">Menyimpan&hellip;</span>
                     </button>

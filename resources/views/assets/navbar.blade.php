@@ -45,7 +45,7 @@
     <div class="container-fluid px-4">
         <button class="header-toggler d-flex justify-content-start align-items-center" type="button"
             onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"
-            style="color: #6b7280; outline: none; box-shadow: none;">
+            style="color: #6b7280; outline: none; box-shadow: none;" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka/tutup sidebar" aria-label="Buka/tutup sidebar">
             <i class="fa-solid fa-bars-staggered"></i>
         </button>
 
@@ -60,7 +60,7 @@
             <div class="dropdown">
                 <button onclick="myFunction()"
                     class="btn btn-link p-0 d-flex align-items-center text-decoration-none shadow-none dropdown-toggle"
-                    style="outline: none;">
+                    style="outline: none;" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka menu" aria-label="Buka menu">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=f15833&color=fff&rounded=true"
                         alt="Profile" style="display: block; width: 35px; height: 35px; border-radius: 50%;">
                 </button>
@@ -85,7 +85,7 @@
                     <form action="/logout" method="POST" class="m-0 p-0">
                         @csrf
                         <button type="submit" class="dropdown-item text-danger w-100"
-                            style="background: transparent; border: none;">
+                            style="background: transparent; border: none;" data-bs-toggle="tooltip" data-bs-placement="top" title="Logout">
                             <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Logout
                         </button>
                     </form>

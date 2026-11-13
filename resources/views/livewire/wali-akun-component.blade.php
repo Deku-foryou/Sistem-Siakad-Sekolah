@@ -15,7 +15,7 @@
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAkunModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAkunModal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                         <i class="fa-solid fa-user-plus me-2"></i>Tambah Akun Wali
                     </button>
                 </div>
@@ -27,8 +27,8 @@
                 <div class="fw-bold mb-1"><i class="fa-solid fa-triangle-exclamation me-2"></i>Sandi sementara (tampil sekali) — salin sekarang, jangan dibagi lewat pesan/email.</div>
                 <div class="d-flex align-items-center gap-2">
                     <code id="sandiSementara" class="fs-5">{{ $sandiTampil }}</code>
-                    <button type="button" class="btn btn-sm btn-outline-dark" id="copySandiBtn">Salin</button>
-                    <button type="button" class="btn btn-sm btn-primary" wire:click="dismissSandi">Saya sudah menyalin</button>
+                    <button type="button" class="btn btn-sm btn-outline-dark" id="copySandiBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Salin">Salin</button>
+                    <button type="button" class="btn btn-sm btn-primary" wire:click="dismissSandi" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Saya sudah menyalin</button>
                 </div>
             </div>
         @endif
@@ -98,17 +98,17 @@
                                     </td>
                                     <td class="pe-3 text-end">
                                         <button class="btn btn-sm btn-outline-primary" title="Reset sandi"
-                                            wire:click="bukaAksi({{ $user->id }}, 'reset')" data-bs-toggle="modal" data-bs-target="#aksiModal">
+                                            wire:click="bukaAksi({{ $user->id }}, 'reset')" data-bs-toggle="modal" data-bs-target="#aksiModal" data-bs-toggle="tooltip" data-bs-placement="top">
                                             <i class="fa-solid fa-key"></i>
                                         </button>
                                         @if ($user->status_akun === 'aktif')
                                             <button class="btn btn-sm btn-outline-danger" title="Nonaktifkan"
-                                                wire:click="bukaAksi({{ $user->id }}, 'nonaktif')" data-bs-toggle="modal" data-bs-target="#aksiModal">
+                                                wire:click="bukaAksi({{ $user->id }}, 'nonaktif')" data-bs-toggle="modal" data-bs-target="#aksiModal" data-bs-toggle="tooltip" data-bs-placement="top">
                                                 <i class="fa-solid fa-user-slash"></i>
                                             </button>
                                         @else
                                             <button class="btn btn-sm btn-outline-success" title="Aktifkan"
-                                                wire:click="bukaAksi({{ $user->id }}, 'aktif')" data-bs-toggle="modal" data-bs-target="#aksiModal">
+                                                wire:click="bukaAksi({{ $user->id }}, 'aktif')" data-bs-toggle="modal" data-bs-target="#aksiModal" data-bs-toggle="tooltip" data-bs-placement="top">
                                                 <i class="fa-solid fa-user-check"></i>
                                             </button>
                                         @endif
@@ -130,7 +130,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Tambah Akun Wali</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                     </div>
                     <form wire:submit.prevent="simpan">
                         <div class="modal-body">
@@ -156,8 +156,8 @@
                             <p class="small text-muted mb-0 mt-3">Sistem akan menerbitkan sandi sementara acak (16 karakter) dan menampilkan hanya satu kali ke admin setelah disimpan.</p>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading><span class="spinner-border spinner-border-sm"></span></span>
                                 Simpan &amp; Terbitkan Sandi
                             </button>
@@ -178,7 +178,7 @@
                             @else Aktifkan Akun
                             @endif
                         </h5>
-                        <button type="button" class="btn-close" wire:click="batalAksi" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" wire:click="batalAksi" data-bs-dismiss="modal" aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -189,8 +189,8 @@
                         <p class="small text-muted mb-0">Data ini dicatat ke histori akun (append-only), aman dan tidak berisi sandi.</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="batalAksi" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn btn-primary" wire:click="simpanAksi" wire:loading.attr="disabled">
+                        <button type="button" class="btn btn-secondary" wire:click="batalAksi" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                        <button type="button" class="btn btn-primary" wire:click="simpanAksi" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                             <span wire:loading><span class="spinner-border spinner-border-sm"></span></span>
                             Simpan
                         </button>

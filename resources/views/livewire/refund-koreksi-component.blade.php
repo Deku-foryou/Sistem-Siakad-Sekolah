@@ -66,13 +66,13 @@
                         <tr>
                             <td>{{ $p->siswa?->nama }}<br><small class="text-muted">NIS {{ $p->siswa?->nis }}</small></td>
                             <td>{{ $p->tagihan ? strtoupper($p->tagihan->jenis).' '.$p->tagihan->periode : '-' }}</td>
-                            <td class="text-end">Rp {{ number_format($p->nominal_dibayar, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $p->nominal_dibayar, 0, ',', '.') }}</td>
                             <td>{{ strtoupper($p->metode) }}</td>
-                            <td class="text-end">Rp {{ number_format($refundable, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $refundable, 0, ',', '.') }}</td>
                             <td class="text-center text-nowrap">
                                 @if($refundable > 0)
-                                    <button class="btn btn-sm btn-outline-success" wire:click="pilihPembayaran({{ $p->idpembayaran }}); $dispatch('show-modal-refund')" type="button">Refund</button>
-                                    <button class="btn btn-sm btn-outline-primary" wire:click="pilihPembayaran({{ $p->idpembayaran }}); $dispatch('show-modal-koreksi')" type="button">Koreksi</button>
+                                    <button class="btn btn-sm btn-outline-success" wire:click="pilihPembayaran({{ $p->idpembayaran }}); $dispatch('show-modal-refund')" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar">Refund</button>
+                                    <button class="btn btn-sm btn-outline-primary" wire:click="pilihPembayaran({{ $p->idpembayaran }}); $dispatch('show-modal-koreksi')" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar">Koreksi</button>
                                 @else
                                     <small class="text-muted">Habis direfund</small>
                                 @endif
@@ -101,16 +101,16 @@
                             <td>{{ $r->id }}</td>
                             <td>{{ $r->created_at?->format('d/m/Y H:i') }}</td>
                             <td>{{ $r->pembayaran?->siswa?->nama }}</td>
-                            <td class="text-end">Rp {{ number_format($r->nominal_refund, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $r->nominal_refund, 0, ',', '.') }}</td>
                             <td>{{ strtoupper(str_replace('_', ' ', $r->metode)) }}</td>
                             <td>
                                 @if($r->status === 'pending') <span class="sa-badge sa-netral">Menunggu</span>
                                 @elseif($r->status === 'disetujui') <span class="sa-badge sa-netral">Disetujui</span>
                                 @elseif($r->status === 'terproses') <span class="sa-badge sa-hadir">Terproses {{ $r->nomor_dokumen }}</span>
                                     @if($r->dokumen)
-                                        <a class="btn btn-sm btn-outline-success ms-1" href="{{ route('refund.dokumen', $r->dokumen->id) }}"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</a>
+                                        <a class="btn btn-sm btn-outline-success ms-1" href="{{ route('refund.dokumen', $r->dokumen->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</a>
                                     @elseif(auth()->user()?->level === 'superadmin')
-                                        <button class="btn btn-sm btn-outline-warning ms-1" wire:click="generatePdfRefund({{ $r->id }})" type="button"><i class="fa-solid fa-file-circle-plus"></i> Generate PDF</button>
+                                        <button class="btn btn-sm btn-outline-warning ms-1" wire:click="generatePdfRefund({{ $r->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF"><i class="fa-solid fa-file-circle-plus"></i> Generate PDF</button>
                                     @endif
                                 @elseif($r->status === 'ditolak') <span class="sa-badge sa-alpha">Ditolak</span>
                                 @else <span class="sa-badge sa-alpha">Gagal</span>
@@ -120,10 +120,10 @@
                             <td class="text-center text-nowrap">
                                 @if(auth()->user()?->level === 'superadmin')
                                     @if($r->status === 'pending')
-                                        <button class="btn btn-sm btn-success" wire:click="setujuiRefund({{ $r->id }})" type="button"><i class="fa-solid fa-check"></i> Setujui</button>
-                                        <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolakRefund({{ $r->id }})" type="button"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                                        <button class="btn btn-sm btn-success" wire:click="setujuiRefund({{ $r->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Setujui"><i class="fa-solid fa-check"></i> Setujui</button>
+                                        <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolakRefund({{ $r->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak"><i class="fa-solid fa-xmark"></i> Tolak</button>
                                     @elseif($r->status === 'disetujui')
-                                        <button class="btn btn-sm btn-primary" wire:click="pilihProsesRefund({{ $r->id }})" type="button"><i class="fa-solid fa-hand-holding-dollar"></i> Proses</button>
+                                        <button class="btn btn-sm btn-primary" wire:click="pilihProsesRefund({{ $r->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Proses"><i class="fa-solid fa-hand-holding-dollar"></i> Proses</button>
                                     @endif
                                 @endif
                             </td>
@@ -151,7 +151,7 @@
                             <td>{{ $k->created_at?->format('d/m/Y H:i') }}</td>
                             <td>{{ $k->pembayaran?->siswa?->nama }}</td>
                             <td>{{ strtoupper(str_replace('_', ' ', $k->jenis)) }}</td>
-                            <td class="text-end">{{ $k->nominal_usulan !== null ? 'Rp '.number_format($k->nominal_usulan, 0, ',', '.') : '-' }}</td>
+                            <td class="text-end">{{ $k->nominal_usulan !== null ? 'Rp '.number_format((int) $k->nominal_usulan, 0, ',', '.') : '-' }}</td>
                             <td>
                                 @if($k->status === 'pending') <span class="sa-badge sa-netral">Menunggu</span>
                                 @elseif($k->status === 'disetujui') <span class="sa-badge sa-netral">Disetujui</span>
@@ -163,8 +163,8 @@
                             <td class="text-center text-nowrap">
                                 @if(auth()->user()?->level === 'superadmin')
                                     @if($k->status === 'pending')
-                                        <button class="btn btn-sm btn-success" wire:click="setujuiKoreksi({{ $k->id }}); $dispatch('close-modal-koreksi')" type="button"><i class="fa-solid fa-check"></i> Setujui &amp; Terapkan</button>
-                                        <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolakKoreksi({{ $k->id }})" type="button"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                                        <button class="btn btn-sm btn-success" wire:click="setujuiKoreksi({{ $k->id }}); $dispatch('close-modal-koreksi')" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Setujui"><i class="fa-solid fa-check"></i> Setujui &amp; Terapkan</button>
+                                        <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolakKoreksi({{ $k->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak"><i class="fa-solid fa-xmark"></i> Tolak</button>
                                     @endif
                                 @endif
                             </td>
@@ -189,7 +189,7 @@
 <div wire:ignore.self class="modal fade" id="modalRefund" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Ajukan Refund</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Ajukan Refund</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <p class="small text-muted">Pembayaran #{{ $selectedPembayaranId }}</p>
                 <label class="form-label">Nominal refund (Rp)</label>
@@ -207,8 +207,8 @@
                 <input type="text" class="form-control" wire:model="referensiRefund" placeholder="No. transfer / bukti / dll">
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm">Batal</button>
-                <button class="btn btn-primary" wire:click="ajukanRefund" wire:loading.attr="disabled">Ajukan</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-primary" wire:click="ajukanRefund" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">Ajukan</button>
             </div>
         </div>
     </div>
@@ -218,7 +218,7 @@
 <div wire:ignore.self class="modal fade" id="modalKoreksi" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i>Ajukan Koreksi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i>Ajukan Koreksi</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <p class="small text-muted">Pembayaran #{{ $selectedPembayaranId }}</p>
                 <label class="form-label">Jenis Koreksi</label>
@@ -245,14 +245,14 @@
                 <select class="form-select mb-2" wire:model="tagihanPenggantiId">
                     <option value="">-- Pilih tagihan pengganti --</option>
                     @foreach($tagihanOptions as $t)
-                        <option value="{{ $t->idtagihan }}">{{ strtoupper($t->jenis) }} {{ $t->periode }} — Rp {{ number_format($t->total_tagihan, 0, ',', '.') }}</option>
+                        <option value="{{ $t->idtagihan }}">{{ strtoupper($t->jenis) }} {{ $t->periode }} — Rp {{ number_format((int) $t->total_tagihan, 0, ',', '.') }}</option>
                     @endforeach
                 </select>
                 @endif
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm">Batal</button>
-                <button class="btn btn-primary" wire:click="ajukanKoreksi" wire:loading.attr="disabled">Ajukan</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-primary" wire:click="ajukanKoreksi" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">Ajukan</button>
             </div>
         </div>
     </div>
@@ -262,17 +262,17 @@
 <div wire:ignore.self class="modal fade" id="modalTolak" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title text-danger"><i class="fa-solid fa-xmark me-2"></i>Tolak</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title text-danger"><i class="fa-solid fa-xmark me-2"></i>Tolak</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <label class="form-label">Alasan penolakan (wajib)</label>
                 <textarea class="form-control" rows="3" wire:model="alasanPenolakan"></textarea>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
                 @if($tolakTipe === 'refund')
-                    <button class="btn btn-danger" wire:click="tolakRefundTerpilih">Tolak</button>
+                    <button class="btn btn-danger" wire:click="tolakRefundTerpilih" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak</button>
                 @else
-                    <button class="btn btn-danger" wire:click="tolakKoreksiTerpilih">Tolak</button>
+                    <button class="btn btn-danger" wire:click="tolakKoreksiTerpilih" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak</button>
                 @endif
             </div>
         </div>
@@ -283,7 +283,7 @@
 <div wire:ignore.self class="modal fade" id="modalProses" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Proses Refund (manual oleh sekolah)</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Proses Refund (manual oleh sekolah)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <label class="form-label">Referensi proses (wajib) — nomor transfer / nama penerima / tanggal</label>
                 <input type="text" class="form-control mb-2" wire:model="referensiProses" placeholder="TRX-001 / tunai 11/11/2026 / dll">
@@ -291,8 +291,8 @@
                 <textarea class="form-control" rows="2" wire:model="catatanProses"></textarea>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button class="btn btn-primary" wire:click="prosesRefundTerpilih" wire:loading.attr="disabled">Tandai Terproses</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-primary" wire:click="prosesRefundTerpilih" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Proses">Tandai Terproses</button>
             </div>
         </div>
     </div>

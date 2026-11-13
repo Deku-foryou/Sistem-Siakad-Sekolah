@@ -397,7 +397,7 @@
                 <p class="academic-description mb-0">Kelola tahun ajaran dan semester sekolah dalam satu tempat.</p>
             </div>
             <div class="academic-header-actions">
-                <button type="button" class="btn btn-academic px-3 py-2" wire:click="$dispatch('show-add-tahunajaran-modal')">
+                <button type="button" class="btn btn-academic px-3 py-2" wire:click="$dispatch('show-add-tahunajaran-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                     <i class="fa-solid fa-plus me-2" aria-hidden="true"></i>Tambah Tahun Ajaran
                 </button>
             </div>
@@ -488,8 +488,7 @@
                                 data-bs-toggle="collapse"
                                 data-bs-target="#collapse-{{ $ta->idtahunajaran }}"
                                 aria-expanded="{{ $ta->aktif ? 'true' : 'false' }}"
-                                aria-controls="collapse-{{ $ta->idtahunajaran }}"
-                            >
+                                aria-controls="collapse-{{ $ta->idtahunajaran }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Nonaktifkan">
                                 <span class="academic-year-name">Tahun Ajaran {{ $ta->nama }}</span>
                                 @if ($ta->aktif)
                                     <span class="badge rounded-pill badge-academic-active">Aktif</span>
@@ -507,8 +506,7 @@
                                     class="btn btn-sm btn-outline-success btn-add-semester"
                                     wire:click="addSemester('{{ $ta->idtahunajaran }}')"
                                     title="Tambah semester pada tahun ajaran {{ $ta->nama }}"
-                                    aria-label="Tambah semester pada tahun ajaran {{ $ta->nama }}"
-                                >
+                                    aria-label="Tambah semester pada tahun ajaran {{ $ta->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <i class="fa-solid fa-plus me-sm-1" aria-hidden="true"></i><span>Tambah Semester</span>
                                 </button>
                                 <button
@@ -516,8 +514,7 @@
                                     class="btn btn-sm btn-outline-secondary academic-icon-button"
                                     wire:click="editTahunajaran('{{ $ta->idtahunajaran }}')"
                                     title="Edit tahun ajaran {{ $ta->nama }}"
-                                    aria-label="Edit tahun ajaran {{ $ta->nama }}"
-                                >
+                                    aria-label="Edit tahun ajaran {{ $ta->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
                                 </button>
                                 <button
@@ -525,8 +522,7 @@
                                     class="btn btn-sm btn-outline-danger academic-icon-button"
                                     wire:click="deleteConfirmationTahunajaran('{{ $ta->idtahunajaran }}')"
                                     title="Hapus tahun ajaran {{ $ta->nama }}"
-                                    aria-label="Hapus tahun ajaran {{ $ta->nama }}"
-                                >
+                                    aria-label="Hapus tahun ajaran {{ $ta->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
                                 </button>
                                 <button
@@ -537,8 +533,7 @@
                                     aria-expanded="{{ $ta->aktif ? 'true' : 'false' }}"
                                     aria-controls="collapse-{{ $ta->idtahunajaran }}"
                                     title="Tampilkan atau sembunyikan semester"
-                                    aria-label="Tampilkan atau sembunyikan semester tahun ajaran {{ $ta->nama }}"
-                                >
+                                    aria-label="Tampilkan atau sembunyikan semester tahun ajaran {{ $ta->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <i class="fa-solid fa-chevron-down expand-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -578,8 +573,7 @@
                                                             type="button"
                                                             class="btn btn-sm btn-outline-warning"
                                                             wire:click="aktifkanSemester('{{ $sem->idsemester }}')"
-                                                            wire:confirm="Sinkronkan konteks dengan mengaktifkan semester ini dan tahun ajaran induknya? Periode lain akan dinonaktifkan."
-                                                        >
+                                                            wire:confirm="Sinkronkan konteks dengan mengaktifkan semester ini dan tahun ajaran induknya? Periode lain akan dinonaktifkan." data-bs-toggle="tooltip" data-bs-placement="top" title="Sinkronkan data/paket">
                                                             <i class="fa-solid fa-arrows-rotate me-1" aria-hidden="true"></i>Sinkronkan Konteks
                                                         </button>
                                                     @elseif ($sem->aktif)
@@ -587,8 +581,7 @@
                                                             type="button"
                                                             class="btn btn-sm btn-outline-secondary"
                                                             wire:click="nonaktifkanSemester('{{ $sem->idsemester }}')"
-                                                            wire:confirm="Nonaktifkan semester ini? Konteks akademik mungkin menjadi tidak valid sampai semester lain diaktifkan."
-                                                        >
+                                                            wire:confirm="Nonaktifkan semester ini? Konteks akademik mungkin menjadi tidak valid sampai semester lain diaktifkan." data-bs-toggle="tooltip" data-bs-placement="top" title="Nonaktifkan">
                                                             <i class="fa-solid fa-pause me-1" aria-hidden="true"></i>Nonaktifkan
                                                         </button>
                                                     @else
@@ -596,8 +589,7 @@
                                                             type="button"
                                                             class="btn btn-sm btn-outline-success"
                                                             wire:click="aktifkanSemester('{{ $sem->idsemester }}')"
-                                                            wire:confirm="Aktifkan semester ini dan tahun ajaran induknya? Semua semester dan tahun ajaran lain akan dinonaktifkan."
-                                                        >
+                                                            wire:confirm="Aktifkan semester ini dan tahun ajaran induknya? Semua semester dan tahun ajaran lain akan dinonaktifkan." data-bs-toggle="tooltip" data-bs-placement="top" title="Aktifkan">
                                                             <i class="fa-solid fa-check me-1" aria-hidden="true"></i>Aktifkan
                                                         </button>
                                                     @endif
@@ -606,8 +598,7 @@
                                                         class="btn btn-sm btn-outline-secondary academic-icon-button"
                                                         wire:click="editSemester('{{ $sem->idsemester }}')"
                                                         title="Edit semester {{ $sem->nama }}"
-                                                        aria-label="Edit semester {{ $sem->nama }}"
-                                                    >
+                                                        aria-label="Edit semester {{ $sem->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                                         <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
                                                     </button>
                                                     <button
@@ -615,8 +606,7 @@
                                                         class="btn btn-sm btn-outline-danger academic-icon-button"
                                                         wire:click="deleteConfirmationSemester('{{ $sem->idsemester }}')"
                                                         title="Hapus semester {{ $sem->nama }}"
-                                                        aria-label="Hapus semester {{ $sem->nama }}"
-                                                    >
+                                                        aria-label="Hapus semester {{ $sem->nama }}" data-bs-toggle="tooltip" data-bs-placement="top">
                                                         <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
                                                     </button>
                                                 </div>
@@ -654,7 +644,7 @@
                         <h2 class="modal-title" id="addTahunajaranTitle">Tambah Tahun Ajaran</h2>
                         <p class="modal-description">Masukkan periode baru dengan format tahun berurutan.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="storeTahunajaran">
@@ -665,8 +655,8 @@
                             @error('nama') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                         <div class="modal-footer px-0 pb-0">
-                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Simpan Tahun Ajaran
                             </button>
                         </div>
@@ -684,7 +674,7 @@
                         <h2 class="modal-title" id="editTahunajaranTitle">Edit Tahun Ajaran</h2>
                         <p class="modal-description">Perbarui nama periode tahun ajaran.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updateTahunajaran">
@@ -695,8 +685,8 @@
                             @error('nama') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                         <div class="modal-footer px-0 pb-0">
-                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Simpan Perubahan
                             </button>
                         </div>
@@ -714,13 +704,13 @@
                         <h2 class="modal-title text-danger" id="deleteTahunajaranTitle">Hapus Tahun Ajaran</h2>
                         <p class="modal-description">Tindakan ini tidak dapat dibatalkan.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <p class="mb-0">Tahun ajaran aktif atau yang masih memiliki semester maupun data terkait tidak dapat dihapus.</p>
                     <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                        <button type="button" class="btn btn-danger" wire:click="deleteTahunajaran()">Hapus Tahun Ajaran</button>
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                        <button type="button" class="btn btn-danger" wire:click="deleteTahunajaran()" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus Tahun Ajaran</button>
                     </div>
                 </div>
             </div>
@@ -735,7 +725,7 @@
                         <h2 class="modal-title" id="addSemesterTitle">Tambah Semester</h2>
                         <p class="modal-description">Semester akan ditambahkan ke tahun ajaran yang dipilih.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="storeSemester">
@@ -758,8 +748,8 @@
                             @error('semester_nama') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                         <div class="modal-footer px-0 pb-0">
-                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Simpan Semester
                             </button>
                         </div>
@@ -777,7 +767,7 @@
                         <h2 class="modal-title" id="editSemesterTitle">Edit Semester</h2>
                         <p class="modal-description">Perbarui nama dan tahun ajaran induk semester.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="updateSemester">
@@ -803,8 +793,8 @@
                             @error('semester_nama') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                         <div class="modal-footer px-0 pb-0">
-                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                            <button type="submit" class="btn btn-academic" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>Simpan Perubahan
                             </button>
                         </div>
@@ -822,13 +812,13 @@
                         <h2 class="modal-title text-danger" id="deleteSemesterTitle">Hapus Semester</h2>
                         <p class="modal-description">Tindakan ini tidak dapat dibatalkan.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" wire:click="close()" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <p class="mb-0">Yakin ingin menghapus semester ini? Semester aktif atau semester yang masih digunakan tidak dapat dihapus.</p>
                     <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()">Batal</button>
-                        <button type="button" class="btn btn-danger" wire:click="deleteSemester()">Hapus Semester</button>
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                        <button type="button" class="btn btn-danger" wire:click="deleteSemester()" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus Semester</button>
                     </div>
                 </div>
             </div>

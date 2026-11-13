@@ -45,13 +45,13 @@
             <div class="sa-card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
                     <span class="sa-badge {{ abs($totalAktif - 100) < 0.001 ? 'sa-hadir' : 'sa-alpha' }}">
-                        Total bobot aktif: {{ number_format($totalAktif, 2, ',', '.') }}%
+                        Total bobot aktif: {{ number_format((float) $totalAktif, 2, ',', '.') }}%
                     </span>
                     <span class="sa-hint ms-2">Total harus tepat 100% sebelum dapat disimpan.</span>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary" wire:click="tambahBaris"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> Tambah Komponen</button>
-                    <button class="btn btn-sm btn-primary" wire:click="simpan" wire:loading.attr="disabled" wire:target="simpan">
+                    <button class="btn btn-sm btn-outline-primary" wire:click="tambahBaris" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i class="fa-solid fa-plus me-1" aria-hidden="true"></i> Tambah Komponen</button>
+                    <button class="btn btn-sm btn-primary" wire:click="simpan" wire:loading.attr="disabled" wire:target="simpan" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading.remove wire:target="simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i> Simpan Konfigurasi</span>
                         <span wire:loading wire:target="simpan"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan&hellip;</span>
                     </button>
@@ -98,7 +98,7 @@
                                     <input type="checkbox" class="form-check-input" wire:model.live="baris.{{ $index }}.aktif" aria-label="Aktif {{ $index + 1 }}">
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-danger" wire:click="hapusBaris({{ $index }})" aria-label="Hapus baris {{ $index + 1 }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" wire:click="hapusBaris({{ $index }})" aria-label="Hapus baris {{ $index + 1 }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
                                 </td>
                             </tr>
                         @empty

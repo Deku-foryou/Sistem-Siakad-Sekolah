@@ -15,7 +15,7 @@
             @else <span class="text-body-secondary">Dibuat</span> @endif
         </span>
     </div>
-    <div class="bp-row align-items-center"><span class="text-body-secondary">Nominal</span><span class="bp-nominal">Rp {{ number_format($attempt->nominal, 0, ',', '.') }}</span></div>
+    <div class="bp-row align-items-center"><span class="text-body-secondary">Nominal</span><span class="bp-nominal">Rp {{ number_format((int) $attempt->nominal, 0, ',', '.') }}</span></div>
 
     @if ($attempt->status === 'success')
         <div class="alert alert-success mt-3 mb-0" role="status"><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>Pembayaran sudah berhasil diterima. Terima kasih.</div>
@@ -25,10 +25,10 @@
         @elseif ($attempt->expired_pada && now()->greaterThan($attempt->expired_pada))
             <div class="alert alert-danger mt-3 mb-0" role="alert"><i class="fa-solid fa-clock me-2" aria-hidden="true"></i>Transaksi ini sudah kedaluwarsa. Minta tautan pembayaran baru dari pihak sekolah.</div>
         @else
-            <button class="btn btn-success btn-lg w-100 mt-3" wire:click="bayar" wire:loading.attr="disabled" type="button">
+            <button class="btn btn-success btn-lg w-100 mt-3" wire:click="bayar" wire:loading.attr="disabled" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar">
                 <i class="fa-solid fa-credit-card me-2" aria-hidden="true"></i>Bayar Sekarang
             </button>
-            <button class="btn btn-outline-secondary w-100 mt-2" wire:click="periksaStatus" wire:loading.attr="disabled" type="button">
+            <button class="btn btn-outline-secondary w-100 mt-2" wire:click="periksaStatus" wire:loading.attr="disabled" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar">
                 <i class="fa-solid fa-rotate me-2" aria-hidden="true"></i>Saya sudah membayar — Periksa Status
             </button>
         @endif

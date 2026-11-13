@@ -22,14 +22,14 @@
     @if ($pesanGalat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $pesanGalat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
     @if ($sukses)
         <div class="alert alert-success alert-dismissible" role="status">
             {{ $sukses }}
-            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -95,7 +95,7 @@
                                     <td>{{ $baris->komponenNilai->nama ?? ('Komponen #'.$baris->komponen_nilai_idkomponen_nilai) }}</td>
                                     <td class="text-center fw-semibold">{{ number_format((float) $baris->nilai, 2, ',', '.') }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="bukaKoreksiKomponen({{ $baris->idnilai_siswa }})" @disabled(! $nilaiFinal || $nilaiFinal->status !== 'final') aria-label="Koreksi nilai {{ $baris->siswa->nama ?? $baris->siswa_idsiswa }}">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="bukaKoreksiKomponen({{ $baris->idnilai_siswa }})" @disabled(! $nilaiFinal || $nilaiFinal- data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan koreksi nilai">status !== 'final') aria-label="Koreksi nilai {{ $baris->siswa->nama ?? $baris->siswa_idsiswa }}">
                                             <i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i>Koreksi
                                         </button>
                                     </td>
@@ -179,7 +179,7 @@
                                 <td>{{ $kktp->mapel->nama ?? ('Mapel #'.$kktp->mapel_idmapel) }}</td>
                                 <td class="text-center fw-semibold">{{ number_format((float) $kktp->nilai_minimal, 2, ',', '.') }}</td>
                                 <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-outline-warning" wire:click="bukaKoreksiKktp({{ $kktp->idkktp_mapel }})" aria-label="Koreksi KKTP {{ $kktp->mapel->nama ?? $kktp->mapel_idmapel }}">
+                                    <button type="button" class="btn btn-sm btn-outline-warning" wire:click="bukaKoreksiKktp({{ $kktp->idkktp_mapel }})" aria-label="Koreksi KKTP {{ $kktp->mapel->nama ?? $kktp->mapel_idmapel }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan koreksi nilai">
                                         <i class="fa-solid fa-bullseye me-1" aria-hidden="true"></i>Koreksi
                                     </button>
                                 </td>
@@ -210,8 +210,8 @@
                     <textarea id="alasan" class="form-control" rows="2" wire:model="alasan" placeholder="Contoh: salah tulis saat input"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Koreksi</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                    <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Koreksi</button>
                 </div>
             </form>
         </div>
@@ -232,8 +232,8 @@
                     <textarea id="alasanKktp" class="form-control" rows="2" wire:model="alasanKktp" placeholder="Contoh: penyesuaian KKTP setelah review sekolah"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Koreksi</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                    <button type="submit" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Koreksi</button>
                 </div>
             </form>
         </div>

@@ -8,8 +8,8 @@ Data Jurusan
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Jurusan</p></div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success" wire:click="bukaImport('jurusan')"><i class="fa-solid fa-upload me-1"></i>Import</button>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-jurusan-modal')"><i class="fa-solid fa-plus "></i></button>
+                    <button class="btn btn-success" wire:click="bukaImport('jurusan')" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-jurusan-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
         </div>
@@ -33,8 +33,8 @@ Data Jurusan
                             <td>{{ $j->deskripsi ?: '-' }}</td>
                             <td>{{ $j->aktif ? 'Ya' : 'Tidak' }}</td>
                             <td>
-                                <button class="btn btn-sm btn-warning" wire:click="editJurusan({{ $j->idjurusan }})"><i class="fa-regular fa-pen-to-square"></i></button>
-                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationJurusan({{ $j->idjurusan }})"><i class="fa-solid fa-trash-can"></i></button>
+                                <button class="btn btn-sm btn-warning" wire:click="editJurusan({{ $j->idjurusan }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationJurusan({{ $j->idjurusan }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     @endforeach
@@ -74,8 +74,8 @@ Data Jurusan
                                 <span class="text-danger small">{{ $message }}</span>
                             @enderror</div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -113,8 +113,8 @@ Data Jurusan
                                 <span class="text-danger small">{{ $message }}</span>
                             @enderror</div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan Perubahan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -127,8 +127,8 @@ Data Jurusan
             <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
             <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
             <div class="modal-footer">
-                <button class="btn btn-danger" wire:click="deleteJurusan()">Ya</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                <button class="btn btn-danger" wire:click="deleteJurusan()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
             </div>
         </div>
     </div>

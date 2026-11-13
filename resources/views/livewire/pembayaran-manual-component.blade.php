@@ -9,7 +9,7 @@
             <p class="sa-sub">Pencatatan pembayaran tunai/transfer/manual, verifikasi, dan kuitansi.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-primary" wire:click="$dispatch('show-catat-modal')"><i class="fa-solid fa-plus me-1"></i>Catat Pembayaran</button>
+            <button class="btn btn-primary" wire:click="$dispatch('show-catat-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar"><i class="fa-solid fa-plus me-1"></i>Catat Pembayaran</button>
             @if($pendingCount > 0)
                 <span class="sa-chip"><i class="fa-solid fa-clock me-1"></i>{{ $pendingCount }} menunggu verifikasi</span>
             @endif
@@ -68,7 +68,7 @@
                             <td>{{ $row->tanggal_pembayaran?->format('d/m/Y') ?? $row->created_at?->format('d/m/Y') }}</td>
                             <td>{{ $row->siswa?->nama }}<br><small class="text-muted">NIS {{ $row->siswa?->nis }}</small></td>
                             <td>{{ strtoupper($row->tagihan?->jenis) }} {{ $row->tagihan?->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($row->nominal_dibayar, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row->nominal_dibayar, 0, ',', '.') }}</td>
                             <td>{{ strtoupper($row->metode) }}</td>
                             <td>{{ $row->nama_pembayar ?? $row->payer_nama ?? '-' }}</td>
                             <td>
@@ -82,13 +82,13 @@
                             <td class="text-center text-nowrap">
                                 @if($row->status === 'pending' || $row->status === 'review')
                                     @if($row->bukti_path)
-                                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('pembayaran.bukti', $row->idpembayaran) }}" target="_blank"><i class="fa-solid fa-file-image"></i></a>
+                                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('pembayaran.bukti', $row->idpembayaran) }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Berkas" aria-label="Berkas"><i class="fa-solid fa-file-image"></i></a>
                                     @endif
-                                    <button class="btn btn-sm btn-success" wire:click="setujui({{ $row->idpembayaran }})" wire:confirm="Setujui pembayaran ini?"><i class="fa-solid fa-check"></i> Setujui</button>
-                                    <button class="btn btn-sm btn-outline-danger" wire:click="pilihVerifikasi({{ $row->idpembayaran }})" data-bs-toggle="modal" data-bs-target="#modalTolak"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                                    <button class="btn btn-sm btn-success" wire:click="setujui({{ $row->idpembayaran }})" wire:confirm="Setujui pembayaran ini?" data-bs-toggle="tooltip" data-bs-placement="top" title="Setujui"><i class="fa-solid fa-check"></i> Setujui</button>
+                                    <button class="btn btn-sm btn-outline-danger" wire:click="pilihVerifikasi({{ $row->idpembayaran }})" data-bs-toggle="modal" data-bs-target="#modalTolak" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak"><i class="fa-solid fa-xmark"></i> Tolak</button>
                                 @elseif($row->status === 'success')
                                     @if($row->kuitansi)
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('pembayaran.kuitansi', $row->idpembayaran) }}" target="_blank"><i class="fa-solid fa-receipt"></i> Kuitansi</a>
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('pembayaran.kuitansi', $row->idpembayaran) }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Unduh kuitansi"><i class="fa-solid fa-receipt"></i> Kuitansi</a>
                                     @endif
                                 @elseif($row->status === 'failed')
                                     <span class="text-muted small">{{ Str::limit($row->alasan_penolakan ?? $row->alasan_gagal, 40) }}</span>
@@ -109,24 +109,19 @@
 <div wire:ignore.self class="modal fade" id="modalCatat" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i>Catat Pembayaran Manual</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i>Catat Pembayaran Manual</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label">Siswa</label>
-                        <select class="form-select" wire:model.live="siswaId" wire:change="pilihSiswa">
-                            <option value="">-- Pilih Siswa --</option>
-                            @foreach($siswas as $s)
-                                <option value="{{ $s->idsiswa }}">{{ $s->nama }} (NIS {{ $s->nis }})</option>
-                            @endforeach
-                        </select>
+                        <label class="form-label" for="lov-siswa-search">Siswa</label>
+                        @include('livewire.partials.lov-siswa', ['lovMode' => 'single', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => []])
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Tagihan</label>
                         <select class="form-select" wire:model="tagihanId">
                             <option value="">-- Pilih Tagihan --</option>
                             @foreach($tagihanOptions as $t)
-                                <option value="{{ $t->idtagihan }}">{{ strtoupper($t->jenis) }} {{ $t->periode }} - Sisa: Rp {{ number_format(\App\Services\Payments\PaymentService::sisaTagihan($t), 0, ',', '.') }}</option>
+                                <option value="{{ $t->idtagihan }}">{{ strtoupper($t->jenis) }} {{ $t->periode }} - Sisa: Rp {{ number_format((int) \App\Services\Payments\PaymentService::sisaTagihan($t), 0, ',', '.') }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -167,8 +162,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm">Batal</button>
-                <button class="btn btn-primary" wire:click="catat" wire:loading.attr="disabled">Simpan (Status: Menunggu Verifikasi)</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="resetForm" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-primary" wire:click="catat" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan (Status: Menunggu Verifikasi)</button>
             </div>
         </div>
     </div>
@@ -178,14 +173,14 @@
 <div wire:ignore.self class="modal fade" id="modalTolak" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-xmark me-2 text-danger"></i>Tolak Pembayaran</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-xmark me-2 text-danger"></i>Tolak Pembayaran</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <label class="form-label">Alasan Penolakan (wajib)</label>
                 <textarea class="form-control" rows="3" wire:model="alasanPenolakan"></textarea>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button class="btn btn-danger" wire:click="tolak({{ $selectedPembayaranId }})">Tolak Pembayaran</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-danger" wire:click="tolak({{ $selectedPembayaranId }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak Pembayaran</button>
             </div>
         </div>
     </div>

@@ -8,8 +8,8 @@ Data Kelas
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Kelas</p></div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success" wire:click="bukaImport('kelas')"><i class="fa-solid fa-upload me-1"></i>Import</button>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-kelas-modal')"><i class="fa-solid fa-plus "></i></button>
+                    <button class="btn btn-success" wire:click="bukaImport('kelas')" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-kelas-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
         </div>
@@ -42,9 +42,9 @@ Data Kelas
                             <td>{{ $k->jenis === 'induk' ? 'Induk' : 'Mapel pilihan' }}</td>
                             <td>{{ $k->wali->nama ?? '-' }}</td>
                             <td>
-                                <a href="{{ route('jadwalkelas', ['kelas' => $k->idkelas]) }}" class="btn btn-sm btn-info" title="Lihat Jadwal" aria-label="Lihat jadwal kelas {{ $k->nama }}"><i class="fa-regular fa-calendar-days"></i></a>
-                                <button class="btn btn-sm btn-warning" wire:click="editKelas({{ $k->idkelas }})"><i class="fa-regular fa-pen-to-square"></i></button>
-                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationKelas({{ $k->idkelas }})"><i class="fa-solid fa-trash-can"></i></button>
+                                <a href="{{ route('jadwalkelas', ['kelas' => $k->idkelas]) }}" class="btn btn-sm btn-info" title="Lihat Jadwal" aria-label="Lihat jadwal kelas {{ $k->nama }}" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fa-regular fa-calendar-days"></i></a>
+                                <button class="btn btn-sm btn-warning" wire:click="editKelas({{ $k->idkelas }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationKelas({{ $k->idkelas }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     @endforeach
@@ -106,8 +106,8 @@ Data Kelas
                             <input type="text" class="form-control" readonly wire:model.defer="previewNama" value="{{ old('previewNama') }}">
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -167,8 +167,8 @@ Data Kelas
                             <input type="text" class="form-control" readonly wire:model.defer="previewNama" value="{{ old('previewNama') }}">
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan Perubahan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -182,8 +182,8 @@ Data Kelas
                 <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
                 <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteKelas()">Ya</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                    <button class="btn btn-danger" wire:click="deleteKelas()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>

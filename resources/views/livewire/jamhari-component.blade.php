@@ -11,7 +11,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-clock me-2 text-success" aria-hidden="true"></i>Jam Pelajaran</h1>
             <p class="sa-sub">Atur jam pelajaran dan istirahat per hari untuk kelas aktif.</p>
         </div>
-        <button class="btn btn-primary" wire:click="openAdd" @if(!$filterKelas) disabled @endif>
+        <button class="btn btn-primary" wire:click="openAdd" @if(!$filterKelas) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Jam
         </button>
     </div>
@@ -56,7 +56,7 @@
     <ul class="nav nav-tabs mb-3 flex-nowrap overflow-auto">
         @foreach($hariNama as $h => $nama)
             <li class="nav-item">
-                <button class="nav-link {{ $hari == $h ? 'active' : '' }}" wire:click="$set('hari', {{ $h }})" @if(!$filterKelas) disabled @endif>
+                <button class="nav-link {{ $hari == $h ? 'active' : '' }}" wire:click="$set('hari', {{ $h }})" @if(!$filterKelas) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab" aria-label="Pindah tab">
                     {{ $nama }} <span class="sa-count ms-1">{{ $jumlah[$h] ?? '-' }}</span>
                 </button>
             </li>
@@ -93,8 +93,8 @@
                                     <td>{{ substr($j->selesai, 0, 5) }}</td>
                                     <td>{{ (strtotime($j->selesai) - strtotime($j->mulai)) / 60 }} m</td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-secondary" wire:click="edit({{ $j->idjamhari }})">Edit</button>
-                                        <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirm({{ $j->idjamhari }})">Hapus</button>
+                                        <button class="btn btn-sm btn-outline-secondary" wire:click="edit({{ $j->idjamhari }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">Edit</button>
+                                        <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirm({{ $j->idjamhari }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus</button>
                                     </td>
                                 </tr>
                             @empty
@@ -137,7 +137,7 @@
                             @endif
                         @endforeach
                     </div>
-                    <button class="btn btn-outline-primary w-100" wire:click="salinHari" wire:loading.attr="disabled" @if(!$filterKelas || !$hariTujuan) disabled @endif>
+                    <button class="btn btn-outline-primary w-100" wire:click="salinHari" wire:loading.attr="disabled" @if(!$filterKelas || !$hariTujuan) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Salin">
                         <i class="fa-regular fa-copy me-1" aria-hidden="true"></i>Salin ke hari terpilih
                     </button>
                 </div>
@@ -179,8 +179,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-success" wire:loading.attr="disabled">Simpan</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button type="submit" class="btn btn-success" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
             </div>
         </form>
     </div></div>
@@ -218,8 +218,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-success" wire:loading.attr="disabled">Simpan</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button type="submit" class="btn btn-success" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
             </div>
         </form>
     </div></div>
@@ -233,8 +233,8 @@
             <p class="mb-0">Yakin menghapus jam ini? Tindakan ini tidak dapat dibatalkan.</p>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button class="btn btn-danger" wire:click="delete" wire:loading.attr="disabled">Hapus</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+            <button class="btn btn-danger" wire:click="delete" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus</button>
         </div>
     </div></div>
 </div>

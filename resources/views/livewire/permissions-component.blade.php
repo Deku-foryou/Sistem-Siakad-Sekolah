@@ -9,7 +9,7 @@ Data Permissions
             <div class="d-lg-flex justify-content-between align-items-center">
                 <p class="p-0 m-0 h3 fw-bold mb-3 mb-lg-0 ">Permissions</p>
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-permissions-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-permissions-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data Permissions</button>
                 </div>
             </div>
@@ -35,13 +35,13 @@ Data Permissions
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                         <i class="fa-solid fa-download"></i>
                         <span>Excel</span>
                     </button>
                     <!-- Tombol Export PDF -->
                     <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
@@ -73,10 +73,10 @@ Data Permissions
                                     <tr class="px-4">
                                         <td style="width: 8%;text-align: center">
                                             <button class="btn btn-sm btn-warning text-dark"
-                                                wire:click="editPermissions('{{ $datas->id }}')"><i
+                                                wire:click="editPermissions('{{ $datas->id }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                     class="fa-regular fa-pen-to-square"></i></button>
                                             <button class="btn btn-sm btn-danger text-white"
-                                                wire:click="deleteConfirmationPermissions('{{ $datas->id}}')"><i
+                                                wire:click="deleteConfirmationPermissions('{{ $datas->id}}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                     class="fa-solid fa-trash-can"></i></button>
                                         </td>
                                         <td>{{ $datas->name }}</td>
@@ -129,7 +129,7 @@ Data Permissions
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="permissionsName" wire:model="permissionsName" readonly>
-        <button type="button" class="btn btn-primary" id="btnpermissionsModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnpermissionsModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -138,7 +138,7 @@ Data Permissions
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="permissionsName" wire:model="permissionsName" readonly>
-        <button type="button" class="btn btn-primary" id="btnpermissionsModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnpermissionsModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -175,7 +175,7 @@ Data Permissions
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -183,7 +183,7 @@ Data Permissions
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -209,9 +209,9 @@ Data Permissions
                 </div>
                 <div class="modal-footer">
                     <button class="btn  btn-danger" id="confirmDeleteButton"
-                        wire:click="deletePermissions()">Ya</button>
+                        wire:click="deletePermissions()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -246,7 +246,7 @@ Data Permissions
 
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                                 <span wire:loading.remove>
@@ -254,7 +254,7 @@ Data Permissions
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -264,10 +264,6 @@ Data Permissions
 
 
     </div>
-
-    {{-- @include('livewire.permissions-lov') --}}
-
-
 </div>
 
 
@@ -278,27 +274,6 @@ Data Permissions
             $('#editPermissionsModal').modal('hide'); 
             $('#deletePermissionsModal').modal('hide'); 
         }); 
- 
- 
-  // copy dan aktifkan jika ingin menggunakan LOV  
- 
-  //       window.addEventListener('close-modal-lov', event =>{ 
-   //          $('#permissionsModal').modal('hide'); 
-   //     }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnpermissionsModalLovAdd').click(function(){ 
-   //       $('#permissionsModal').modal('show'); 
-    //    }); 
-  //  }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnpermissionsModalLovEdit').click(function(){ 
-   //       $('#permissionsModal').modal('show'); 
-    //    }); 
-  //  }); 
  
  
        $('#addPermissionsModal').on('shown.bs.modal', function () { 

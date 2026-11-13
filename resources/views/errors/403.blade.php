@@ -28,7 +28,7 @@
 
                         <a class="btn bsb-btn-5xl text-white fw-medium rounded-pill px-5 fs-6 m-0"
                             style="background: #359387" role="button"
-                            href="{{ auth()->check() ? \App\Support\BerandaUrl::untuk(auth()->user()) : '/login' }}">Kembali ke
+                            href="{{ auth()->check() ? \App\Support\BerandaUrl::untuk(auth()->user()) : '/login' }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Kembali">Kembali ke
                             Halaman
                             Awal</a>
                     </div>

@@ -8,8 +8,8 @@ Data Mapel
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Mapel</p></div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success" wire:click="bukaImport('mapel')"><i class="fa-solid fa-upload me-1"></i>Import</button>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-mapel-modal')"><i class="fa-solid fa-plus "></i></button>
+                    <button class="btn btn-success" wire:click="bukaImport('mapel')" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-mapel-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
         </div>
@@ -26,8 +26,8 @@ Data Mapel
                             <td>{{ $m->nama }}</td>
                             <td>{{ $m->kelompok }}</td>
                             <td>
-                                <button class="btn btn-sm btn-warning" wire:click="editMapel({{ $m->idmapel }})"><i class="fa-regular fa-pen-to-square"></i></button>
-                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationMapel({{ $m->idmapel }})"><i class="fa-solid fa-trash-can"></i></button>
+                                <button class="btn btn-sm btn-warning" wire:click="editMapel({{ $m->idmapel }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationMapel({{ $m->idmapel }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     @endforeach
@@ -47,8 +47,8 @@ Data Mapel
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Kelompok</label><select class="form-select" wire:model="kelompok"><option value="wajib">wajib</option><option value="pilihan">pilihan</option></select></div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -66,8 +66,8 @@ Data Mapel
                         <div class="mb-2"><label>Nama</label><input class="form-control" wire:model="nama"></div>
                         <div class="mb-2"><label>Kelompok</label><select class="form-select" wire:model="kelompok"><option value="wajib">wajib</option><option value="pilihan">pilihan</option></select></div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan Perubahan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -81,8 +81,8 @@ Data Mapel
                 <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
                 <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteMapel()">Ya</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                    <button class="btn btn-danger" wire:click="deleteMapel()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>

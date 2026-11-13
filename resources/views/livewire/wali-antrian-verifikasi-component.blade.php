@@ -6,13 +6,13 @@
         <div class="card-body">
             <ul class="nav nav-tabs mb-3">
                 <li class="nav-item">
-                    <button class="nav-link {{ $tab === 'pending' ? 'active' : '' }}" wire:click="$set('tab','pending')">Antrean Pending</button>
+                    <button class="nav-link {{ $tab === 'pending' ? 'active' : '' }}" wire:click="$set('tab','pending')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Antrean Pending</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link {{ $tab === 'aktif' ? 'active' : '' }}" wire:click="$set('tab','aktif')">Relasi Aktif (P5a)</button>
+                    <button class="nav-link {{ $tab === 'aktif' ? 'active' : '' }}" wire:click="$set('tab','aktif')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Relasi Aktif (P5a)</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link {{ $tab === 'putus' ? 'active' : '' }}" wire:click="$set('tab','putus')">Permintaan Putus (P5b)</button>
+                    <button class="nav-link {{ $tab === 'putus' ? 'active' : '' }}" wire:click="$set('tab','putus')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Permintaan Putus (P5b)</button>
                 </li>
             </ul>
                 <div class="col-md-4">
@@ -44,8 +44,8 @@
                                     <td>{{ $p->alasan }}</td>
                                     <td>{{ $p->created_at?->format('d-m-Y H:i') ?? '-' }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-success" wire:click="bukaSetujuiPutus({{ $p->idpermintaan_putus }})">Setujui</button>
-                                        <button class="btn btn-sm btn-danger" wire:click="bukaTolakPutus({{ $p->idpermintaan_putus }})">Tolak</button>
+                                        <button class="btn btn-sm btn-success" wire:click="bukaSetujuiPutus({{ $p->idpermintaan_putus }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Setujui">Setujui</button>
+                                        <button class="btn btn-sm btn-danger" wire:click="bukaTolakPutus({{ $p->idpermintaan_putus }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak</button>
                                     </td>
                                 </tr>
                             @empty
@@ -77,10 +77,10 @@
                                 <td>{{ $r->created_at?->format('d-m-Y H:i') ?? '-' }}</td>
                                 <td>
                                     @if ($tab === 'pending')
-                                        <button class="btn btn-sm btn-success" wire:click="bukaAksi({{ $r->idwalimurid }}, 'verifikasi')">Verifikasi</button>
-                                        <button class="btn btn-sm btn-danger" wire:click="bukaAksi({{ $r->idwalimurid }}, 'tolak')">Tolak</button>
+                                        <button class="btn btn-sm btn-success" wire:click="bukaAksi({{ $r->idwalimurid }}, 'verifikasi')" data-bs-toggle="tooltip" data-bs-placement="top" title="Verifikasi">Verifikasi</button>
+                                        <button class="btn btn-sm btn-danger" wire:click="bukaAksi({{ $r->idwalimurid }}, 'tolak')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak</button>
                                     @else
-                                        <button class="btn btn-sm btn-warning" wire:click="bukaAksi({{ $r->idwalimurid }}, 'putus')">Putus</button>
+                                        <button class="btn btn-sm btn-warning" wire:click="bukaAksi({{ $r->idwalimurid }}, 'putus')" data-bs-toggle="tooltip" data-bs-placement="top" title="Putuskan relasi">Putus</button>
                                     @endif
                                 </td>
                             </tr>
@@ -110,7 +110,7 @@
                             @elseif ($aksi === 'putus') Putus Relasi
                             @endif
                         </h5>
-                        <button type="button" class="btn-close" wire:click="batalAksi"></button>
+                        <button type="button" class="btn-close" wire:click="batalAksi" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan" aria-label="Tutup pesan"></button>
                     </div>
                     <div class="modal-body">
                         @if ($aksi === 'verifikasi')
@@ -135,8 +135,8 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="batalAksi">Batal</button>
-                        <button type="button" class="btn btn-primary" wire:click="simpanAksi">Simpan</button>
+                        <button type="button" class="btn btn-secondary" wire:click="batalAksi" data-bs-toggle="tooltip" data-bs-placement="top" title="Batalkan aksi">Batal</button>
+                        <button type="button" class="btn btn-primary" wire:click="simpanAksi" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
                     </div>
                 </div>
             </div>

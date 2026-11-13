@@ -53,12 +53,12 @@
                         <tr>
                             <td>{{ $t->siswa?->nama }}<br><small class="text-muted">NIS {{ $t->siswa?->nis }}</small></td>
                             <td>{{ strtoupper($t->jenis) }} {{ $t->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($t->total_tagihan, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($t->denda?->nominal_denda ?? 0, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format(\App\Services\Payments\PaymentService::terpakaiTagihan($t), 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $t->total_tagihan, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) ($t->denda?->nominal_denda ?? 0), 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) \App\Services\Payments\PaymentService::terpakaiTagihan($t), 0, ',', '.') }}</td>
                             <td class="text-center text-nowrap">
                                 @if($sisaDenda > 0)
-                                    <button class="btn btn-sm btn-outline-success" wire:click="pilihTagihan({{ $t->idtagihan }}); $dispatch('show-modal-ajukan')" type="button">Ajukan Pembebasan</button>
+                                    <button class="btn btn-sm btn-outline-success" wire:click="pilihTagihan({{ $t->idtagihan }}); $dispatch('show-modal-ajukan')" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">Ajukan Pembebasan</button>
                                 @else
                                     <small class="text-muted">Denda tertutupi</small>
                                 @endif
@@ -87,7 +87,7 @@
                             <td>{{ $p->created_at?->format('d/m/Y H:i') }}</td>
                             <td>{{ $p->tagihan?->siswa?->nama }}<br><small class="text-muted">NIS {{ $p->tagihan?->siswa?->nis }}</small></td>
                             <td>{{ strtoupper($p->tagihan?->jenis ?? '-') }} {{ $p->tagihan?->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($p->nominal_denda, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $p->nominal_denda, 0, ',', '.') }}</td>
                             <td>
                                 @if($p->status === 'pending') <span class="sa-badge sa-netral">Menunggu</span>
                                 @elseif($p->status === 'terproses') <span class="sa-badge sa-hadir">Terproses</span>
@@ -98,8 +98,8 @@
                             <td>{{ $p->pengaju?->name ?? '-' }}</td>
                             <td class="text-center text-nowrap">
                                 @if(auth()->user()?->level === 'superadmin' && $p->status === 'pending')
-                                    <button class="btn btn-sm btn-success" wire:click="setujui({{ $p->id }})" type="button"><i class="fa-solid fa-check"></i> Setujui</button>
-                                    <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolak({{ $p->id }}); $dispatch('show-modal-tolak')" type="button"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                                    <button class="btn btn-sm btn-success" wire:click="setujui({{ $p->id }})" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Setujui"><i class="fa-solid fa-check"></i> Setujui</button>
+                                    <button class="btn btn-sm btn-outline-danger" wire:click="pilihTolak({{ $p->id }}); $dispatch('show-modal-tolak')" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak"><i class="fa-solid fa-xmark"></i> Tolak</button>
                                 @endif
                             </td>
                         </tr>
@@ -123,18 +123,18 @@
 <div wire:ignore.self class="modal fade" id="modalAjukan" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Ajukan Pembebasan Denda</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-hand-holding-dollar me-2"></i>Ajukan Pembebasan Denda</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 @if($selected)
                     <p class="small text-muted">Tagihan: <strong>{{ strtoupper($selected->jenis) }} {{ $selected->periode }}</strong> — Siswa: {{ $selected->siswa?->nama }}</p>
-                    <p class="small">Total tagihan: <strong>Rp {{ number_format($selected->total_tagihan, 0, ',', '.') }}</strong><br>Denda: <strong>Rp {{ number_format($selected->denda?->nominal_denda ?? 0, 0, ',', '.') }}</strong><br>Denda dapat dibebaskan (belum tertutupi): <strong>Rp {{ number_format(\App\Services\Keuangan\DendaPembebasanService::nominalDapatDibebaskan($selected->denda, $selected), 0, ',', '.') }}</strong></p>
+                    <p class="small">Total tagihan: <strong>Rp {{ number_format((int) $selected->total_tagihan, 0, ',', '.') }}</strong><br>Denda: <strong>Rp {{ number_format((int) ($selected->denda?->nominal_denda ?? 0), 0, ',', '.') }}</strong><br>Denda dapat dibebaskan (belum tertutupi): <strong>Rp {{ number_format((int) \App\Services\Keuangan\DendaPembebasanService::nominalDapatDibebaskan($selected->denda, $selected), 0, ',', '.') }}</strong></p>
                 @endif
                 <label class="form-label">Alasan pembebasan (wajib)</label>
                 <textarea class="form-control" rows="3" wire:model="alasanPengajuan" placeholder="Contoh: Siswa sakit berkepanjangan; disetujui wali & guru; kebijakan sekolah..."></textarea>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button class="btn btn-primary" wire:click="ajukan()" wire:loading.attr="disabled">Ajukan</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-primary" wire:click="ajukan()" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">Ajukan</button>
             </div>
         </div>
     </div>
@@ -144,14 +144,14 @@
 <div wire:ignore.self class="modal fade" id="modalTolak" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title text-danger"><i class="fa-solid fa-xmark me-2"></i>Tolak Pembebasan Denda</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header"><h5 class="modal-title text-danger"><i class="fa-solid fa-xmark me-2"></i>Tolak Pembebasan Denda</h5><button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup" aria-label="Tutup"></button></div>
             <div class="modal-body">
                 <label class="form-label">Alasan penolakan (wajib)</label>
                 <textarea class="form-control" rows="3" wire:model="alasanPenolakan"></textarea>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button class="btn btn-danger" wire:click="tolak()">Tolak</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                <button class="btn btn-danger" wire:click="tolak()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tolak">Tolak</button>
             </div>
         </div>
     </div>

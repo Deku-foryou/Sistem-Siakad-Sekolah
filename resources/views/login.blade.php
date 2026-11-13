@@ -31,8 +31,12 @@
                     <div class="card border border-light-subtle rounded-3 shadow-sm">
                         <div class="card-body p-3 p-md-4 p-xl-5">
                             <div class="text-center mb-3">
-                                <div>
-                                    <img src="{{ asset('img/brand/siakad-logo.svg') }}" alt="SIAKAD Template" height="64" style="width:auto; height:64px;">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <img src="{{ asset('ubhi.webp') }}" alt="SIAKAD Template" width="64" height="64" style="object-fit: contain; width:auto; height:64px; flex:0 0 auto;">
+                                    <span class="lh-sm text-start" style="white-space: nowrap;">
+                                        <span style="display:block; font-weight:800; font-size:1.5rem; color:#0b5f52; letter-spacing:.02em;">SIAKAD</span>
+                                        <span style="display:block; font-size:.72rem; font-weight:700; color:#6b7280; letter-spacing:.12em; text-transform:uppercase;">Template</span>
+                                    </span>
                                 </div>
                             </div>
                             <h2 class="fs-6 fw-normal text-center text-secondary mb-4">Sign in to your account</h2>
@@ -76,7 +80,7 @@
                                             <input type="text" name="captcha" id="captcha"
                                                 placeholder="Masukkan CAPTCHA" class="form-control">
                                             <button type="button" class="btn  btn-refresh"
-                                                style="background: #0e7d6a"><i
+                                                style="background: #0e7d6a" data-bs-toggle="tooltip" data-bs-placement="top" title="Muat ulang" aria-label="Muat ulang"><i
                                                     class="fa-solid fa-arrows-rotate text-white"></i></button>
                                         </div>
                                         @error('captcha')
@@ -100,7 +104,7 @@
                                     <div class="col-12">
                                         <div class="d-grid my-3">
                                             <button class="btn btn-lg text-white" style="background: #0e7d6a"
-                                                type="submit">Log
+                                                type="submit" data-bs-toggle="tooltip" data-bs-placement="top" title="Masuk">Log
                                                 in</button>
                                         </div>
                                     </div>

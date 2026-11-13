@@ -31,7 +31,7 @@
             @endif
         </div>
         @if ($modeLihat)
-            <a href="{{ route('kelas') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('kelas') }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Kembali">
                 <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Kembali ke Kelas
             </a>
         @endif
@@ -159,7 +159,7 @@
                                                             <small class="sa-cell-muted">{{ substr($j->mulai, 0, 5) }}-{{ substr($j->selesai, 0, 5) }}</small>
                                                         </div>
                                                     @else
-                                                        <button wire:click="edit({{$jdw->idjadwalkelas}}, {{$j->idjamhari}})" class="btn btn-sm btn-primary w-100">
+                                                        <button wire:click="edit({{$jdw->idjadwalkelas}}, {{$j->idjamhari}})" class="btn btn-sm btn-primary w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data">
                                                             <strong class="d-block">{{ $jdw->mapel_nama }}</strong>
                                                             <small class="d-block fw-normal">{{ $jdw->guru_nama }} ({{ $jdw->kode_guru }})</small>
                                                             <small class="fw-normal">{{ substr($j->mulai, 0, 5) }}-{{ substr($j->selesai, 0, 5) }}</small>
@@ -168,7 +168,7 @@
                                                 @elseif($modeLihat)
                                                     <div class="sa-cell-muted py-2">-</div>
                                                 @else
-                                                    <button wire:click="edit(0, {{$j->idjamhari}})" class="btn btn-sm btn-outline-success w-100">
+                                                    <button wire:click="edit(0, {{$j->idjamhari}})" class="btn btn-sm btn-outline-success w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data">
                                                         {{ $j->jenis === 'pelajaran' ? 'Jam ke-'.$j->jam_ke : ucfirst($j->jenis) }}<br>
                                                         <small>{{ substr($j->mulai, 0, 5) }}-{{ substr($j->selesai, 0, 5) }}</small><br>
                                                         <strong><i class="fa-solid fa-plus" aria-hidden="true"></i></strong>
@@ -229,8 +229,8 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button wire:click="store" class="btn btn-success"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                        <button wire:click="store" class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
                     </div>
                 </div>
             </div>

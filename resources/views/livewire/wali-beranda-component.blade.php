@@ -46,7 +46,7 @@
                         </div>
 
                         <hr class="my-4">
-                        <a href="/setting" class="btn btn-outline-secondary btn-sm">
+                        <a href="/setting" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Ganti password">
                             <i class="fa-solid fa-key me-1"></i>Ganti password
                         </a>
                     </div>

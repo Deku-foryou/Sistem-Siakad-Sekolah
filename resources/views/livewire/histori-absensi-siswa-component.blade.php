@@ -1,4 +1,4 @@
-﻿@section('title', 'Histori Absensi')
+@section('title', 'Histori Absensi')
 
 <div class="container-fluid px-3 px-lg-4 py-3">
     @include('assets.akademik')
@@ -27,7 +27,7 @@
                             Tidak terpengaruh filter di bawah
                         </p>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-success" wire:click="unduhRekap" wire:loading.attr="disabled">
+                    <button type="button" class="btn btn-sm btn-outline-success" wire:click="unduhRekap" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor CSV">
                         <i class="fa-solid fa-file-csv me-1" aria-hidden="true"></i>Unduh Rekap (CSV)
                     </button>
                 </div>
@@ -66,8 +66,7 @@
                     role="tab"
                     aria-selected="{{ $tab === 'harian' ? 'true' : 'false' }}"
                     class="nav-link {{ $tab === 'harian' ? 'active' : '' }}"
-                    wire:click="gantiTab('harian')"
-                >Absensi Harian</button>
+                    wire:click="gantiTab('harian')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Absensi Harian</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button
@@ -75,8 +74,7 @@
                     role="tab"
                     aria-selected="{{ $tab === 'per_jam' ? 'true' : 'false' }}"
                     class="nav-link {{ $tab === 'per_jam' ? 'active' : '' }}"
-                    wire:click="gantiTab('per_jam')"
-                >Absensi Per Jam</button>
+                    wire:click="gantiTab('per_jam')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Absensi Per Jam</button>
             </li>
         </ul>
 
@@ -103,7 +101,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetFilterHarian">Reset filter</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetFilterHarian" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter">Reset filter</button>
                     </div>
                 </div>
             </div>
@@ -153,7 +151,7 @@
                         </table>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <small class="text-muted">Menampilkan {{ $absensiHarian->firstItem() }}â€“{{ $absensiHarian->lastItem() }} dari {{ $absensiHarian->total() }} catatan</small>
+                        <small class="text-muted">Menampilkan {{ $absensiHarian->firstItem() }}–{{ $absensiHarian->lastItem() }} dari {{ $absensiHarian->total() }} catatan</small>
                         <div>{{ $absensiHarian->links() }}</div>
                     </div>
                 </div>
@@ -170,7 +168,7 @@
                             @endif
                         </p>
                         @if ($tanggalDariHarian || $tanggalSampaiHarian || $statusHarian !== '')
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilterHarian">Reset filter</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilterHarian" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter">Reset filter</button>
                         @endif
                     </div>
                 </div>
@@ -198,7 +196,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetFilter">Reset filter</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetFilter" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter">Reset filter</button>
                     </div>
                 </div>
             </div>
@@ -234,7 +232,7 @@
                                         <td>{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
                                         <td>{{ $namaHari[(int) $row->hari] ?? '-' }}</td>
                                         <td class="text-center">{{ $row->jam_ke ?? '-' }}</td>
-                                        <td>{{ $row->waktu_mulai }}â€“{{ $row->waktu_selesai }}</td>
+                                        <td>{{ $row->waktu_mulai }}–{{ $row->waktu_selesai }}</td>
                                         <td>{{ $row->kelas_nama }}</td>
                                         <td>{{ $row->mapel_nama }}</td>
                                         <td>{{ $row->guru_nama }}</td>
@@ -256,7 +254,7 @@
                         </table>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <small class="text-muted">Menampilkan {{ $absensiPerJam->firstItem() }}â€“{{ $absensiPerJam->lastItem() }} dari {{ $absensiPerJam->total() }} catatan</small>
+                        <small class="text-muted">Menampilkan {{ $absensiPerJam->firstItem() }}–{{ $absensiPerJam->lastItem() }} dari {{ $absensiPerJam->total() }} catatan</small>
                         <div>{{ $absensiPerJam->links() }}</div>
                     </div>
                 </div>
@@ -273,7 +271,7 @@
                             @endif
                         </p>
                         @if ($tanggalDari || $tanggalSampai || $status !== '')
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilter">Reset filter</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilter" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter">Reset filter</button>
                         @endif
                     </div>
                 </div>

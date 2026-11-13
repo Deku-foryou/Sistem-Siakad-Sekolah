@@ -8,7 +8,7 @@ Penempatan Siswa
             <div class="d-lg-flex justify-content-between align-items-center mb-lg-1">
                 <div class="mb-3 mb-lg-0"><p class="p-0 m-0 h3 fw-bold ">Penempatan Siswa</p></div>
                 <div>
-                    <button class="btn btn-success" wire:click="bukaImport('penempatan')"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-success" wire:click="bukaImport('penempatan')" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data"><i class="fa-solid fa-upload me-1"></i>Import</button>
                 </div>
             </div>
         </div>
@@ -37,13 +37,11 @@ Penempatan Siswa
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-3">
                     <h6>Tambah Siswa</h6>
-                    <input type="text" class="form-control mb-2" placeholder="Cari nama/NISN..." wire:model.live.debounce.300ms="search">
-                    <select class="form-select mb-2" multiple wire:model="siswa_ids" size="8">
-                        @foreach ($siswaAktif as $s)
-                            <option value="{{ $s->idsiswa }}">{{ $s->nama }} ({{ $s->nisn }})</option>
-                        @endforeach
-                    </select>
-                    <button class="btn btn-primary" wire:click="tambahSiswa">Tambahkan</button>
+                    <label class="form-label" for="lov-siswa-search">Cari &amp; pilih siswa (nama / NIS / NISN)</label>
+                    @include('livewire.partials.lov-siswa', ['lovMode' => 'multi', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => $siswaTerpilih])
+                    @error('siswaIds') <div class="invalid-feedback d-block mb-2" role="alert">{{ $message }}</div> @enderror
+                    @error('lovSearch') <div class="invalid-feedback d-block mb-2" role="alert">{{ $message }}</div> @enderror
+                    <button class="btn btn-primary mt-2" wire:click="tambahSiswa" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">Tambahkan</button>
                 </div>
             </div>
 
@@ -56,7 +54,7 @@ Penempatan Siswa
                                 <tr>
                                     <td>{{ $m->siswa->nama ?? '-' }}</td>
                                     <td>{{ $m->siswa->nisn ?? '-' }}</td>
-                                    <td><button class="btn btn-sm btn-danger" wire:click="keluarkan({{ $m->idkelassiswa }})">Keluarkan</button></td>
+                                    <td><button class="btn btn-sm btn-danger" wire:click="keluarkan({{ $m->idkelassiswa }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Logout">Keluarkan</button></td>
                                 </tr>
                             @endforeach
                         @endif

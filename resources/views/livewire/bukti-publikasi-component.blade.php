@@ -10,7 +10,7 @@
         <p><strong>Tanggal Publikasi:</strong> {{ $pub->published_at }}</p>
         <p><strong>Penerbit:</strong> {{ $pub->publisher->name ?? '-' }}</p>
         <p><strong>Status:</strong> {{ $pub->status }}</p>
-        <button class="btn btn-primary" wire:click="unduhPdf">Unduh PDF</button>
+        <button class="btn btn-primary" wire:click="unduhPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">Unduh PDF</button>
     </div></div>
     <div class="table-responsive"><table class="table table-bordered">
         <thead><tr><th>Hari</th><th>Jam Ke</th><th>Mapel</th><th>Guru</th></tr></thead>

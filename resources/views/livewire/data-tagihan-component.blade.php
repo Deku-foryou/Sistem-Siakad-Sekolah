@@ -8,10 +8,10 @@
             <p class="sa-sub">Daftar tagihan siswa, penerbitan dan pembatalan tagihan.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" wire:click="terbit('spp')" wire:loading.attr="disabled" wire:target="terbit">
+            <button class="btn btn-outline-primary" wire:click="terbit('spp')" wire:loading.attr="disabled" wire:target="terbit" data-bs-toggle="tooltip" data-bs-placement="top" title="Terbitkan">
                 <i class="fa-solid fa-calendar-days me-1" aria-hidden="true"></i> Terbitkan SPP {!! $periode !!}
             </button>
-            <button class="btn btn-primary" wire:click="$dispatch('show-add-tagihan-modal')">
+            <button class="btn btn-primary" wire:click="$dispatch('show-add-tagihan-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                 <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tagihan Insidental
             </button>
         </div>
@@ -42,7 +42,7 @@
                             <td><div class="fw-semibold">{{ $row->siswa?->nama }}</div><div class="text-body-secondary small">NIS {{ $row->siswa?->nis ?? '-' }}</div></td>
                             <td>{{ ucfirst($row->jenis) }} @if($row->nama) / {{ $row->nama }} @endif</td>
                             <td>{{ $row->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($row->total_tagihan, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row->total_tagihan, 0, ',', '.') }}</td>
                             <td>
                                 @if ($row->status === 'lunas') <span class="sa-badge sa-hadir">Lunas</span>
                                 @elseif ($row->status === 'dibayar_sebagian') <span class="sa-badge sa-netral">Dibayar Sebagian</span>
@@ -52,11 +52,11 @@
                             </td>
                             <td>{{ $row->tanggal_jatuh_tempo?->format('d/m/Y') }}</td>
                             <td class="text-center text-nowrap">
-                                <button class="btn btn-sm btn-outline-primary" wire:click="lihatDetail({{ $row->idtagihan }})" aria-label="Lihat detail"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="lihatDetail({{ $row->idtagihan }})" aria-label="Lihat detail" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
                                 @if ($row->status === 'belum_dibayar')
-                                    <button class="btn btn-sm btn-outline-danger" wire:click="hapus({{ $row->idtagihan }})" aria-label="Batalkan tagihan"><i class="fa-solid fa-ban" aria-hidden="true"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" wire:click="hapus({{ $row->idtagihan }})" aria-label="Batalkan tagihan" data-bs-toggle="tooltip" data-bs-placement="top" title="Batalkan tagihan"><i class="fa-solid fa-ban" aria-hidden="true"></i></button>
                                     @if (auth()->user()?->level === 'superadmin')
-                                        <button class="btn btn-sm btn-outline-secondary" wire:click="bebaskan({{ $row->idtagihan }})" aria-label="Bebaskan tagihan"><i class="fa-solid fa-hand-holding" aria-hidden="true"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary" wire:click="bebaskan({{ $row->idtagihan }})" aria-label="Bebaskan tagihan" data-bs-toggle="tooltip" data-bs-placement="top" title="Bebaskan tagihan"><i class="fa-solid fa-hand-holding" aria-hidden="true"></i></button>
                                     @endif
                                 @endif
                             </td>
@@ -90,13 +90,14 @@
                             <label class="form-label" for="add-tg-kelas">Kelas</label>
                             <select id="add-tg-kelas" class="form-select mb-3" wire:model="scopeId"><option value="">Pilih kelas</option>@foreach ($kelasOptions as $k)<option value="{{ $k->idkelas }}">{{ $k->nama }} ({{ $k->tingkat }})</option>@endforeach</select>
                         @elseif ($scope === 'siswa')
-                            <label class="form-label" for="add-tg-siswa">Siswa</label>
-                            <select id="add-tg-siswa" class="form-select mb-3" wire:model="scopeId"><option value="">Pilih siswa</option>@foreach (\App\Models\Siswa::where('status','aktif')->orderBy('nama')->limit(500)->get() as $s)<option value="{{ $s->idsiswa }}">{{ $s->nama }}</option>@endforeach</select>
+                            <label class="form-label" for="lov-siswa-search">Siswa</label>
+                            @include('livewire.partials.lov-siswa', ['lovMode' => 'single', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => []])
+                            @error('siswaId') <div class="invalid-feedback d-block mb-3" role="alert">{{ $message }}</div> @enderror
                         @endif
                         <label class="form-label" for="add-tg-alasan">Alasan (opsional)</label>
                         <textarea id="add-tg-alasan" class="form-control" rows="2" wire:model="alasan"></textarea>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button><button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="terbit"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Terbitkan</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button><button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="terbit" data-bs-toggle="tooltip" data-bs-placement="top" title="Terbitkan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Terbitkan</button></div>
                 </form>
             </div>
         </div>
@@ -115,9 +116,9 @@
                             <div class="row g-2">
                                 <div class="col-md-6"><div class="sa-hint">Jenis</div><div>{{ ucfirst($t->jenis) }} @if($t->nama) / {{ $t->nama }} @endif</div></div>
                                 <div class="col-md-6"><div class="sa-hint">Periode</div><div>{{ $t->periode }}</div></div>
-                                <div class="col-md-6"><div class="sa-hint">Nominal</div><div>Rp {{ number_format($t->nominal, 0, ',', '.') }}</div></div>
-                                <div class="col-md-6"><div class="sa-hint">Diskon</div><div>Rp {{ number_format($t->diskon_nominal, 0, ',', '.') }} ({{ $t->diskon_persen }}%)</div></div>
-                                <div class="col-md-6"><div class="sa-hint">Total</div><div class="fw-semibold">Rp {{ number_format($t->total_tagihan, 0, ',', '.') }}</div></div>
+                                <div class="col-md-6"><div class="sa-hint">Nominal</div><div>Rp {{ number_format((int) $t->nominal, 0, ',', '.') }}</div></div>
+                                <div class="col-md-6"><div class="sa-hint">Diskon</div><div>Rp {{ number_format((int) $t->diskon_nominal, 0, ',', '.') }} ({{ $t->diskon_persen }}%)</div></div>
+                                <div class="col-md-6"><div class="sa-hint">Total</div><div class="fw-semibold">Rp {{ number_format((int) $t->total_tagihan, 0, ',', '.') }}</div></div>
                                 <div class="col-md-6"><div class="sa-hint">Status</div><div>{{ $t->label_status }}</div></div>
                                 <div class="col-md-6"><div class="sa-hint">Terbit</div><div>{{ $t->tanggal_terbit?->format('d/m/Y') }}</div></div>
                                 <div class="col-md-6"><div class="sa-hint">Jatuh Tempo</div><div>{{ $t->tanggal_jatuh_tempo?->format('d/m/Y') }}</div></div>
@@ -127,7 +128,7 @@
                         </div>
                     @endif
                 @endif
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="$set('detailId', null)">Tutup</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="$set('detailId', null)" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button></div>
             </div>
         </div>
     </div>

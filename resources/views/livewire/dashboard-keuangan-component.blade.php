@@ -52,13 +52,13 @@
         <div class="col-md-3">
             <div class="sa-card sa-stat">
                 <div class="sa-stat-label">Total Nominal</div>
-                <div class="sa-stat-value">Rp {{ number_format($totalNominal, 0, ',', '.') }}</div>
+                <div class="sa-stat-value">Rp {{ number_format((int) $totalNominal, 0, ',', '.') }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="sa-card sa-stat">
                 <div class="sa-stat-label">Estimasi Terbayar</div>
-                <div class="sa-stat-value text-success">Rp {{ number_format($totalTerbayar, 0, ',', '.') }}</div>
+                <div class="sa-stat-value text-success">Rp {{ number_format((int) $totalTerbayar, 0, ',', '.') }}</div>
             </div>
         </div>
     </div>
@@ -81,9 +81,9 @@
                     @forelse ($tagihanPerKelas as $row)
                         <tr>
                             <td>{{ $row['kelas'] }}</td>
-                            <td class="text-end">Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($row['estimasi'], 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($row['total'] - $row['estimasi'], 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row['total'], 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row['estimasi'], 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) ($row['total'] - $row['estimasi']), 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="4"><div class="sa-empty"><i class="fa-solid fa-inbox" aria-hidden="true"></i><p class="sa-empty-title">Belum ada tagihan</p><p class="sa-empty-text">Terbitkan tagihan terlebih dahulu untuk melihat rekap per kelas.</p></div></td></tr>
@@ -92,9 +92,9 @@
             </table>
         </div>
         <div class="sa-card-foot">
-            <a href="{{ url('datatagihan') }}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-list me-1" aria-hidden="true"></i>Lihat Semua Tagihan</a>
-            <a href="{{ url('tarif') }}" class="btn btn-sm btn-outline-secondary ms-2"><i class="fa-solid fa-tags me-1" aria-hidden="true"></i>Atur Tarif</a>
-            <a href="{{ url('beasiswa') }}" class="btn btn-sm btn-outline-secondary ms-2"><i class="fa-solid fa-hands-holding-child me-1" aria-hidden="true"></i>Kelola Beasiswa</a>
+            <a href="{{ url('datatagihan') }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail"><i class="fa-solid fa-list me-1" aria-hidden="true"></i>Lihat Semua Tagihan</a>
+            <a href="{{ url('tarif') }}" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Atur"><i class="fa-solid fa-tags me-1" aria-hidden="true"></i>Atur Tarif</a>
+            <a href="{{ url('beasiswa') }}" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka pengelolaan"><i class="fa-solid fa-hands-holding-child me-1" aria-hidden="true"></i>Kelola Beasiswa</a>
         </div>
     </div>
 </div>

@@ -58,7 +58,7 @@
         </tr>
         <tr>
             <td>Nominal Pembayaran Asli</td>
-            <td>: Rp {{ number_format($dokumen['pembayaran_nominal'], 0, ',', '.') }}</td>
+            <td>: Rp {{ number_format((int) $dokumen['pembayaran_nominal'], 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Metode Refund</td>
@@ -83,13 +83,13 @@
         <tbody>
             <tr>
                 <td>Pengembalian dana untuk Pembayaran #{{ $dokumen['pembayaran_id'] }}</td>
-                <td class="right">{{ number_format($dokumen['nominal_refund'], 0, ',', '.') }}</td>
+                <td class="right">{{ number_format((int) $dokumen['nominal_refund'], 0, ',', '.') }}</td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
                 <th class="right">Total Refund</th>
-                <th class="right">Rp {{ number_format($dokumen['nominal_refund'], 0, ',', '.') }}</th>
+                <th class="right">Rp {{ number_format((int) $dokumen['nominal_refund'], 0, ',', '.') }}</th>
             </tr>
         </tfoot>
     </table>

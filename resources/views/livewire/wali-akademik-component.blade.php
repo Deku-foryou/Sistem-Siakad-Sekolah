@@ -1,4 +1,4 @@
-﻿@section('title', 'Akses Akademik Wali')
+@section('title', 'Akses Akademik Wali')
 
 <div>
     <div class="container-fluid px-3 px-lg-4 py-3">
@@ -45,21 +45,21 @@
 
             @if ($siswaId !== '')
                 <ul class="nav nav-tabs mb-3 flex-wrap">
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'nilai' ? 'active' : '' }}" wire:click="gantiTab('nilai')">Nilai / Rapor</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'rekap' ? 'active' : '' }}" wire:click="gantiTab('rekap')">Rekap Kehadiran</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'ketidakhadiran' ? 'active' : '' }}" wire:click="gantiTab('ketidakhadiran')">Ketidakhadiran</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'catatan' ? 'active' : '' }}" wire:click="gantiTab('catatan')">Catatan Wali Kelas</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'perkembangan' ? 'active' : '' }}" wire:click="gantiTab('perkembangan')">Perkembangan Akademik</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'absensi_harian' ? 'active' : '' }}" wire:click="gantiTab('absensi_harian')">Absensi Harian</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'absensi_perjam' ? 'active' : '' }}" wire:click="gantiTab('absensi_perjam')">Absensi Per Jam</button></li>
-                    <li class="nav-item"><button class="nav-link {{ $tab === 'jadwal' ? 'active' : '' }}" wire:click="gantiTab('jadwal')">Jadwal</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'nilai' ? 'active' : '' }}" wire:click="gantiTab('nilai')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Nilai / Rapor</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'rekap' ? 'active' : '' }}" wire:click="gantiTab('rekap')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Rekap Kehadiran</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'ketidakhadiran' ? 'active' : '' }}" wire:click="gantiTab('ketidakhadiran')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Ketidakhadiran</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'catatan' ? 'active' : '' }}" wire:click="gantiTab('catatan')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Catatan Wali Kelas</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'perkembangan' ? 'active' : '' }}" wire:click="gantiTab('perkembangan')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Perkembangan Akademik</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'absensi_harian' ? 'active' : '' }}" wire:click="gantiTab('absensi_harian')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Absensi Harian</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'absensi_perjam' ? 'active' : '' }}" wire:click="gantiTab('absensi_perjam')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Absensi Per Jam</button></li>
+                    <li class="nav-item"><button class="nav-link {{ $tab === 'jadwal' ? 'active' : '' }}" wire:click="gantiTab('jadwal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">Jadwal</button></li>
                 </ul>
 
                 @if ($tab === 'nilai')
                     @forelse ($dataNilai as $d)
                         <div class="card border-0 shadow-sm mb-3">
                             <div class="card-header bg-white py-2 fw-semibold">
-                                {{ $d['kelas']->nama ?? '-' }} â€” {{ $d['semester']->nama ?? '-' }} ({{ $d['semester']->tahunajaran->nama ?? '' }})
+                                {{ $d['kelas']->nama ?? '-' }} — {{ $d['semester']->nama ?? '-' }} ({{ $d['semester']->tahunajaran->nama ?? '' }})
                             </div>
                             <div class="card-body p-0">
                                 <table class="table sa-table table-bordered mb-0">
@@ -86,7 +86,7 @@
                     @else
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                             <h2 class="h6 fw-bold mb-0">Rekap Kehadiran Semester Aktif</h2>
-                            <button type="button" class="btn btn-outline-primary btn-sm" wire:click="unduhRekap" wire:loading.attr="disabled" wire:target="unduhRekap">
+                            <button type="button" class="btn btn-outline-primary btn-sm" wire:click="unduhRekap" wire:loading.attr="disabled" wire:target="unduhRekap" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor CSV">
                                 <span wire:loading.remove wire:target="unduhRekap"><i class="fa-solid fa-file-csv me-1"></i>Unduh CSV</span>
                                 <span wire:loading wire:target="unduhRekap"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyiapkan&hellip;</span>
                             </button>
@@ -216,7 +216,7 @@
                     @else
                         <div class="row g-3 mb-3">
                             <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center py-3"><div class="small text-body-secondary">Jumlah Mapel</div><div class="h4 fw-bold mb-0">{{ $dataPerkembangan['jumlah_mapel'] }}</div></div></div>
-                            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center py-3"><div class="small text-body-secondary">Rata-rata Nilai Akhir</div><div class="h4 fw-bold mb-0">{{ number_format($dataPerkembangan['rata_rata'] ?? 0, 2, ',', '.') }}</div></div></div>
+                            <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center py-3"><div class="small text-body-secondary">Rata-rata Nilai Akhir</div><div class="h4 fw-bold mb-0">{{ number_format((float) ($dataPerkembangan['rata_rata'] ?? 0), 2, ',', '.') }}</div></div></div>
                             <div class="col-6 col-md-4"><div class="card border-0 shadow-sm text-center py-3"><div class="small text-body-secondary">Di Bawah KKTP</div><div class="h4 fw-bold mb-0 {{ ($dataPerkembangan['jumlah_di_bawah_kktp'] ?? 0) > 0 ? 'text-danger' : 'text-success' }}">{{ $dataPerkembangan['jumlah_di_bawah_kktp'] }}</div></div></div>
                         </div>
                         <div class="card border-0 shadow-sm">
@@ -228,8 +228,8 @@
                                         @foreach ($dataPerkembangan['rows'] as $row)
                                             <tr>
                                                 <td>{{ $row['mapel'] }}</td>
-                                                <td class="text-center">{{ number_format($row['nilai'], 2, ',', '.') }}</td>
-                                                <td class="text-center">{{ $row['kktp'] !== null ? number_format($row['kktp'], 2, ',', '.') : '-' }}</td>
+                                                <td class="text-center">{{ number_format((float) $row['nilai'], 2, ',', '.') }}</td>
+                                                <td class="text-center">{{ $row['kktp'] !== null ? number_format((float) $row['kktp'], 2, ',', '.') : '-' }}</td>
                                                 <td class="text-center">@if ($row['di_bawah']) <span class="badge bg-danger">Di Bawah</span> @else <span class="badge bg-success">Tercapai</span> @endif</td>
                                             </tr>
                                         @endforeach

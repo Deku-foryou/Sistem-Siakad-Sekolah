@@ -91,7 +91,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Penggunaan Saldo</span>
-                <span class="tp-stat-number">{{ number_format($stats['total'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['total'] ?? 0)) }}</span>
                 <span class="tp-stat-note">transaksi tercatat</span>
             </span>
         </div>
@@ -99,7 +99,7 @@
             <span class="tp-stat-icon" style="background:#e8efff;color:#1d4ed8"><i class="fa-solid fa-rupiah-sign" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Nominal Terpakai</span>
-                <span class="tp-stat-number">Rp {{ number_format($stats['nominal'] ?? 0, 0, ',', '.') }}</span>
+                <span class="tp-stat-number">Rp {{ number_format((int) ($stats['nominal'] ?? 0), 0, ',', '.') }}</span>
                 <span class="tp-stat-note">sesuai filter aktif</span>
             </span>
         </div>
@@ -107,7 +107,7 @@
             <span class="tp-stat-icon" style="background:#f3f0ff;color:#6d28d9"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Siswa Unik</span>
-                <span class="tp-stat-number">{{ number_format($stats['siswa'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['siswa'] ?? 0)) }}</span>
                 <span class="tp-stat-note">menggunakan saldo</span>
             </span>
         </div>
@@ -118,7 +118,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Total Percobaan</span>
-                <span class="tp-stat-number">{{ number_format($stats['total'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['total'] ?? 0)) }}</span>
                 <span class="tp-stat-note">payment attempt</span>
             </span>
         </div>
@@ -126,7 +126,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Berhasil</span>
-                <span class="tp-stat-number">{{ number_format($stats['success'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['success'] ?? 0)) }}</span>
                 <span class="tp-stat-note">pembayaran terverifikasi</span>
             </span>
         </div>
@@ -134,7 +134,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Menunggu</span>
-                <span class="tp-stat-number">{{ number_format($stats['pending'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['pending'] ?? 0)) }}</span>
                 <span class="tp-stat-note">dibuat + pending</span>
             </span>
         </div>
@@ -142,7 +142,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Gagal / Expired</span>
-                <span class="tp-stat-number">{{ number_format($stats['failed'] ?? 0) }}</span>
+                <span class="tp-stat-number">{{ number_format((int) ($stats['failed'] ?? 0)) }}</span>
                 <span class="tp-stat-note">gagal + expired</span>
             </span>
         </div>
@@ -150,7 +150,7 @@
             <span class="tp-stat-icon"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i></span>
             <span class="tp-stat-value">
                 <span class="tp-stat-label">Total Terverifikasi</span>
-                <span class="tp-stat-number">Rp {{ number_format($stats['verified'] ?? 0, 0, ',', '.') }}</span>
+                <span class="tp-stat-number">Rp {{ number_format((int) ($stats['verified'] ?? 0), 0, ',', '.') }}</span>
                 <span class="tp-stat-note">ledger masuk (seluruh waktu)</span>
             </span>
         </div>
@@ -192,7 +192,7 @@
                 </select>
             </div>
             <div class="col-md-2 col-12">
-                <button type="button" class="btn btn-outline-secondary tp-reset w-100" wire:click="resetFilters"><i class="fa-solid fa-rotate-left me-1" aria-hidden="true"></i>Reset Filter</button>
+                <button type="button" class="btn btn-outline-secondary tp-reset w-100" wire:click="resetFilters" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter"><i class="fa-solid fa-rotate-left me-1" aria-hidden="true"></i>Reset Filter</button>
             </div>
         </div>
     </div>
@@ -214,7 +214,7 @@
                             <td><div class="fw-semibold">{{ $row->diverifikasi_pada?->format('d/m/Y') ?? $row->created_at?->format('d/m/Y') }}</div><div class="tp-mono-sub">{{ $row->diverifikasi_pada?->format('H:i') ?? $row->created_at?->format('H:i') }}</div></td>
                             <td><div class="fw-semibold">{{ $row->siswa?->nama ?? '-' }}</div><div class="tp-mono-sub">NIS {{ $row->siswa?->nis ?? '-' }}</div></td>
                             <td><div class="fw-semibold">{{ $row->tagihan?->jenis === 'spp' ? 'SPP' : ucfirst($row->tagihan?->jenis ?? '-') }}</div><div class="tp-mono-sub">{{ $row->tagihan?->periode }}</div></td>
-                            <td class="text-end tp-nominal">Rp {{ number_format($row->nominal_dibayar, 0, ',', '.') }}</td>
+                            <td class="text-end tp-nominal">Rp {{ number_format((int) $row->nominal_dibayar, 0, ',', '.') }}</td>
                             <td class="tp-hide-sm">{{ $row->nama_pembayar ?? $row->payer_nama ?? '-' }}</td>
                             <td class="tp-hide-sm">{{ $row->inputer?->name ?? '-' }}</td>
                             <td class="tp-hide-sm">{{ $row->verifikator?->name ?? '-' }}</td>
@@ -254,7 +254,7 @@
                             <td><code class="tp-orderid">{{ $row->order_id }}</code></td>
                             <td><div class="fw-semibold">{{ $row->siswa?->nama ?? '-' }}</div><div class="tp-mono-sub">NIS {{ $row->siswa?->nis ?? '-' }}</div></td>
                             <td><div class="fw-semibold">{{ $row->tagihan?->jenis === 'spp' ? 'SPP' : ucfirst($row->tagihan?->jenis ?? '-') }}</div><div class="tp-mono-sub">{{ $row->tagihan?->periode }}</div></td>
-                            <td class="text-end tp-nominal">Rp {{ number_format($row->nominal, 0, ',', '.') }}</td>
+                            <td class="text-end tp-nominal">Rp {{ number_format((int) $row->nominal, 0, ',', '.') }}</td>
                             <td class="tp-metode tp-hide-sm">{{ $row->metode ? str_replace('_', ' ', strtoupper($row->metode)) : '-' }}</td>
                             <td class="tp-hide-sm">{{ $row->payer_nama ?: ($row->payer_jenis === 'siswa' ? 'Siswa' : ucfirst($row->payer_jenis)) }}</td>
                             <td class="tp-status">

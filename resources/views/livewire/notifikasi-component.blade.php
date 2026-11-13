@@ -7,7 +7,7 @@
             <p class="text-body-secondary mb-0">Pemberitahuan terbaru untuk Anda &middot; urut terbaru</p>
         </div>
         @if ($jumlahBelumDibaca > 0)
-            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="tandaiSemuaDibaca" wire:loading.attr="disabled">
+            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="tandaiSemuaDibaca" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tampilkan semua">
                 <i class="fa-solid fa-check-double me-1"></i> Tandai Semua Dibaca
             </button>
         @endif
@@ -16,14 +16,14 @@
     @if ($galat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $galat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
     @if ($sukses)
         <div class="alert alert-success alert-dismissible" role="alert">
             {{ $sukses }}
-            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -32,12 +32,12 @@
         <div class="card-body py-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <ul class="nav nav-pills gap-2 mb-0">
                 <li class="nav-item">
-                    <button type="button" class="nav-link @if ($tab === 'all') active @endif" wire:click="$set('tab', 'all')">
+                    <button type="button" class="nav-link @if ($tab === 'all') active @endif" wire:click="$set('tab', 'all')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">
                         Semua
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button type="button" class="nav-link @if ($tab === 'unread') active @endif" wire:click="$set('tab', 'unread')">
+                    <button type="button" class="nav-link @if ($tab === 'unread') active @endif" wire:click="$set('tab', 'unread')" data-bs-toggle="tooltip" data-bs-placement="top" title="Pindah tab">
                         Belum Dibaca
                         @if ($jumlahBelumDibaca > 0)
                             <span class="badge bg-danger ms-1">{{ $jumlahBelumDibaca }}</span>
@@ -84,7 +84,7 @@
                         @endif
                     </div>
                     @if (! $dibaca)
-                        <button type="button" class="btn btn-sm btn-outline-success" wire:click="tandaiDibaca({{ $notifikasi->idnotifikasi }})" wire:loading.attr="disabled">
+                        <button type="button" class="btn btn-sm btn-outline-success" wire:click="tandaiDibaca({{ $notifikasi->idnotifikasi }})" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tandai dibaca">
                             <i class="fa-solid fa-check me-1"></i> Tandai Dibaca
                         </button>
                     @endif

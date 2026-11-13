@@ -17,7 +17,7 @@ Data Role has permissions
                         <i class="fa-solid fa-arrow-left-long me-1"></i>
                         Kembali</a>
                     {{-- <button class="btn btn-primary"
-                        wire:click="$dispatch('show-add-role_has_permissions-modal')"><i
+                        wire:click="$dispatch('show-add-role_has_permissions-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data Role_has_permissions</button> --}}
                 </div>
             </div>
@@ -28,14 +28,14 @@ Data Role has permissions
             <div class="col-lg-5">
                 <form wire:submit.prevent='storeRole_has_permissions'>
                     <div class="col-12 mb-3">
-                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled'>
+                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled' data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                             <span wire:loading>
                                 <span class='spinner-border spinner-border-sm'></span> Loading...</span>
                             <span wire:loading.remove>
                                 <i class="fa-regular fa-floppy-disk me-2"></i> Simpan
                             </span>
                         </button>
-                        <button type='button' class='btn btn-success btn-sm' wire:click='selectAll'>
+                        <button type='button' class='btn btn-success btn-sm' wire:click='selectAll' data-bs-toggle="tooltip" data-bs-placement="top" title="Pilih">
 
                             <i class="fa-solid fa-check me-2"></i>Pilih Semua
                         </button>
@@ -134,7 +134,7 @@ Data Role has permissions
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="role_has_permissionsName" wire:model="role_has_permissionsName" readonly>
-        <button type="button" class="btn btn-primary" id="btnrole_has_permissionsModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnrole_has_permissionsModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -143,7 +143,7 @@ Data Role has permissions
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="role_has_permissionsName" wire:model="role_has_permissionsName" readonly>
-        <button type="button" class="btn btn-primary" id="btnrole_has_permissionsModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnrole_has_permissionsModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -186,7 +186,7 @@ Data Role has permissions
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -194,7 +194,7 @@ Data Role has permissions
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -221,9 +221,9 @@ Data Role has permissions
                 </div>
                 <div class="modal-footer">
                     <button class="btn  btn-danger" id="confirmDeleteButton"
-                        wire:click="deleteRole_has_permissions()">Ya</button>
+                        wire:click="deleteRole_has_permissions()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -264,7 +264,7 @@ Data Role has permissions
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                                 <span wire:loading.remove>
@@ -272,7 +272,7 @@ Data Role has permissions
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -282,10 +282,6 @@ Data Role has permissions
 
 
     </div>
-
-    {{-- @include('livewire.role_has_permissions-lov') --}}
-
-
 </div>
 
 
@@ -296,27 +292,6 @@ Data Role has permissions
             $('#editRole_has_permissionsModal').modal('hide'); 
             $('#deleteRole_has_permissionsModal').modal('hide'); 
         }); 
- 
- 
-  // copy dan aktifkan jika ingin menggunakan LOV  
- 
-  //       window.addEventListener('close-modal-lov', event =>{ 
-   //          $('#role_has_permissionsModal').modal('hide'); 
-   //     }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnrole_has_permissionsModalLovAdd').click(function(){ 
-   //       $('#role_has_permissionsModal').modal('show'); 
-    //    }); 
-  //  }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnrole_has_permissionsModalLovEdit').click(function(){ 
-   //       $('#role_has_permissionsModal').modal('show'); 
-    //    }); 
-  //  }); 
  
  
        $('#addRole_has_permissionsModal').on('shown.bs.modal', function () { 

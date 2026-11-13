@@ -15,7 +15,7 @@ Data Kelola Menu
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-appmenu-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-appmenu-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
@@ -44,13 +44,13 @@ Data Kelola Menu
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                         <i class="fa-solid fa-download"></i>
                         <span>Excel</span>
                     </button>
                     <!-- Tombol Export PDF -->
                     <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
@@ -89,10 +89,10 @@ Data Kelola Menu
                                         <td class="text-center">{{ $appmenus->firstItem() + $key }} </td>
                                         <td style="min-width: 90px;text-align: center">
                                             <button class="btn btn-sm btn-warning text-dark"
-                                                wire:click="editAppmenu('{{ $datas->idappmenunew }}')"><i
+                                                wire:click="editAppmenu('{{ $datas->idappmenunew }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                     class="fa-regular fa-pen-to-square"></i></button>
                                             <button class="btn btn-sm btn-danger text-white"
-                                                wire:click="deleteConfirmationAppmenu('{{ $datas->idappmenunew}}')"><i
+                                                wire:click="deleteConfirmationAppmenu('{{ $datas->idappmenunew}}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                     class="fa-solid fa-trash-can"></i></button>
                                         </td>
                                         {{-- <td>{{ $datas->idappmenunew }}</td> --}}
@@ -160,7 +160,7 @@ Data Kelola Menu
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="appmenuName" wire:model="appmenuName" readonly>
-        <button type="button" class="btn btn-primary" id="btnappmenuModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnappmenuModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -169,7 +169,7 @@ Data Kelola Menu
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="appmenuName" wire:model="appmenuName" readonly>
-        <button type="button" class="btn btn-primary" id="btnappmenuModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnappmenuModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -232,7 +232,7 @@ Data Kelola Menu
                                 <div class="d-flex justify-content-between align-items-center gap-1">
                                     <input type="text" id="icon" class="form-control" wire:model="icon"
                                         placeholder="Contoh: fa-solid fa-book">
-                                    <button type="button" class="btn btn-primary" id="btniconModalLovAdd">
+                                    <button type="button" class="btn btn-primary" id="btniconModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </button>
                                 </div>
@@ -275,7 +275,7 @@ Data Kelola Menu
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -283,7 +283,7 @@ Data Kelola Menu
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -308,9 +308,9 @@ Data Kelola Menu
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteAppmenu()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteAppmenu()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -371,7 +371,7 @@ Data Kelola Menu
                                 <div class="d-flex justify-content-between align-items-center gap-1">
                                     <input type="text" id="icon" class="form-control" wire:model="icon"
                                         placeholder="Contoh: fa-solid fa-book">
-                                    <button type="button" class="btn btn-primary" id="btniconModalLovEdit">
+                                    <button type="button" class="btn btn-primary" id="btniconModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </button>
                                 </div>
@@ -411,7 +411,7 @@ Data Kelola Menu
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Tunggu...</span>
                                 <span wire:loading.remove>
@@ -419,7 +419,7 @@ Data Kelola Menu
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -429,8 +429,6 @@ Data Kelola Menu
 
 
     </div>
-
-    {{-- @include('livewire.appmenu-lov') --}}
     @include('livewire.icon-lov')
 
 
@@ -446,27 +444,6 @@ Data Kelola Menu
         }); 
  
  
-  // copy dan aktifkan jika ingin menggunakan LOV  
- 
-  //       window.addEventListener('close-modal-lov', event =>{ 
-   //          $('#appmenuModal').modal('hide'); 
-   //     }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnappmenuModalLovAdd').click(function(){ 
-   //       $('#appmenuModal').modal('show'); 
-    //    }); 
-  //  }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnappmenuModalLovEdit').click(function(){ 
-   //       $('#appmenuModal').modal('show'); 
-    //    }); 
-  //  }); 
-
-
 //   icon LOV -----------------------------------------------------------
     window.addEventListener('close-modal-lov', event =>{
         $('#iconModal').modal('hide');

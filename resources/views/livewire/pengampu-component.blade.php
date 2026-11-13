@@ -9,7 +9,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-user-tie me-2 text-success" aria-hidden="true"></i>Pengampu</h1>
             <p class="sa-sub">Tetapkan guru mata pelajaran pada kelas dan semester.</p>
         </div>
-        <button class="btn btn-primary" wire:click="$dispatch('show-add-pengampu-modal')">
+        <button class="btn btn-primary" wire:click="$dispatch('show-add-pengampu-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Pengampu
         </button>
     </div>
@@ -67,8 +67,8 @@
                             <span class="sa-badge {{ $row->jadwal_count > 0 ? 'sa-hadir' : 'sa-netral' }}">{{ $row->jadwal_count }} sesi</span>
                         </td>
                         <td class="text-center text-nowrap">
-                            <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idpengampu }})" aria-label="Ubah pengampu {{ $row->guru->nama }} - {{ $row->mapel->nama }}"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idpengampu }})" aria-label="Hapus pengampu {{ $row->guru->nama }} - {{ $row->mapel->nama }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                            <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idpengampu }})" aria-label="Ubah pengampu {{ $row->guru->nama }} - {{ $row->mapel->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idpengampu }})" aria-label="Hapus pengampu {{ $row->guru->nama }} - {{ $row->mapel->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
                         </td>
                     </tr>
                 @empty
@@ -96,7 +96,7 @@
                 <label for="add-guru" class="form-label">Guru Aktif</label>
                 <select id="add-guru" class="form-select" wire:model="guru_idguru"><option value="">Pilih guru</option>@foreach ($gurus as $guru)
                     <option value="{{ $guru->idguru }}">{{ $guru->nama }} ({{ $guru->nip }})</option>@endforeach</select>
-            </div><div class="modal-footer"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button></div></form>
+            </div><div class="modal-footer"><button class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button></div></form>
         </div></div>
     </div>
 
@@ -117,7 +117,7 @@
                 <label for="edit-guru" class="form-label">Guru Aktif</label>
                 <select id="edit-guru" class="form-select" wire:model="guru_idguru"><option value="">Pilih guru</option>@foreach ($gurus as $guru)
                     <option value="{{ $guru->idguru }}">{{ $guru->nama }} ({{ $guru->nip }})</option>@endforeach</select>
-            </div><div class="modal-footer"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button></div></form>
+            </div><div class="modal-footer"><button class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button></div></form>
         </div></div>
     </div>
 
@@ -126,7 +126,7 @@
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <div class="modal-header"><h5 class="modal-title" id="deletePengampuTitle"><i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>Hapus Pengampu</h5></div>
             <div class="modal-body">Hapus data pengampu ini? Tindakan ini tidak menghapus data jadwal yang sudah dibuat.</div>
-            <div class="modal-footer"><button class="btn btn-danger" wire:click="delete"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button></div>
+            <div class="modal-footer"><button class="btn btn-danger" wire:click="delete" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button></div>
         </div></div>
     </div>
 </div>

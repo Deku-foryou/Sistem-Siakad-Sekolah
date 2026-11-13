@@ -22,14 +22,14 @@
     @if ($pesanGalat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $pesanGalat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
     @if ($sukses)
         <div class="alert alert-success alert-dismissible" role="status">
             {{ $sukses }}
-            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -100,10 +100,10 @@
                 <div class="sa-card-head">
                     <h2 class="sa-card-title"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>Kesiapan Finalisasi</h2>
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="periksa" wire:loading.attr="disabled">
+                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="periksa" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Periksa ulang data">
                             <i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> Periksa Ulang
                         </button>
-                        <button type="button" class="btn btn-sm btn-success" wire:click="finalisasi" wire:loading.attr="disabled" @disabled($status && $status->status === 'final')>
+                        <button type="button" class="btn btn-sm btn-success" wire:click="finalisasi" wire:loading.attr="disabled" @disabled($status && $status- data-bs-toggle="tooltip" data-bs-placement="top" title="Finalisasi rapor">status === 'final')>
                             <i class="fa-solid fa-clipboard-check me-1" aria-hidden="true"></i>
                             <span wire:loading.remove wire:target="finalisasi">Finalisasi Sekarang</span>
                             <span wire:loading wire:target="finalisasi">Memfinalisasi...</span>

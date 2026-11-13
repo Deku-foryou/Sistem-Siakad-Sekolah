@@ -10,7 +10,7 @@
             <p class="sa-sub">Kelola kehadiran siswa per kelas, satu hari per sesi pengisian.</p>
         </div>
         @if ($isLoaded)
-            <button class="btn btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi">
+            <button class="btn btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                 <span wire:loading.remove wire:target="simpanAbsensi"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Absensi</span>
                 <span wire:loading wire:target="simpanAbsensi"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan&hellip;</span>
             </button>
@@ -21,13 +21,13 @@
     @if ($errorMessage)
         <div class="alert alert-danger d-flex justify-content-between align-items-center gap-2 py-2" role="alert">
             <span><i class="fa-solid fa-circle-exclamation me-2" aria-hidden="true"></i>{{ $errorMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup pesan error"></button>
+            <button type="button" class="btn-close" wire:click="$set('errorMessage', '')" aria-label="Tutup pesan error" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
     @if ($successMessage)
         <div class="alert alert-success d-flex justify-content-between align-items-center gap-2 py-2" role="status">
             <span><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{{ $successMessage }}</span>
-            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup pesan sukses"></button>
+            <button type="button" class="btn-close" wire:click="$set('successMessage', '')" aria-label="Tutup pesan sukses" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -144,7 +144,7 @@
                                         <button type="button"
                                             class="btn btn-sm {{ $isEditingThis ? 'btn-outline-danger' : 'btn-outline-secondary' }}"
                                             wire:click="toggleEditAbsensi({{ $record['idabsensi_harian'] }})"
-                                            aria-label="{{ $isEditingThis ? 'Batalkan ubah' : 'Ubah absensi' }} {{ $siswa['nama'] }}">
+                                            aria-label="{{ $isEditingThis ? 'Batalkan ubah' : 'Ubah absensi' }} {{ $siswa['nama'] }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">
                                             @if ($isEditingThis)
                                                 <i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="d-none d-sm-inline ms-1">Batal</span>
                                             @else
@@ -164,7 +164,7 @@
             </div>
             <div class="sa-card-foot">
                 <span><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Baris kuning = mode ubah baris tersebut saja. Simpan hanya untuk baris yang diedit.</span>
-                <button type="button" class="btn btn-sm btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi">
+                <button type="button" class="btn btn-sm btn-primary" wire:click="simpanAbsensi" wire:loading.attr="disabled" wire:target="simpanAbsensi" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                     <span wire:loading.remove wire:target="simpanAbsensi"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</span>
                     <span wire:loading wire:target="simpanAbsensi">Menyimpan&hellip;</span>
                 </button>

@@ -71,7 +71,7 @@
                 </div>
                 <div class="modal-body">
                     <p class="mb-3">Gunakan template sesuai jenis data. File XLSX maksimal 2 MB.</p>
-                    <a class="btn btn-outline-primary btn-sm mb-3" href="{{ route('import.template', ['jenis' => $jenisUntukTemplate]) }}">
+                    <a class="btn btn-outline-primary btn-sm mb-3" href="{{ route('import.template', ['jenis' => $jenisUntukTemplate]) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Unduh berkas">
                         <i class="fa-solid fa-download me-1"></i>Unduh template
                     </a>
 
@@ -115,14 +115,14 @@
                     <div x-show="error" x-cloak class="alert alert-danger py-2 mb-0" role="alert" x-text="error"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" @click="start()" :disabled="running || ! $wire.fileImport">
+                    <button type="button" class="btn btn-success" @click="start()" :disabled="running || ! $wire.fileImport" data-bs-toggle="tooltip" data-bs-placement="top" title="Proses">
                         <span x-show="!running"><i class="fa-solid fa-upload me-1"></i>Mulai import</span>
                         <span x-show="running" x-cloak><i class="fa-solid fa-spinner fa-spin me-1"></i>Memproses...</span>
                     </button>
-                    <button type="button" class="btn btn-warning" x-show="running" @click="cancel()" :disabled="!running">
+                    <button type="button" class="btn btn-warning" x-show="running" @click="cancel()" :disabled="!running" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data">
                         Batalkan import
                     </button>
-                    <button type="button" class="btn btn-secondary" wire:click="tutupImport" :disabled="running">
+                    <button type="button" class="btn btn-secondary" wire:click="tutupImport" :disabled="running" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">
                         Tutup
                     </button>
                 </div>

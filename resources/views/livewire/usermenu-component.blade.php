@@ -14,7 +14,7 @@
                         Tentukan role apa saja yang boleh diakses oleh masing - masing pengguna yang ada.</div>
                 </div>
                 <div>
-                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-usermenus-modal')"><i
+                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-usermenus-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data usermenus</button> --}}
                     <a class='btn btn-primary' href="/users">
                         <i class="fa-solid fa-arrow-left-long me-1"></i>
@@ -32,7 +32,7 @@
                 <form wire:submit.prevent='tambahMenuUser'>
 
                     <div class="col-12 mb-3">
-                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled'>
+                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled' data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                             <span wire:loading>
                                 <span class='spinner-border spinner-border-sm'></span> Loading...</span>
                             <span wire:loading.remove>
@@ -52,7 +52,7 @@
                             @if ($rolecat_id)
                                 <div>
                                     <button class='btn btn-danger btn-sm text-white' wire:loading.attr='disabled'
-                                        wire:click='hapusPaket()' wire:ignore.self type="button">
+                                        wire:click='hapusPaket()' wire:ignore.self type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">
                                         <span wire:loading>
                                             <span class='spinner-border spinner-border-sm'></span> Loading...</span>
                                         <span wire:loading.remove>
@@ -178,14 +178,14 @@
                                 <!-- Tombol Export Excel -->
                                 <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
                                     style="border-radius: 10px; font-size: 13px; font-weight: 600;"
-                                    wire:click="exportToExcel">
+                                    wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                                     <i class="fa-solid fa-download"></i>
                                     <span>Excel</span>
                                 </button>
                                 <!-- Tombol Export PDF -->
                                 <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
                                     style="border-radius: 10px; font-size: 13px; font-weight: 600;"
-                                    wire:click="exportToPdf">
+                                    wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                                     <i class="fa-solid fa-file-pdf"></i>
                                     <span>PDF</span>
                                 </button>
@@ -219,7 +219,7 @@
                                                     <button class="btn btn-sm btn-danger text-white"
                                                         wire:click="deleteConfirmationUsermenu('{{ $datas->idusermenu }}')"
                                                         style="border-radius: 8px;"
-                                                        type="button">
+                                                        type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)">
                                                         <i class="fa-solid fa-trash-can"></i>
                                                     </button>
                                                 </td>
@@ -288,7 +288,7 @@
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="usermenusName" wire:model="usermenusName" readonly>
-        <button type="button" class="btn btn-primary" id="btnusermenusModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnusermenusModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -297,7 +297,7 @@
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="usermenusName" wire:model="usermenusName" readonly>
-        <button type="button" class="btn btn-primary" id="btnusermenusModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnusermenusModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -323,9 +323,9 @@
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteUsermenu()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteUsermenu()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                        aria-label="Close">Close</button>
+                        aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -345,9 +345,9 @@
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deletePaketRole()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deletePaketRole()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                        aria-label="Close">Close</button>
+                        aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -356,7 +356,6 @@
 
 
 
-    {{-- @include('livewire.usermenus-lov') --}}
 
 
 </div>
@@ -370,27 +369,6 @@
         $('#deleteusermenusModal').modal('hide');
         $('#deletehapuspaketModal').modal('hide');
     });
-
-
-    // copy dan aktifkan jika ingin menggunakan LOV  
-
-    //       window.addEventListener('close-modal-lov', event =>{ 
-    //          $('#usermenusModal').modal('hide'); 
-    //     }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btnusermenusModalLovAdd').click(function(){ 
-    //       $('#usermenusModal').modal('show'); 
-    //    }); 
-    //  }); 
-
-
-    // $(document).ready(function(){ 
-    //      $('#btnusermenusModalLovEdit').click(function(){ 
-    //       $('#usermenusModal').modal('show'); 
-    //    }); 
-    //  }); 
 
 
     $('#addusermenusModal').on('shown.bs.modal', function () {

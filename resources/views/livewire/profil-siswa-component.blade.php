@@ -268,7 +268,7 @@
                         <div class="profil-field-label">Status Password</div>
                         <div class="profil-field-value {{ $akun['wajibGantiPassword'] ? 'text-warning' : '' }}">{{ $akun['wajibGantiPassword'] ? 'Belum diganti' : 'Sudah diganti' }}</div>
                     </div>
-                    <a class="btn btn-outline-success btn-sm" href="/setting">Pengaturan Akun</a>
+                    <a class="btn btn-outline-success btn-sm" href="/setting" data-bs-toggle="tooltip" data-bs-placement="top" title="Atur">Pengaturan Akun</a>
                 </div>
             </div>
         </div>

@@ -18,14 +18,14 @@
     @if ($pesanGalat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $pesanGalat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
     @if ($sukses)
         <div class="alert alert-success alert-dismissible" role="status">
             {{ $sukses }}
-            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -54,7 +54,7 @@
                     <span class="sa-badge sa-netral">Draf / Belum Final</span>
                 @endif
                 <span class="sa-hint">{{ $daftarSiswa->count() }} siswa aktif &middot; Nilai dari snapshot final; PDF wajib final.</span>
-                <a class="btn btn-sm btn-outline-primary" href="{{ route('finalisasirapor') }}"><i class="fa-solid fa-clipboard-check me-1" aria-hidden="true"></i>Ke Finalisasi Rapor</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ route('finalisasirapor') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Finalisasi rapor"><i class="fa-solid fa-clipboard-check me-1" aria-hidden="true"></i>Ke Finalisasi Rapor</a>
             </div>
 
             <div class="sa-card mb-3">
@@ -78,7 +78,7 @@
             <div class="sa-card mb-3">
                 <div class="sa-card-head">
                     <h2 class="sa-card-title"><i class="fa-solid fa-file-lines" aria-hidden="true"></i>Rapor: {{ $detail['siswa']->nama }}</h2>
-                    <button type="button" class="btn btn-sm btn-danger" wire:click="unduhPdf" wire:loading.attr="disabled" @disabled(!$detail['is_final'])>
+                    <button type="button" class="btn btn-sm btn-danger" wire:click="unduhPdf" wire:loading.attr="disabled" @disabled(!$detail['is_final']) data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf me-1" aria-hidden="true"></i> Cetak PDF
                     </button>
                 </div>
@@ -122,7 +122,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" for="catatan">Catatan Wali Kelas</label>
                             <textarea id="catatan" class="form-control" rows="3" wire:model="catatan" maxlength="1000" placeholder="Tulis catatan wali kelas..."></textarea>
-                            <button type="button" class="btn btn-sm btn-primary mt-2" wire:click="simpanCatatan" wire:loading.attr="disabled" wire:target="simpanCatatan">
+                            <button type="button" class="btn btn-sm btn-primary mt-2" wire:click="simpanCatatan" wire:loading.attr="disabled" wire:target="simpanCatatan" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading.remove wire:target="simpanCatatan"><i class="fa-solid fa-save me-1" aria-hidden="true"></i>Simpan Catatan</span>
                                 <span wire:loading wire:target="simpanCatatan"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan&hellip;</span>
                             </button>

@@ -14,7 +14,7 @@ Data Model has Roles
                         Tentukan role apa saja yang boleh diakses oleh masing - masing pengguna yang ada.</div>
                 </div>
                 <div>
-                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-model_has_roles-modal')"><i
+                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-model_has_roles-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data Model_has_roles</button> --}}
                     <a class='btn btn-primary' href="/users">
                         <i class="fa-solid fa-arrow-left-long me-1"></i>
@@ -29,7 +29,7 @@ Data Model has Roles
                 <form wire:submit.prevent='storeModel_has_roles'>
 
                     <div class="col-12 mb-3">
-                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled'>
+                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled' data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                             <span wire:loading>
                                 <span class='spinner-border spinner-border-sm'></span> Loading...</span>
                             <span wire:loading.remove>
@@ -129,7 +129,7 @@ Data Model has Roles
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="model_has_rolesName" wire:model="model_has_rolesName" readonly>
-        <button type="button" class="btn btn-primary" id="btnmodel_has_rolesModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnmodel_has_rolesModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -138,7 +138,7 @@ Data Model has Roles
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="model_has_rolesName" wire:model="model_has_rolesName" readonly>
-        <button type="button" class="btn btn-primary" id="btnmodel_has_rolesModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnmodel_has_rolesModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -191,7 +191,7 @@ Data Model has Roles
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -199,7 +199,7 @@ Data Model has Roles
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -225,9 +225,9 @@ Data Model has Roles
                 </div>
                 <div class="modal-footer">
                     <button class="btn  btn-danger" id="confirmDeleteButton"
-                        wire:click="deleteModel_has_roles()">Ya</button>
+                        wire:click="deleteModel_has_roles()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -278,7 +278,7 @@ Data Model has Roles
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                                 <span wire:loading.remove>
@@ -286,7 +286,7 @@ Data Model has Roles
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -296,10 +296,6 @@ Data Model has Roles
 
 
     </div>
-
-    {{-- @include('livewire.model_has_roles-lov') --}}
-
-
 </div>
 
 
@@ -310,27 +306,6 @@ Data Model has Roles
             $('#editModel_has_rolesModal').modal('hide'); 
             $('#deleteModel_has_rolesModal').modal('hide'); 
         }); 
- 
- 
-  // copy dan aktifkan jika ingin menggunakan LOV  
- 
-  //       window.addEventListener('close-modal-lov', event =>{ 
-   //          $('#model_has_rolesModal').modal('hide'); 
-   //     }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnmodel_has_rolesModalLovAdd').click(function(){ 
-   //       $('#model_has_rolesModal').modal('show'); 
-    //    }); 
-  //  }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnmodel_has_rolesModalLovEdit').click(function(){ 
-   //       $('#model_has_rolesModal').modal('show'); 
-    //    }); 
-  //  }); 
  
  
        $('#addModel_has_rolesModal').on('shown.bs.modal', function () { 

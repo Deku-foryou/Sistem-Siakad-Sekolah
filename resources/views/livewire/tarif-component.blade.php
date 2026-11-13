@@ -7,7 +7,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-tags me-2 text-success" aria-hidden="true"></i>Tarif</h1>
             <p class="sa-sub">Atur besaran tarif per jenis: global, per kelas, dan per individu.</p>
         </div>
-        <button class="btn btn-primary" wire:click="$dispatch('show-add-tarif-modal')">
+        <button class="btn btn-primary" wire:click="$dispatch('show-add-tarif-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Tarif
         </button>
     </div>
@@ -57,7 +57,7 @@
                         <tr>
                             <td>@if ($row->jenis === 'global') Global @elseif ($row->jenis === 'kelas') Kelas @else Individu @endif</td>
                             <td>{{ $row->nama }}</td>
-                            <td class="text-end">Rp {{ number_format($row->nominal, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row->nominal, 0, ',', '.') }}</td>
                             <td>{{ $row->berlaku_dari?->format('d/m/Y') }} s.d {{ $row->berlaku_sampai ? $row->berlaku_sampai->format('d/m/Y') : '-' }}</td>
                             <td>
                                 @if ($row->jenis === 'kelas') {{ $row->kelas?->nama ?? '-' }}
@@ -66,8 +66,8 @@
                             </td>
                             <td><span class="sa-badge {{ $row->status === 'aktif' ? 'sa-hadir' : 'sa-netral' }}">{{ ucfirst($row->status) }}</span></td>
                             <td class="text-center text-nowrap">
-                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idtarif }})" aria-label="Edit tarif {{ $row->nama }}"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary" wire:click="toggleStatus({{ $row->idtarif }})" aria-label="Toggle status tarif {{ $row->nama }}"><i class="fa-solid fa-toggle-{{ $row->status === 'aktif' ? 'on' : 'off' }}" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idtarif }})" aria-label="Edit tarif {{ $row->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" wire:click="toggleStatus({{ $row->idtarif }})" aria-label="Toggle status tarif {{ $row->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Aktif/nonaktif"><i class="fa-solid fa-toggle-{{ $row->status === 'aktif' ? 'on' : 'off' }}" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     @empty
@@ -96,8 +96,9 @@
                             <select id="add-tarif-kelas" class="form-select mb-3" wire:model="kelas_idkelas"><option value="">Pilih kelas</option>@foreach ($kelasOptions as $k)<option value="{{ $k->idkelas }}">{{ $k->nama }} ({{ $k->tingkat }})</option>@endforeach</select>
                         @endif
                         @if ($jenis === 'individu')
-                            <label class="form-label" for="add-tarif-siswa">Siswa</label>
-                            <select id="add-tarif-siswa" class="form-select mb-3" wire:model="siswa_idsiswa"><option value="">Pilih siswa</option>@foreach ($siswaOptions as $s)<option value="{{ $s->idsiswa }}">{{ $s->nama }} &middot; {{ $s->nis ?? '-' }}</option>@endforeach</select>
+                            <label class="form-label" for="lov-siswa-search">Siswa</label>
+                            @include('livewire.partials.lov-siswa', ['lovMode' => 'single', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => []])
+                            @error('siswaId') <div class="invalid-feedback d-block mb-3" role="alert">{{ $message }}</div> @enderror
                         @endif
                         <label class="form-label" for="add-tarif-nama">Nama</label>
                         <input id="add-tarif-nama" type="text" class="form-control mb-3" wire:model="nama" placeholder="Contoh: SPP Bulanan">
@@ -107,7 +108,7 @@
                         <label class="form-label mt-2" for="add-tarif-alasan">Alasan (opsional)</label>
                         <textarea id="add-tarif-alasan" class="form-control" rows="2" wire:model="alasan"></textarea>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button><button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button></div>
                 </form>
             </div>
         </div>
@@ -123,7 +124,10 @@
                         <label class="form-label" for="edit-tarif-jenis">Jenis</label>
                         <select id="edit-tarif-jenis" class="form-select mb-3" wire:model.live="jenis"><option value="global">Global</option><option value="kelas">Kelas</option><option value="individu">Individu</option></select>
                         @if ($jenis === 'kelas')<label class="form-label" for="edit-tarif-kelas">Kelas</label><select id="edit-tarif-kelas" class="form-select mb-3" wire:model="kelas_idkelas"><option value="">Pilih kelas</option>@foreach ($kelasOptions as $k)<option value="{{ $k->idkelas }}">{{ $k->nama }} ({{ $k->tingkat }})</option>@endforeach</select>@endif
-                        @if ($jenis === 'individu')<label class="form-label" for="edit-tarif-siswa">Siswa</label><select id="edit-tarif-siswa" class="form-select mb-3" wire:model="siswa_idsiswa"><option value="">Pilih siswa</option>@foreach ($siswaOptions as $s)<option value="{{ $s->idsiswa }}">{{ $s->nama }} &middot; {{ $s->nis ?? '-' }}</option>@endforeach</select>@endif
+                        @if ($jenis === 'individu')<label class="form-label" for="lov-siswa-search">Siswa</label>
+                            @include('livewire.partials.lov-siswa', ['lovMode' => 'single', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => []])
+                            @error('siswaId') <div class="invalid-feedback d-block mb-3" role="alert">{{ $message }}</div> @enderror
+                        @endif
                         <label class="form-label" for="edit-tarif-nama">Nama</label>
                         <input id="edit-tarif-nama" type="text" class="form-control mb-3" wire:model="nama">
                         <label class="form-label" for="edit-tarif-nominal">Nominal (Rp)</label>
@@ -134,7 +138,7 @@
                         <label class="form-label mt-2" for="edit-tarif-status">Status</label>
                         <select id="edit-tarif-status" class="form-select" wire:model="status"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select>
                     </div>
-                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button><button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>

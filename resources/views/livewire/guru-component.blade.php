@@ -10,9 +10,9 @@ Data Guru
                     <p class="p-0 m-0 h3 fw-bold ">Guru</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-success" wire:click="bukaImport('guru')"><i class="fa-solid fa-upload me-1"></i>Import</button>
-                    <button class="btn btn-outline-primary" wire:click="$dispatch('show-sync-guru-modal')"><i class="fa-solid fa-arrows-rotate me-1"></i>Terapkan paket menu ke semua guru</button>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-guru-modal')"><i class="fa-solid fa-plus "></i></button>
+                    <button class="btn btn-success" wire:click="bukaImport('guru')" data-bs-toggle="tooltip" data-bs-placement="top" title="Impor data"><i class="fa-solid fa-upload me-1"></i>Import</button>
+                    <button class="btn btn-outline-primary" wire:click="$dispatch('show-sync-guru-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka formulir"><i class="fa-solid fa-arrows-rotate me-1"></i>Terapkan paket menu ke semua guru</button>
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-guru-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
         </div>
@@ -47,9 +47,9 @@ Data Guru
                             <td>{{ $g->jenis_kelamin }}</td>
                             <td>{{ $g->status }}</td>
                             <td class="text-nowrap">
-                                <button class="btn btn-sm btn-info text-white" wire:click="detailGuru({{ $g->idguru }})" title="Detail" aria-label="Detail"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-sm btn-warning" wire:click="editGuru({{ $g->idguru }})"><i class="fa-regular fa-pen-to-square"></i></button>
-                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationGuru({{ $g->idguru }})"><i class="fa-solid fa-trash-can"></i></button>
+                                <button class="btn btn-sm btn-info text-white" wire:click="detailGuru({{ $g->idguru }})" title="Detail" aria-label="Detail" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-sm btn-warning" wire:click="editGuru({{ $g->idguru }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button class="btn btn-sm btn-danger" wire:click="deleteConfirmationGuru({{ $g->idguru }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     @endforeach
@@ -103,8 +103,8 @@ Data Guru
                             @error('mapel_ids')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="storeGuru">Simpan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="storeGuru" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -156,8 +156,8 @@ Data Guru
                             @error('mapel_ids')<span class="text-danger small">{{ $message }}</span>@enderror
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="updateGuru">Simpan Perubahan</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="updateGuru" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Simpan Perubahan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>
@@ -230,7 +230,7 @@ Data Guru
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="tutupDetailGuru">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="tutupDetailGuru" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
                 </div>
             </div>
         </div>
@@ -243,8 +243,8 @@ Data Guru
                 <div class="modal-header"><h5 class="modal-title">Delete Confirmation</h5></div>
                 <div class="modal-body pt-4 pb-4"><h6>Are you sure? You want to delete this data ?</h6></div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteGuru()">Ya</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()">Close</button>
+                    <button class="btn btn-danger" wire:click="deleteGuru()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -255,8 +255,8 @@ Data Guru
                 <div class="modal-header"><h5 class="modal-title" id="syncGuruTitle">Terapkan paket menu Guru</h5></div>
                 <div class="modal-body">Paket menu Guru akan diterapkan ke semua akun guru. Menu yang sudah ada, termasuk menu manual, tidak akan dihapus.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" wire:click="sinkronkanPaket">Terapkan paket</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-primary" wire:click="sinkronkanPaket" data-bs-toggle="tooltip" data-bs-placement="top" title="Sinkronkan data/paket">Terapkan paket</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
                 </div>
             </div>
         </div>

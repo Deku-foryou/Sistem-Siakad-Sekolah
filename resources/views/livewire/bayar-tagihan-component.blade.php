@@ -74,13 +74,13 @@
                         <tr>
                             <td>{{ $row['tagihan']->jenis === 'spp' ? 'SPP' : ucfirst($row['tagihan']->jenis) }}@if ($row['tagihan']->nama) &middot; {{ $row['tagihan']->nama }}@endif</td>
                             <td>{{ $row['tagihan']->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($row['tagihan']->total_tagihan, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($row['terpakai'], 0, ',', '.') }}</td>
-                            <td class="text-end fw-semibold">Rp {{ number_format($row['sisa'], 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row['tagihan']->total_tagihan, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $row['terpakai'], 0, ',', '.') }}</td>
+                            <td class="text-end fw-semibold">Rp {{ number_format((int) $row['sisa'], 0, ',', '.') }}</td>
                             <td>{{ $row['tagihan']->tanggal_jatuh_tempo?->format('d/m/Y') }}</td>
                             <td class="text-center text-nowrap">
                                 @if ($row['sisa'] > 0)
-                                    <button class="btn btn-sm btn-success" wire:click="bayar({{ $row['tagihan']->idtagihan }})" wire:loading.attr="disabled" aria-label="Bayar tagihan">
+                                    <button class="btn btn-sm btn-success" wire:click="bayar({{ $row['tagihan']->idtagihan }})" wire:loading.attr="disabled" aria-label="Bayar tagihan" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar">
                                         <i class="fa-solid fa-credit-card me-1" aria-hidden="true"></i>Bayar
                                     </button>
                                 @else
@@ -99,7 +99,7 @@
     <div class="sa-card mb-3">
         <div class="sa-card-head">
             <h2 class="sa-card-title"><i class="fa-solid fa-wallet" aria-hidden="true"></i>Saldo Siswa</h2>
-            <span class="sa-count">Tersedia: Rp {{ number_format($saldoTersedia, 0, ',', '.') }}</span>
+            <span class="sa-count">Tersedia: Rp {{ number_format((int) $saldoTersedia, 0, ',', '.') }}</span>
         </div>
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
@@ -107,7 +107,7 @@
                 <input id="bt-saldo-jumlah" type="number" class="form-control" wire:model="jumlahSaldo" min="1" max="{{ $saldoTersedia }}" @disabled($saldoTersedia < 1) placeholder="0">
             </div>
             <div class="col-md-4">
-                <button class="btn btn-success" wire:click="gunakanSaldo" wire:loading.attr="disabled" @disabled($saldoTersedia < 1) type="button">
+                <button class="btn btn-success" wire:click="gunakanSaldo" wire:loading.attr="disabled" @disabled($saldoTersedia < 1) type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Bayar dengan saldo siswa">
                     <i class="fa-solid fa-hand-holding-dollar me-1" aria-hidden="true"></i>Gunakan Saldo
                 </button>
                 <p class="small text-body-secondary mt-1 mb-0">Dialokasikan otomatis: jatuh tempo terdekat lebih dahulu; jika sama, tanggal terbit tertua; pokok sebelum denda.</p>
@@ -129,7 +129,7 @@
                             <tr>
                                 <td>{{ $rs->dibayar_pada?->format('d/m/Y H:i') ?? $rs->created_at?->format('d/m/Y H:i') }}</td>
                                 <td>{{ $rs->tagihan?->jenis === 'spp' ? 'SPP' : ucfirst($rs->tagihan?->jenis ?? '-') }} {{ $rs->tagihan?->periode }}</td>
-                                <td class="text-end">Rp {{ number_format($rs->nominal_dibayar, 0, ',', '.') }}</td>
+                                <td class="text-end">Rp {{ number_format((int) $rs->nominal_dibayar, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -153,7 +153,7 @@
                         <tr>
                             <td><code class="small">{{ $attempt->order_id }}</code></td>
                             <td>{{ $attempt->tagihan?->jenis === 'spp' ? 'SPP' : ucfirst($attempt->tagihan?->jenis ?? '-') }} {{ $attempt->tagihan?->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($attempt->nominal, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $attempt->nominal, 0, ',', '.') }}</td>
                             <td>{{ $attempt->metode ? str_replace('_', ' ', strtoupper($attempt->metode)) : '-' }}</td>
                             <td>
                                 @if ($attempt->status === 'success') <span class="sa-badge sa-hadir">Berhasil</span>
@@ -166,8 +166,8 @@
                             <td>{{ $attempt->created_at?->format('d/m/Y H:i') }}</td>
                             <td class="text-center text-nowrap">
                                 @if (in_array($attempt->status, ['created', 'pending'], true))
-                                    <button class="btn btn-sm btn-outline-secondary" wire:click="periksaStatus({{ $attempt->idpayment_attempt }})" aria-label="Periksa status transaksi"><i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="d-none d-xl-inline ms-1">Cek Status</span></button>
-                                    <button class="btn btn-sm btn-outline-primary" wire:click="tampilkanTautan({{ $attempt->idpayment_attempt }})" aria-label="Salin tautan pembayaran pihak ketiga"><i class="fa-solid fa-link" aria-hidden="true"></i><span class="d-none d-xl-inline ms-1">Tautan</span></button>
+                                    <button class="btn btn-sm btn-outline-secondary" wire:click="periksaStatus({{ $attempt->idpayment_attempt }})" aria-label="Periksa status transaksi" data-bs-toggle="tooltip" data-bs-placement="top" title="Periksa status pembayaran"><i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="d-none d-xl-inline ms-1">Cek Status</span></button>
+                                    <button class="btn btn-sm btn-outline-primary" wire:click="tampilkanTautan({{ $attempt->idpayment_attempt }})" aria-label="Salin tautan pembayaran pihak ketiga" data-bs-toggle="tooltip" data-bs-placement="top" title="Tautan pembayaran"><i class="fa-solid fa-link" aria-hidden="true"></i><span class="d-none d-xl-inline ms-1">Tautan</span></button>
                                 @endif
                             </td>
                         </tr>
@@ -195,7 +195,7 @@
                         <tr>
                             <td>{{ $pm->tanggal_pembayaran?->format('d/m/Y') ?? $pm->created_at?->format('d/m/Y') }}</td>
                             <td>{{ $pm->tagihan?->jenis === 'spp' ? 'SPP' : ucfirst($pm->tagihan?->jenis ?? '-') }} {{ $pm->tagihan?->periode }}</td>
-                            <td class="text-end">Rp {{ number_format($pm->nominal_dibayar, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) $pm->nominal_dibayar, 0, ',', '.') }}</td>
                             <td>{{ strtoupper($pm->metode) }}</td>
                             <td>
                                 @if($pm->status === 'success') <span class="sa-badge sa-hadir">Disetujui</span>
@@ -206,10 +206,10 @@
                             </td>
                             <td class="text-center">
                                 @if($pm->bukti_path)
-                                    <a class="btn btn-sm btn-outline-secondary me-1" href="{{ route('pembayaran.bukti', $pm->idpembayaran) }}" target="_blank"><i class="fa-solid fa-file-lines"></i> Bukti</a>
+                                    <a class="btn btn-sm btn-outline-secondary me-1" href="{{ route('pembayaran.bukti', $pm->idpembayaran) }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Unduh bukti"><i class="fa-solid fa-file-lines"></i> Bukti</a>
                                 @endif
                                 @if($pm->status === 'success' && $pm->kuitansi)
-                                    <a class="btn btn-sm btn-outline-primary" href="{{ route('pembayaran.kuitansi', $pm->idpembayaran) }}" target="_blank"><i class="fa-solid fa-receipt"></i> Lihat Kuitansi</a>
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ route('pembayaran.kuitansi', $pm->idpembayaran) }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail"><i class="fa-solid fa-receipt"></i> Lihat Kuitansi</a>
                                 @elseif($pm->status === 'failed')
                                     <small class="text-muted">-</small>
                                 @else
@@ -241,9 +241,9 @@
                             <td>{{ $rd->created_at?->format('d/m/Y') }}</td>
                             <td>Refund #{{ $rd->refund_pengajuan_id }}<br><small class="text-muted">{{ $rd->nomor_dokumen }}</small></td>
                             <td>{{ $rd->refund?->pembayaran?->tagihan ? strtoupper($rd->refund->pembayaran->tagihan->jenis).' '.($rd->refund->pembayaran->tagihan->periode ?? '') : '-' }}</td>
-                            <td class="text-end">Rp {{ number_format($rd->refund?->nominal_refund ?? 0, 0, ',', '.') }}</td>
+                            <td class="text-end">Rp {{ number_format((int) ($rd->refund?->nominal_refund ?? 0), 0, ',', '.') }}</td>
                             <td class="text-center">
-                                <a class="btn btn-sm btn-outline-primary" href="{{ route('refund.dokumen', $rd->id) }}" target="_blank"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</a>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ route('refund.dokumen', $rd->id) }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</a>
                             </td>
                         </tr>
                     @endforeach
@@ -259,18 +259,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTautanLabel"><i class="fa-solid fa-link me-2" aria-hidden="true"></i>Tautan Pembayaran Pihak Ketiga</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
             </div>
             <div class="modal-body">
                 <p class="small text-body-secondary">Bagikan tautan ini kepada pihak yang ingin membantu membayarkan tagihan. Tautan hanya berlaku untuk satu transaksi ini dan tidak menampilkan data akademik siswa.</p>
                 <label for="bt-tautan" class="form-label">Tautan pembayaran</label>
                 <div class="input-group">
                     <input id="bt-tautan" type="text" class="form-control" readonly value="{{ $tautanPublik }}" onclick="this.select()">
-                    <button type="button" class="btn btn-outline-primary" onclick="window.salinTautan()" aria-label="Salin tautan"><i class="fa-solid fa-copy" aria-hidden="true"></i></button>
+                    <button type="button" class="btn btn-outline-primary" onclick="window.salinTautan()" aria-label="Salin tautan" data-bs-toggle="tooltip" data-bs-placement="top" title="Salin"><i class="fa-solid fa-copy" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
             </div>
         </div>
     </div>

@@ -15,7 +15,7 @@ Data Model has Roles
                         yang ada.</div>
                 </div>
                 <div>
-                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-usermenus-modal')"><i
+                    {{-- <button class="btn btn-primary" wire:click="$dispatch('show-add-usermenus-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data usermenus</button> --}}
                     <a class='btn btn-primary' href="/rolecat">
                         <i class="fa-solid fa-arrow-left-long me-1"></i>
@@ -33,7 +33,7 @@ Data Model has Roles
                 <form wire:submit.prevent='tambahMenuRole'>
 
                     <div class="col-12 mb-3">
-                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled'>
+                        <button type='submit' class='btn btn-primary btn-sm' wire:loading.attr='disabled' data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                             <span wire:loading>
                                 <span class='spinner-border spinner-border-sm'></span> Loading...</span>
                             <span wire:loading.remove>
@@ -99,13 +99,13 @@ Data Model has Roles
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                         <i class="fa-solid fa-download"></i>
                         <span>Excel</span>
                     </button>
                     <!-- Tombol Export PDF -->
                     <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
@@ -159,9 +159,9 @@ Data Model has Roles
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteRolemenu()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteRolemenu()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal"
-                        aria-label="Close">Close</button>
+                        aria-label="Close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -170,7 +170,6 @@ Data Model has Roles
 
 
 
-    {{-- @include('livewire.usermenus-lov') --}}
 
 
 </div>

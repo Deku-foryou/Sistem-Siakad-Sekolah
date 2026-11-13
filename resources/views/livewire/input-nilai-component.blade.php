@@ -22,14 +22,14 @@
     @if ($pesanGalat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $pesanGalat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
     @if ($sukses)
         <div class="alert alert-success alert-dismissible" role="status">
             {{ $sukses }}
-            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -74,7 +74,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="sa-hint">Total Bobot Komponen Aktif</div>
-                        <div class="fw-semibold">{{ number_format($totalBobotAktif, 2, ',', '.') }}%</div>
+                        <div class="fw-semibold">{{ number_format((float) $totalBobotAktif, 2, ',', '.') }}%</div>
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                         <h2 class="sa-card-title"><i class="fa-solid fa-table" aria-hidden="true"></i>Daftar Nilai</h2>
                         <span class="sa-hint">{{ $rekap->count() }} siswa &middot; {{ $komponen->count() }} komponen aktif</span>
                     </div>
-                    <button type="button" class="btn btn-sm btn-primary" wire:click="simpan" wire:loading.attr="disabled" @disabled(! $konfigurasiValid || $terkunci)>
+                    <button type="button" class="btn btn-sm btn-primary" wire:click="simpan" wire:loading.attr="disabled" @disabled(! $konfigurasiValid || $terkunci) data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading.remove wire:target="simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i> Simpan Nilai</span>
                         <span wire:loading wire:target="simpan"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan&hellip;</span>
                     </button>
@@ -148,7 +148,7 @@
                                         </td>
                                     @endforeach
                                     <td class="text-center fw-semibold">
-                                        {{ $baris['nilai_draft'] === null ? '-' : number_format($baris['nilai_draft'], 2, ',', '.') }}
+                                        {{ $baris['nilai_draft'] === null ? '-' : number_format((float) $baris['nilai_draft'], 2, ',', '.') }}
                                     </td>
                                     <td class="text-center">
                                         @if (! $konfigurasiValid)

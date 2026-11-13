@@ -59,13 +59,13 @@
                 <td>{{ $kuitansi['tagihan_jenis'] === 'spp' ? 'SPP' : ucfirst($kuitansi['tagihan_jenis'] ?? 'Tagihan') }} @if($kuitansi['tagihan_nama']) - {{ $kuitansi['tagihan_nama'] }} @endif</td>
                 <td>{{ $kuitansi['tagihan_periode'] ?? '-' }}</td>
                 <td>{{ strtoupper($kuitansi['metode'] ?? '-') }}</td>
-                <td class="right">{{ number_format($kuitansi['nominal'], 0, ',', '.') }}</td>
+                <td class="right">{{ number_format((int) $kuitansi['nominal'], 0, ',', '.') }}</td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
                 <th colspan="3" class="right">Total</th>
-                <th class="right">Rp {{ number_format($kuitansi['nominal'], 0, ',', '.') }}</th>
+                <th class="right">Rp {{ number_format((int) $kuitansi['nominal'], 0, ',', '.') }}</th>
             </tr>
         </tfoot>
     </table>

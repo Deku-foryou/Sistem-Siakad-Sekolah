@@ -67,7 +67,7 @@
                     {{-- hapus bedasarkan bulan --}}
                     <div>
                         @if($selectedBulan != '')
-                        <button type="button" class="btn btn-danger rounded-5 text-white fw-bold" wire:click="deleteLog('{{ $selectedBulan }}')">Hapus Log</button>
+                        <button type="button" class="btn btn-danger rounded-5 text-white fw-bold" wire:click="deleteLog('{{ $selectedBulan }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus Log</button>
                         @endif
                     </div>  
 

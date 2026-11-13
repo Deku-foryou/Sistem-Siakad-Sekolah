@@ -1,19 +1,18 @@
 @section('title', 'Jadwal Pelajaran')
 
 {{-- Hanya tampil saat cetak --}}
-<div class="print-header" aria-hidden="true">
-    <h1>Jadwal Pelajaran</h1>
-    <p>
-        {{ $siswa?->nama ?: '-' }}
-        @if ($kelasList->isNotEmpty())
-            &middot; {{ $kelasList->pluck('nama')->implode(', ') }}
-        @endif
-        &middot; Tahun Ajaran {{ $konteks->tahunAjaranNama() ?: '-' }}
-        &middot; Semester {{ $konteks->semesterNama() ?: '-' }}
-    </p>
-</div>
-
 <div class="container-fluid px-3 px-lg-4 py-3">
+    <div class="print-header" aria-hidden="true">
+        <h1>Jadwal Pelajaran</h1>
+        <p>
+            {{ $siswa?->nama ?: '-' }}
+            @if ($kelasList->isNotEmpty())
+                &middot; {{ $kelasList->pluck('nama')->implode(', ') }}
+            @endif
+            &middot; Tahun Ajaran {{ $konteks->tahunAjaranNama() ?: '-' }}
+            &middot; Semester {{ $konteks->semesterNama() ?: '-' }}
+        </p>
+    </div>
     @include('assets.akademik')
     <style>
         /* Ringkasan hari ini + kartu hari (cetak-aman) */
@@ -72,7 +71,7 @@
             @endif
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()" data-bs-toggle="tooltip" data-bs-placement="top" title="Cetak">
                 <i class="fa-solid fa-print me-1" aria-hidden="true"></i>Cetak Jadwal
             </button>
             <span class="sa-chip"><i class="fa-solid fa-user-graduate" aria-hidden="true"></i>Siswa</span>
@@ -98,10 +97,10 @@
         {{-- Navigasi hari --}}
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3 no-print" role="group" aria-label="Filter hari" wire:loading.class="opacity-50">
             <span class="sa-hint fw-semibold me-1">Hari:</span>
-            <button type="button" class="btn btn-sm {{ $filterHari === '0' ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '0')">Semua</button>
-            <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $hariIni ? 'btn-success' : 'btn-outline-success' }}" wire:click="$set('filterHari', '{{ $hariIni }}')">Hari Ini</button>
+            <button type="button" class="btn btn-sm {{ $filterHari === '0' ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '0')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tampilkan semua">Semua</button>
+            <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $hariIni ? 'btn-success' : 'btn-outline-success' }}" wire:click="$set('filterHari', '{{ $hariIni }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tampilkan hari ini">Hari Ini</button>
             @foreach ($namaHari as $h => $n)
-                <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $h ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '{{ $h }}')">{{ $n }}</button>
+                <button type="button" class="btn btn-sm {{ (string) $filterHari === (string) $h ? 'btn-success' : 'btn-outline-secondary' }}" wire:click="$set('filterHari', '{{ $h }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Filter jadwal per hari" aria-label="Filter jadwal per hari">{{ $n }}</button>
             @endforeach
         </div>
 

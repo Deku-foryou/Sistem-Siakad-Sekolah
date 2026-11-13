@@ -119,7 +119,7 @@ Beranda Siswa
                                 </tbody>
                             </table>
                         </div>
-                        <a class="btn btn-success btn-sm" href="/setting">Ganti password</a>
+                        <a class="btn btn-success btn-sm" href="/setting" data-bs-toggle="tooltip" data-bs-placement="top" title="Ganti password">Ganti password</a>
                     </div>
                 </section>
             </div>
@@ -154,14 +154,14 @@ Beranda Siswa
                                 </table>
                             </div>
                             <div class="mt-3 text-end">
-                                <a class="btn btn-outline-success btn-sm" href="/jadwalsiswa">Lihat semua jadwal</a>
+                                <a class="btn btn-outline-success btn-sm" href="/jadwalsiswa" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail">Lihat semua jadwal</a>
                             </div>
                         @else
                             <div class="text-center py-3">
                                 <i class="fa-regular fa-calendar-xmark fs-2 text-secondary mb-2" aria-hidden="true"></i>
                                 <p class="fw-semibold mb-1">Tidak ada jadwal hari ini</p>
                                 <p class="text-body-secondary mb-3">Hari {{ $namaHariIni }} tidak ada mata pelajaran untuk kelas Anda pada semester {{ $konteks->semesterNama() }}.</p>
-                                <a class="btn btn-outline-success btn-sm" href="/jadwalsiswa">Lihat jadwal mingguan</a>
+                                <a class="btn btn-outline-success btn-sm" href="/jadwalsiswa" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail">Lihat jadwal mingguan</a>
                             </div>
                         @endif
                     </div>

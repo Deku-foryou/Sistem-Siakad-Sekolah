@@ -13,7 +13,7 @@
     @if ($pesanGalat)
         <div class="alert alert-danger alert-dismissible" role="alert">
             {{ $pesanGalat }}
-            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat', '')" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -57,7 +57,7 @@
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <span class="fw-semibold">Detail Rapor &mdash; {{ $detail['siswa']->nama }}</span>
-                <button type="button" class="btn btn-sm btn-danger" wire:click="unduhPdf" wire:loading.attr="disabled">
+                <button type="button" class="btn btn-sm btn-danger" wire:click="unduhPdf" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                     <i class="fa-solid fa-file-pdf me-1"></i> Unduh PDF
                 </button>
             </div>

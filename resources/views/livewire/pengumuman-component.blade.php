@@ -9,7 +9,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-bullhorn me-2 text-success" aria-hidden="true"></i>Pengumuman</h1>
             <p class="sa-sub">Kelola pengumuman sekolah untuk siswa. Pengumuman terbit tidak dapat diedit atau dikembalikan menjadi draf.</p>
         </div>
-        <button class="btn btn-primary" wire:click="tambahPengumuman">
+        <button class="btn btn-primary" wire:click="tambahPengumuman" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Pengumuman
         </button>
     </div>
@@ -51,7 +51,7 @@
                 </select>
             </div>
             <div class="col-6 col-md-2">
-                <button type="button" class="btn btn-outline-secondary w-100" wire:click="resetFilter">Reset</button>
+                <button type="button" class="btn btn-outline-secondary w-100" wire:click="resetFilter" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset">Reset</button>
             </div>
         </div>
     </div>
@@ -108,13 +108,13 @@
                                 <td class="text-center">{{ $item->baca_count ?? 0 }}</td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
-                                        <button class="btn btn-sm btn-outline-primary" wire:click="detailPengumuman({{ $item->idpengumuman }})" aria-label="Lihat detail {{ $item->judul }}">Detail</button>
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="detailPengumuman({{ $item->idpengumuman }})" aria-label="Lihat detail {{ $item->judul }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail">Detail</button>
                                         @if ($item->status === 'draf')
-                                            <button class="btn btn-sm btn-outline-warning" wire:click="editPengumuman({{ $item->idpengumuman }})" aria-label="Edit draf {{ $item->judul }}">Edit</button>
-                                            <button class="btn btn-sm btn-outline-success" wire:click="terbitkan({{ $item->idpengumuman }})" wire:confirm="Terbitkan pengumuman ini untuk penerima terkait?" wire:loading.attr="disabled" aria-label="Terbitkan {{ $item->judul }}">Terbitkan</button>
+                                            <button class="btn btn-sm btn-outline-warning" wire:click="editPengumuman({{ $item->idpengumuman }})" aria-label="Edit draf {{ $item->judul }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">Edit</button>
+                                            <button class="btn btn-sm btn-outline-success" wire:click="terbitkan({{ $item->idpengumuman }})" wire:confirm="Terbitkan pengumuman ini untuk penerima terkait?" wire:loading.attr="disabled" aria-label="Terbitkan {{ $item->judul }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Terbitkan">Terbitkan</button>
                                         @endif
                                         @if ($item->status === 'terbit')
-                                            <button class="btn btn-sm btn-outline-secondary" wire:click="arsipkan({{ $item->idpengumuman }})" wire:confirm="Arsipkan pengumuman ini? Riwayat baca dipertahankan." wire:loading.attr="disabled" aria-label="Arsipkan {{ $item->judul }}">Arsipkan</button>
+                                            <button class="btn btn-sm btn-outline-secondary" wire:click="arsipkan({{ $item->idpengumuman }})" wire:confirm="Arsipkan pengumuman ini? Riwayat baca dipertahankan." wire:loading.attr="disabled" aria-label="Arsipkan {{ $item->judul }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Arsipkan">Arsipkan</button>
                                         @endif
                                     </div>
                                 </td>
@@ -141,7 +141,7 @@
                     @endif
                 </p>
                 @if ($search || $filterStatus || $filterKategori || $filterPrioritas)
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilter">Reset filter</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-3" wire:click="resetFilter" data-bs-toggle="tooltip" data-bs-placement="top" title="Reset filter">Reset filter</button>
                 @endif
             </div>
         </div>
@@ -153,7 +153,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="pengumumanModalTitle"><i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i>{{ $editId ? 'Edit Pengumuman (Draf)' : 'Tambah Pengumuman (Draf)' }}</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -227,14 +227,9 @@
 
                     @if($target === 'siswa')
                         <div class="mb-3">
-                            <label class="form-label fw-semibold" for="siswaIds">Siswa <span class="text-danger" aria-hidden="true">*</span></label>
-                            <select id="siswaIds" wire:model.live="siswaIds" class="form-select @error('siswaIds') is-invalid @enderror" multiple size="5">
-                                @foreach ($siswaList as $siswa)
-                                    <option value="{{ $siswa->idsiswa }}">{{ $siswa->nama }} ({{ $siswa->nisn }})</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-semibold" for="lov-siswa-search">Siswa <span class="text-danger" aria-hidden="true">*</span></label>
+                            @include('livewire.partials.lov-siswa', ['lovMode' => 'multi', 'siswaTerpilih' => $siswaTerpilih, 'siswaLabel' => ''])
                             @error('siswaIds') <div class="invalid-feedback d-block" role="alert">{{ $message }}</div> @enderror
-                            <div class="form-text">Hanya siswa aktif yang bisa dipilih.</div>
                         </div>
                     @endif
 
@@ -253,8 +248,8 @@
                     <p class="sa-hint mt-2 mb-0">Pengumuman terbit tidak dapat diedit atau dikembalikan menjadi draf. Untuk revisi, buat pengumuman baru.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-success" wire:click="storePengumuman" wire:loading.attr="disabled" wire:target="storePengumuman">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                    <button type="button" class="btn btn-success" wire:click="storePengumuman" wire:loading.attr="disabled" wire:target="storePengumuman" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading.remove wire:target="storePengumuman">Simpan Draf</span>
                         <span wire:loading wire:target="storePengumuman"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan&hellip;</span>
                     </button>
@@ -269,7 +264,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailPengumumanModalLabel"><i class="fa-solid fa-circle-info me-2" aria-hidden="true"></i>Detail Pengumuman</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     @if($detail)
@@ -319,7 +314,7 @@
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="tutupDetail">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="tutupDetail" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
                 </div>
             </div>
         </div>

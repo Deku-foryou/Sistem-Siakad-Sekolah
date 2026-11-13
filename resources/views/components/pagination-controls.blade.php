@@ -34,13 +34,13 @@
             <div class="d-flex align-items-center">
                 <!-- First Page -->
                 <button wire:click="changePage('first', '{{ $keyPagination }}')" class="btn btn-sm border me-1"
-                    @if (($dataPagination['pagination']['current_page'] ?? 1) == 1) disabled @endif>
+                    @if (($dataPagination['pagination']['current_page'] ?? 1) == 1) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Halaman pertama" aria-label="Halaman pertama">
                     &#171;
                 </button>
 
                 <!-- Previous Page -->
                 <button wire:click="changePage('previous', '{{ $keyPagination }}')" class="btn btn-sm border me-1"
-                    @if (($dataPagination['pagination']['current_page'] ?? 1) == 1) disabled @endif>
+                    @if (($dataPagination['pagination']['current_page'] ?? 1) == 1) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Sebelumnya" aria-label="Sebelumnya">
                     &#8249;
                 </button>
 
@@ -58,18 +58,18 @@
 
                 <!-- Next Page -->
                 <button wire:click="changePage('next', '{{ $keyPagination }}')" class="btn btn-sm border me-1"
-                    @if (($dataPagination['pagination']['current_page'] ?? 1) == ($dataPagination['pagination']['last_page'] ?? 1)) disabled @endif>
+                    @if (($dataPagination['pagination']['current_page'] ?? 1) == ($dataPagination['pagination']['last_page'] ?? 1)) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Selanjutnya" aria-label="Selanjutnya">
                     &#8250;
                 </button>
 
                 <!-- Last Page -->
                 <button wire:click="changePage('last', '{{ $keyPagination }}')" class="btn btn-sm border me-1"
-                    @if (($dataPagination['pagination']['current_page'] ?? 1) == ($dataPagination['pagination']['last_page'] ?? 1)) disabled @endif>
+                    @if (($dataPagination['pagination']['current_page'] ?? 1) == ($dataPagination['pagination']['last_page'] ?? 1)) disabled @endif data-bs-toggle="tooltip" data-bs-placement="top" title="Halaman terakhir" aria-label="Halaman terakhir">
                     &#187;
                 </button>
 
                 <!-- Reload Button -->
-                <button wire:click="reloadPage('{{ $keyPagination }}')" class="btn btn-sm border">
+                <button wire:click="reloadPage('{{ $keyPagination }}')" class="btn btn-sm border" data-bs-toggle="tooltip" data-bs-placement="top" title="Muat ulang" aria-label="Muat ulang">
                     &#x21bb;
                 </button>
             </div>

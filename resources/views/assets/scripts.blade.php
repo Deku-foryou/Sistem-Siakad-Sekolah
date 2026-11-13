@@ -2,6 +2,7 @@
 <script src="{{ asset('js/core.js') }}"></script>
 <script src="{{ asset('js/simplebar.js') }}"></script>
 <script src="{{ asset('asset_offline/js/bootstrap.js') }}"></script>
+@include('assets.tooltip')
 
 
 <x-livewire-alert::flash />

@@ -7,7 +7,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-hands-holding-child me-2 text-success" aria-hidden="true"></i>Beasiswa</h1>
             <p class="sa-sub">Kelola beasiswa sekolah: nominal, persen, dan pembebasan penuh.</p>
         </div>
-        <button class="btn btn-primary" wire:click="$dispatch('show-add-beasiswa-modal')">
+        <button class="btn btn-primary" wire:click="$dispatch('show-add-beasiswa-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Beasiswa
         </button>
     </div>
@@ -40,7 +40,7 @@
                         <th>Berlaku</th>
                         <th>Status</th>
                         <th>Penerima</th>
-                        <th class="text-center" style="width:150px;">Aksi</th>
+                        <th class="text-center" style="width:190px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,7 +53,7 @@
                                 @else Pembebasan Penuh @endif
                             </td>
                             <td class="text-end">
-                                @if ($row->jenis === 'nominal') Rp {{ number_format($row->nilai, 0, ',', '.') }}
+                                @if ($row->jenis === 'nominal') Rp {{ number_format((int) $row->nilai, 0, ',', '.') }}
                                 @elseif ($row->jenis === 'persen') {{ $row->nilai }}%
                                 @else Rp 0 @endif
                             </td>
@@ -63,8 +63,9 @@
                             </td>
                             <td>{{ $row->penerima->where('status', 'aktif')->count() }} penerima</td>
                             <td class="text-center text-nowrap">
-                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idbeasiswa }})" aria-label="Edit beasiswa {{ $row->nama }}"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary" wire:click="toggleStatus({{ $row->idbeasiswa }})" aria-label="Toggle status {{ $row->nama }}"><i class="fa-solid fa-toggle-{{ $row->status === 'aktif' ? 'on' : 'off' }}" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idbeasiswa }})" aria-label="Edit beasiswa {{ $row->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" wire:click="toggleStatus({{ $row->idbeasiswa }})" aria-label="Toggle status {{ $row->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Aktif/nonaktif"><i class="fa-solid fa-toggle-{{ $row->status === 'aktif' ? 'on' : 'off' }}" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-success" wire:click="kelolaPenerima({{ $row->idbeasiswa }})" aria-label="Kelola penerima beasiswa {{ $row->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Kelola penerima"><i class="fa-solid fa-users" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     @empty
@@ -74,6 +75,75 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    {{-- Modal Kelola Penerima --}}
+    <div wire:ignore.self class="modal fade" id="penerimaBeasiswaModal" tabindex="-1" aria-labelledby="penerimaBeasiswaTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title" id="penerimaBeasiswaTitle"><i class="fa-solid fa-users me-2" aria-hidden="true"></i>Kelola Penerima{{ $penerimaBeasiswa ? ' — ' . $penerimaBeasiswa->nama : '' }}</h5></div>
+                <div class="modal-body">
+                    @if ($penerimaBeasiswa)
+                        <div class="sa-card sa-filter mb-3 d-flex flex-wrap gap-3 align-items-center">
+                            <span><span class="sa-hint">Jenis</span><br><strong>@if ($penerimaBeasiswa->jenis === 'nominal') Nominal @elseif ($penerimaBeasiswa->jenis === 'persen') Persen @else Pembebasan Penuh @endif</strong></span>
+                            <span><span class="sa-hint">Nilai</span><br><strong>@if ($penerimaBeasiswa->jenis === 'nominal') Rp {{ number_format((int) $penerimaBeasiswa->nilai, 0, ',', '.') }} @elseif ($penerimaBeasiswa->jenis === 'persen') {{ $penerimaBeasiswa->nilai }}% @else Rp 0 @endif</strong></span>
+                            <span><span class="sa-hint">Berlaku</span><br><strong>{{ $penerimaBeasiswa->berlaku_dari?->format('d/m/Y') }} s.d {{ $penerimaBeasiswa->berlaku_sampai ? $penerimaBeasiswa->berlaku_sampai->format('d/m/Y') : '-' }}</strong></span>
+                            <span><span class="sa-hint">Status</span><br><span class="sa-badge {{ $penerimaBeasiswa->status === 'aktif' ? 'sa-hadir' : 'sa-netral' }}">{{ ucfirst($penerimaBeasiswa->status) }}</span></span>
+                        </div>
+
+                        <h6 class="mb-2"><i class="fa-solid fa-user-plus me-1 text-success" aria-hidden="true"></i>Tetapkan Siswa</h6>
+                        @include('livewire.partials.lov-siswa', ['lovMode' => 'single', 'siswaLabel' => $siswaLabel, 'siswaTerpilih' => []])
+                        @error('siswaId') <div class="invalid-feedback d-block mb-2" role="alert">{{ $message }}</div> @enderror
+                        <label class="form-label mt-2" for="penerima-alasan">Alasan (opsional)</label>
+                        <textarea id="penerima-alasan" class="form-control" rows="2" wire:model="alasanPenerima" placeholder="Contoh: juara kelas / kurang mampu"></textarea>
+                        <div class="d-flex justify-content-end mt-2 mb-3">
+                            <button type="button" class="btn btn-success" wire:click="tambahPenerima" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tetapkan beasiswa ke siswa terpilih"><i class="fa-solid fa-check me-1" aria-hidden="true"></i>Tetapkan ke Beasiswa</button>
+                        </div>
+
+                        <h6 class="mb-2"><i class="fa-solid fa-users me-1 text-success" aria-hidden="true"></i>Daftar Penerima <span class="sa-count">{{ $penerimaList->where('status', 'aktif')->count() }} aktif &middot; {{ $penerimaList->count() }} total</span></h6>
+                        <div class="table-responsive">
+                            <table class="table sa-table sa-table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>NIS</th>
+                                        <th>Berlaku</th>
+                                        <th>Status</th>
+                                        <th class="text-center" style="width:110px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($penerimaList as $p)
+                                        <tr wire:key="penerima-{{ $p->idbeasiswa_siswa }}">
+                                            <td><strong>{{ $p->siswa?->nama ?? '(siswa tidak ditemukan)' }}</strong>@if ($p->alasan)<br><small class="text-body-secondary">{{ $p->alasan }}</small>@endif</td>
+                                            <td>{{ $p->siswa?->nis ?? '-' }}</td>
+                                            <td>{{ $p->berlaku_dari?->format('d/m/Y') }} s.d {{ $p->berlaku_sampai ? $p->berlaku_sampai->format('d/m/Y') : '-' }}</td>
+                                            <td>
+                                                <span class="sa-badge {{ $p->status === 'aktif' ? 'sa-hadir' : 'sa-netral' }}">{{ $p->status === 'aktif' ? 'Aktif' : 'Berhenti' }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if ($p->status === 'aktif')
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" wire:click="cabutPenerima({{ $p->idbeasiswa_siswa }})" wire:confirm="Cabut beasiswa dari siswa {{ $p->siswa?->nama ?? '' }}? Histori penetapan tetap tersimpan." data-bs-toggle="tooltip" data-bs-placement="top" title="Cabut beasiswa" aria-label="Cabut beasiswa dari {{ $p->siswa?->nama ?? '' }}"><i class="fa-solid fa-user-minus" aria-hidden="true"></i><span class="d-none d-sm-inline"> Cabut</span></button>
+                                                @else
+                                                    <span class="text-body-secondary" title="Penetapan sudah dicabut">—</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="5"><p class="sa-hint mb-0 py-2"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Belum ada penerima. Gunakan pencarian di atas untuk menetapkan siswa.</p></td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="sa-hint mb-0"><i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>Beasiswa tidak ditemukan.</p>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="tutupPenerima" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -113,8 +183,8 @@
                         <textarea id="add-bea-alasan" class="form-control" rows="2" wire:model="alasan"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
                     </div>
                 </form>
             </div>
@@ -139,8 +209,8 @@
                         <textarea id="edit-bea-alasan" class="form-control" rows="2" wire:model="alasan"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
                     </div>
                 </form>
             </div>
@@ -151,7 +221,9 @@
 @script
 <script>
     window.addEventListener('close-beasiswa-modal', () => { $('#addBeasiswaModal, #editBeasiswaModal').modal('hide'); });
+    window.addEventListener('close-penerima-beasiswa-modal', () => { $('#penerimaBeasiswaModal').modal('hide'); });
     window.addEventListener('show-add-beasiswa-modal', () => $('#addBeasiswaModal').modal('show'));
     window.addEventListener('show-edit-beasiswa-modal', () => $('#editBeasiswaModal').modal('show'));
+    window.addEventListener('show-penerima-beasiswa-modal', () => $('#penerimaBeasiswaModal').modal('show'));
 </script>
 @endscript

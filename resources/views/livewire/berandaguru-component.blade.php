@@ -66,7 +66,7 @@ Beranda Guru
                             </tr>
                         </tbody>
                     </table>
-                    <a class="btn btn-success btn-sm" href="/setting">Ganti password</a>
+                    <a class="btn btn-success btn-sm" href="/setting" data-bs-toggle="tooltip" data-bs-placement="top" title="Ganti password">Ganti password</a>
                 </div>
             </section>
 

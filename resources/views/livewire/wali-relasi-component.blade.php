@@ -15,13 +15,13 @@
     @if ($sukses !== '')
         <div class="alert alert-success d-flex justify-content-between align-items-center gap-2 py-2" role="status">
             <span><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{{ $sukses }}</span>
-            <button type="button" class="btn-close" wire:click="$set('sukses','')" aria-label="Tutup pesan sukses"></button>
+            <button type="button" class="btn-close" wire:click="$set('sukses','')" aria-label="Tutup pesan sukses" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
     @if ($galat !== '')
         <div class="alert alert-danger d-flex justify-content-between align-items-center gap-2 py-2" role="alert">
             <span><i class="fa-solid fa-circle-exclamation me-2" aria-hidden="true"></i>{{ $galat }}</span>
-            <button type="button" class="btn-close" wire:click="$set('galat','')" aria-label="Tutup pesan error"></button>
+            <button type="button" class="btn-close" wire:click="$set('galat','')" aria-label="Tutup pesan error" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
         </div>
     @endif
 
@@ -74,12 +74,12 @@
                             </td>
                             <td>
                                 @if (in_array($r->status_hubungan, ['rejected', 'terminated'], true))
-                                    <button class="btn btn-sm btn-outline-primary" wire:click="bukaUlang({{ $r->idwalimurid }})">Ajukan Ulang</button>
+                                    <button class="btn btn-sm btn-outline-primary" wire:click="bukaUlang({{ $r->idwalimurid }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">Ajukan Ulang</button>
                                 @elseif ($r->status_hubungan === 'verified')
                                     @if ($permintaanPutusMenunggu)
                                         <span class="sa-badge sa-sakit" title="Pemutusan sudah diajukan"><i class="fa-solid fa-clock me-1" aria-hidden="true"></i>Menunggu</span>
                                     @else
-                                        <button class="btn btn-sm btn-outline-warning" wire:click="bukaPutus({{ $r->idwalimurid }})">Minta Putus</button>
+                                        <button class="btn btn-sm btn-outline-warning" wire:click="bukaPutus({{ $r->idwalimurid }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Tab permintaan putus">Minta Putus</button>
                                     @endif
                                 @endif
                             </td>
@@ -126,7 +126,7 @@
                         @foreach ($hasilCari as $s)
                             <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2">
                                 <span><strong>{{ $s->nama }}</strong><br><small class="text-body-secondary">NIS {{ $s->nis }}&middot; Nisn {{ $s->nisn }}</small></span>
-                                <button class="btn btn-sm btn-outline-primary" wire:click="pilihSiswa({{ $s->idsiswa }})">Pilih</button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="pilihSiswa({{ $s->idsiswa }})" data-bs-toggle="tooltip" data-bs-placement="top" title="Pilih">Pilih</button>
                             </li>
                         @endforeach
                     </ul>
@@ -142,7 +142,7 @@
                         <div class="fw-semibold">{{ $siswaTerpilih->nama }}</div>
                         <div class="sa-cell-muted">NIS {{ $siswaTerpilih->nis }}&middot; {{ $siswaTerpilih->nisn }}</div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="gantiSiswa">Ganti siswa</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="gantiSiswa" data-bs-toggle="tooltip" data-bs-placement="top" title="Ganti siswa">Ganti siswa</button>
                 </div>
 
                 <div class="row g-2 mt-3">
@@ -162,7 +162,7 @@
                     </div>
                 </div>
                 <div class="mt-3">
-                    <button type="button" class="btn btn-primary" wire:click="ajukan" wire:loading.attr="disabled" wire:target="ajukan">
+                    <button type="button" class="btn btn-primary" wire:click="ajukan" wire:loading.attr="disabled" wire:target="ajukan" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan">
                         <span wire:loading.remove wire:target="ajukan"><i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i>Ajukan Relasi</span>
                         <span wire:loading wire:target="ajukan"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Mengirim&hellip;</span>
                     </button>
@@ -191,7 +191,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="ulang-modal-title"><i class="fa-solid fa-rotate-left me-2" aria-hidden="true"></i>Ajukan Ulang Relasi</h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="batalUlang" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close btn-close-white" wire:click="batalUlang" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -209,8 +209,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="batalUlang">Batal</button>
-                        <button type="button" class="btn btn-primary" wire:click="ajukanUlang" wire:loading.attr="disabled" wire:target="ajukanUlang"><span wire:loading.remove wire:target="ajukanUlang">Ajukan Ulang</span><span wire:loading wire:target="ajukanUlang">Mengirim&hellip;</span></button>
+                        <button type="button" class="btn btn-secondary" wire:click="batalUlang" data-bs-toggle="tooltip" data-bs-placement="top" title="Batalkan aksi">Batal</button>
+                        <button type="button" class="btn btn-primary" wire:click="ajukanUlang" wire:loading.attr="disabled" wire:target="ajukanUlang" data-bs-toggle="tooltip" data-bs-placement="top" title="Ajukan"><span wire:loading.remove wire:target="ajukanUlang">Ajukan Ulang</span><span wire:loading wire:target="ajukanUlang">Mengirim&hellip;</span></button>
                     </div>
                 </div>
             </div>
@@ -224,7 +224,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="putus-modal-title"><i class="fa-solid fa-link-slash me-2" aria-hidden="true"></i>Minta Putus Relasi</h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="batalPutus" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close btn-close-white" wire:click="batalPutus" aria-label="Tutup" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup pesan"></button>
                     </div>
                     <div class="modal-body">
                         <p class="sa-hint">Relasi Anda tetap aktif selama pengelola belum memutuskan. Anda dapat dihubungi untuk konfirmasi.</p>
@@ -236,8 +236,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="batalPutus">Batal</button>
-                        <button type="button" class="btn btn-warning" wire:click="ajukanPutus" wire:loading.attr="disabled" wire:target="ajukanPutus"><span wire:loading.remove wire:target="ajukanPutus">Kirim Permintaan</span><span wire:loading wire:target="ajukanPutus">Mengirim&hellip;</span></button>
+                        <button type="button" class="btn btn-secondary" wire:click="batalPutus" data-bs-toggle="tooltip" data-bs-placement="top" title="Batalkan aksi">Batal</button>
+                        <button type="button" class="btn btn-warning" wire:click="ajukanPutus" wire:loading.attr="disabled" wire:target="ajukanPutus" data-bs-toggle="tooltip" data-bs-placement="top" title="Kirim"><span wire:loading.remove wire:target="ajukanPutus">Kirim Permintaan</span><span wire:loading wire:target="ajukanPutus">Mengirim&hellip;</span></button>
                     </div>
                 </div>
             </div>

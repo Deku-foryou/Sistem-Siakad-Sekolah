@@ -19,7 +19,7 @@ Data Roles
                         dilakukan seorang pengguna/user.</div>
                 </div>
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-roles-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-roles-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data"><i
                             class="fa-solid fa-plus me-2 "></i> Tambah Data Roles</button>
                 </div>
             </div>
@@ -45,13 +45,13 @@ Data Roles
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <!-- Tombol Export Excel -->
                     <button class="btn btn-success text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToExcel" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor Excel">
                         <i class="fa-solid fa-download"></i>
                         <span>Excel</span>
                     </button>
                     <!-- Tombol Export PDF -->
                     <button class="btn btn-danger text-white d-flex align-items-center gap-2 px-3"
-                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf">
+                        style="border-radius: 10px; font-size: 13px; font-weight: 600;" wire:click="exportToPdf" data-bs-toggle="tooltip" data-bs-placement="top" title="Ekspor PDF">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>PDF</span>
                     </button>
@@ -83,13 +83,13 @@ Data Roles
                                     <tr class="px-4">
                                         <td style="width: 15%;text-align: center">
                                             <a href="/role_has_permissions/{{ $datas->id }}"
-                                                class="btn btn-sm btn-success text-white"><i
+                                                class="btn btn-sm btn-success text-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Kelola hak akses" aria-label="Kelola hak akses"><i
                                                     class="fa-solid fa-person-circle-question"></i></a>
                                             <button class="btn btn-sm btn-warning text-dark"
-                                                wire:click="editRoles('{{ $datas->id }}')"><i
+                                                wire:click="editRoles('{{ $datas->id }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                     class="fa-regular fa-pen-to-square"></i></button>
                                             <button class="btn btn-sm btn-danger text-white"
-                                                wire:click="deleteConfirmationRoles('{{ $datas->id}}')"><i
+                                                wire:click="deleteConfirmationRoles('{{ $datas->id}}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                     class="fa-solid fa-trash-can"></i></button>
                                         </td>
                                         <td>{{ $datas->name }}</td>
@@ -182,7 +182,7 @@ Data Roles
     {{-- Button LOV modal --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="rolesName" wire:model="rolesName" readonly>
-        <button type="button" class="btn btn-primary" id="btnrolesModalLovAdd">
+        <button type="button" class="btn btn-primary" id="btnrolesModalLovAdd" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -191,7 +191,7 @@ Data Roles
     {{-- Button LOV modal untuk Edit --}}
     {{-- <div class="d-flex justify-content-between align-items-center gap-1">
         <input class="form-control" id="rolesName" wire:model="rolesName" readonly>
-        <button type="button" class="btn btn-primary" id="btnrolesModalLovEdit">
+        <button type="button" class="btn btn-primary" id="btnrolesModalLovEdit" data-bs-toggle="tooltip" data-bs-placement="top" title="Cari" aria-label="Cari">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
     </div> --}}
@@ -228,7 +228,7 @@ Data Roles
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -236,7 +236,7 @@ Data Roles
                         </span>
                     </button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -261,9 +261,9 @@ Data Roles
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteRoles()">Ya</button>
+                    <button class="btn  btn-danger" id="confirmDeleteButton" wire:click="deleteRoles()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -298,7 +298,7 @@ Data Roles
 
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn  btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                                 <span wire:loading.remove>
@@ -306,7 +306,7 @@ Data Roles
                                 </span>
                             </button>
                             <button type="button" class=" btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
 
                     </form>
@@ -316,10 +316,6 @@ Data Roles
 
 
     </div>
-
-    {{-- @include('livewire.roles-lov') --}}
-
-
 </div>
 
 
@@ -330,27 +326,6 @@ Data Roles
             $('#editRolesModal').modal('hide'); 
             $('#deleteRolesModal').modal('hide'); 
         }); 
- 
- 
-  // copy dan aktifkan jika ingin menggunakan LOV  
- 
-  //       window.addEventListener('close-modal-lov', event =>{ 
-   //          $('#rolesModal').modal('hide'); 
-   //     }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnrolesModalLovAdd').click(function(){ 
-   //       $('#rolesModal').modal('show'); 
-    //    }); 
-  //  }); 
- 
- 
-  // $(document).ready(function(){ 
-   //      $('#btnrolesModalLovEdit').click(function(){ 
-   //       $('#rolesModal').modal('show'); 
-    //    }); 
-  //  }); 
  
  
        $('#addRolesModal').on('shown.bs.modal', function () { 

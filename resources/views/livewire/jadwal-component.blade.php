@@ -10,22 +10,22 @@
             <p class="sa-sub">Pilih sel untuk menambah atau mengganti mapel dan guru.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-success" wire:click="publikasikan"><i class="fa-solid fa-cloud-arrow-up me-1" aria-hidden="true"></i>Publikasikan</button>
-            <button class="btn btn-outline-warning" wire:click="tarikPublikasi"><i class="fa-solid fa-cloud-arrow-down me-1" aria-hidden="true"></i>Tarik Publikasi</button>
+            <button class="btn btn-success" wire:click="publikasikan" data-bs-toggle="tooltip" data-bs-placement="top" title="Publikasikan"><i class="fa-solid fa-cloud-arrow-up me-1" aria-hidden="true"></i>Publikasikan</button>
+            <button class="btn btn-outline-warning" wire:click="tarikPublikasi" data-bs-toggle="tooltip" data-bs-placement="top" title="Publikasikan"><i class="fa-solid fa-cloud-arrow-down me-1" aria-hidden="true"></i>Tarik Publikasi</button>
         </div>
     </div>
 
     @if ($publikasiAktif)
         <div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center gap-2" role="status">
             <span><i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i><strong>DIPUBLIKASIKAN</strong> &middot; Nomor: {{ $publikasiAktif->nomor }} &middot; Tanggal: {{ $publikasiAktif->published_at }}</span>
-            <a class="btn btn-sm btn-primary" href="{{ url('/bukti-publikasi/'.$publikasiAktif->idpublikasijadwal) }}">Lihat Bukti</a>
+            <a class="btn btn-sm btn-primary" href="{{ url('/bukti-publikasi/'.$publikasiAktif->idpublikasijadwal) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail">Lihat Bukti</a>
         </div>
     @else
         <div class="alert alert-warning" role="status"><i class="fa-solid fa-file-pen me-2" aria-hidden="true"></i><strong>DRAFT</strong> &mdash; jadwal belum dipublikasikan.</div>
         @if ($publikasiTerakhir && $publikasiTerakhir->status === 'withdrawn')
             <div class="alert alert-secondary d-flex flex-wrap justify-content-between align-items-center gap-2" role="status">
                 <span><i class="fa-solid fa-clock-rotate-left me-2" aria-hidden="true"></i>Publikasi sebelumnya ({{ $publikasiTerakhir->nomor }}) telah ditarik pada {{ $publikasiTerakhir->withdrawn_at }}.</span>
-                <a class="btn btn-sm btn-outline-primary" href="{{ url('/bukti-publikasi/'.$publikasiTerakhir->idpublikasijadwal) }}">Lihat Bukti</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url('/bukti-publikasi/'.$publikasiTerakhir->idpublikasijadwal) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Lihat detail">Lihat Bukti</a>
             </div>
         @endif
     @endif
@@ -86,7 +86,7 @@
                                     <td class="p-1">
                                         <button class="btn btn-sm w-100 {{ $cell ? 'btn-success' : 'btn-outline-secondary' }}"
                                             wire:click="bukaSlot({{ $day }}, {{ $period['jam_ke'] }})"
-                                            aria-label="{{ $cell ? 'Ubah' : 'Tambah' }} jadwal hari {{ $namaHari }} jam ke-{{ $period['jam_ke'] }}">
+                                            aria-label="{{ $cell ? 'Ubah' : 'Tambah' }} jadwal hari {{ $namaHari }} jam ke-{{ $period['jam_ke'] }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka slot jadwal">
                                             <small>{{ $times[$day.'|'.$period['jam_ke']] ?? '' }}</small><br>
                                             @if ($cell)
                                                 <strong>{{ $cell->pengampu->mapel->nama }}</strong><br>
@@ -139,8 +139,8 @@
             @endif
         </div>
         <div class="modal-footer">
-            @if ($idjadwal)<button class="btn btn-danger me-auto" wire:click="hapus" wire:confirm="Hapus jadwal ini?">Hapus Jadwal</button>@endif
-            <button class="btn btn-primary" wire:click="simpan" @disabled($mapels->isEmpty() || $activeGurus->isEmpty() || ! $mapelId || ! $guruId)><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
+            @if ($idjadwal)<button class="btn btn-danger me-auto" wire:click="hapus" wire:confirm="Hapus jadwal ini?" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)">Hapus Jadwal</button>@endif
+            <button class="btn btn-primary" wire:click="simpan" @disabled($mapels- data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">isEmpty() || $activeGurus->isEmpty() || ! $mapelId || ! $guruId)><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button><button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
         </div>
     </div></div></div>
 </div>

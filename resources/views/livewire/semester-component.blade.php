@@ -33,7 +33,7 @@ Data Semester
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-primary" wire:click="$dispatch('show-add-semester-modal')"><i
+                    <button class="btn btn-primary" wire:click="$dispatch('show-add-semester-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data" aria-label="Tambah data"><i
                             class="fa-solid fa-plus "></i></button>
                 </div>
             </div>
@@ -83,29 +83,29 @@ Data Semester
                                                     @if ($tidakSinkron)
                                                         <button class="btn btn-sm btn-warning"
                                                             wire:click="aktifkan('{{ $datas->idsemester }}')"
-                                                            title="Aktifkan tahun ajaran induk agar konteks sinkron">
+                                                            title="Aktifkan tahun ajaran induk agar konteks sinkron" data-bs-toggle="tooltip" data-bs-placement="top">
                                                             Sinkronkan Konteks
                                                         </button>
                                                         <button class="btn btn-sm btn-outline-danger"
-                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')">
+                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Nonaktifkan">
                                                             Nonaktifkan
                                                         </button>
                                                     @elseif ($datas->aktif)
                                                         <button class="btn btn-sm btn-danger"
-                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')">
+                                                            wire:click="nonaktifkan('{{ $datas->idsemester }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Nonaktifkan">
                                                             Nonaktifkan
                                                         </button>
                                                     @else
                                                         <button class="btn btn-sm btn-success"
-                                                            wire:click="aktifkan('{{ $datas->idsemester }}')">
+                                                            wire:click="aktifkan('{{ $datas->idsemester }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Aktifkan">
                                                             Aktifkan
                                                         </button>
                                                     @endif
                                                     <button class="btn btn-sm btn-warning text-dark"
-                                                        wire:click="editSemester('{{ $datas->idsemester }}')"><i
+                                                        wire:click="editSemester('{{ $datas->idsemester }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data" aria-label="Ubah data"><i
                                                             class="fa-regular fa-pen-to-square"></i></button>
                                                     <button class="btn btn-sm btn-danger text-white"
-                                                        wire:click="deleteConfirmationSemester('{{ $datas->idsemester}}')"><i
+                                                        wire:click="deleteConfirmationSemester('{{ $datas->idsemester}}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)" aria-label="Hapus data (ada konfirmasi)"><i
                                                             class="fa-solid fa-trash-can"></i></button>
                                                 </td>
                                                 <td>{{ $datas->tahunajaran->nama ?? '-' }}</td>
@@ -195,7 +195,7 @@ Data Semester
                         </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                         <span wire:loading>
                             <span class="spinner-border spinner-border-sm"></span> Loading...</span>
                         <span wire:loading.remove>
@@ -203,7 +203,7 @@ Data Semester
                         </span>
                     </button>
                     <button type="button" class="btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
                 </form>
             </div>
@@ -222,9 +222,9 @@ Data Semester
                     <h6>Are you sure? You want to delete this data ?</h6>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger" wire:click="deleteSemester()">Ya</button>
+                    <button class="btn btn-danger" wire:click="deleteSemester()" data-bs-toggle="tooltip" data-bs-placement="top" title="Ya, lanjutkan">Ya</button>
                     <button type="button" class="btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                        wire:click="close()">Close</button>
+                        wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                 </div>
             </div>
         </div>
@@ -268,7 +268,7 @@ Data Semester
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">
                                 <span wire:loading>
                                     <span class="spinner-border spinner-border-sm"></span> Tunggu...</span>
                                 <span wire:loading.remove>
@@ -276,7 +276,7 @@ Data Semester
                                 </span>
                             </button>
                             <button type="button" class="btn-secondary btn" data-bs-dismiss="modal" aria-label="Close"
-                                wire:click="close()">Close</button>
+                                wire:click="close()" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Close</button>
                         </div>
                     </form>
                 </div>

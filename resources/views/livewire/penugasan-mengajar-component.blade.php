@@ -7,7 +7,7 @@
             <h1 class="sa-title"><i class="fa-solid fa-user-tie me-2 text-success" aria-hidden="true"></i>Penugasan Mengajar</h1>
             <p class="sa-sub">Tetapkan guru penanggung jawab mata pelajaran per kelas dan semester.</p>
         </div>
-        <button class="btn btn-primary" wire:click="$dispatch('show-add-penugasan-modal')">
+        <button class="btn btn-primary" wire:click="$dispatch('show-add-penugasan-modal')" data-bs-toggle="tooltip" data-bs-placement="top" title="Tambah data">
             <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>Tambah Penugasan
         </button>
     </div>
@@ -61,8 +61,8 @@
                             <td>{{ $row->mapel->nama }}</td>
                             <td>{{ $row->guru->nama }}</td>
                             <td class="text-center text-nowrap">
-                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idpenugasan_mengajar }})" aria-label="Edit penugasan {{ $row->guru->nama }}"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
-                                <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idpenugasan_mengajar }})" aria-label="Hapus penugasan {{ $row->guru->nama }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" wire:click="edit({{ $row->idpenugasan_mengajar }})" aria-label="Edit penugasan {{ $row->guru->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Ubah data"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" wire:click="deleteConfirmation({{ $row->idpenugasan_mengajar }})" aria-label="Hapus penugasan {{ $row->guru->nama }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
                             </td>
                         </tr>
                     @empty
@@ -112,8 +112,8 @@
                         </select>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan</button>
                     </div>
                 </form>
             </div>
@@ -157,8 +157,8 @@
                         </select>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Tutup</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Tutup</button>
+                        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan"><i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -172,8 +172,8 @@
                 <div class="modal-header"><h5 class="modal-title" id="deletePenugasanTitle"><i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>Hapus Penugasan Mengajar</h5></div>
                 <div class="modal-body">Hapus penugasan mengajar ini?</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close">Batal</button>
-                    <button class="btn btn-danger" wire:click="delete"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" wire:click="close" data-bs-toggle="tooltip" data-bs-placement="top" title="Tutup">Batal</button>
+                    <button class="btn btn-danger" wire:click="delete" data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus data (ada konfirmasi)"><i class="fa-solid fa-trash-can me-1" aria-hidden="true"></i>Hapus</button>
                 </div>
             </div>
         </div>

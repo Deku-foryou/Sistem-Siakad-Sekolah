@@ -111,7 +111,7 @@
                         <small class="form-text text-muted">Masukan Kembali Password.</small>
                     </div>
 
-                    <button type="submit" class="btn btn-primary mt-3">Save Change</button>
+                    <button type="submit" class="btn btn-primary mt-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Simpan">Save Change</button>
 
                 </form>
             </div>
