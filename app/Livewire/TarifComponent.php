@@ -2,10 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LovSiswa;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Tarif;
 use App\Models\TarifRiwayat;
+use App\Services\LovService;
+use App\Support\Lov;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
@@ -15,6 +18,7 @@ class TarifComponent extends Component
     use LivewireAlert {
         alert as protected;
     }
+    use LovSiswa;
 
     public $idtarif;
 
@@ -30,7 +34,8 @@ class TarifComponent extends Component
 
     public $kelas_idkelas = '';
 
-    public $siswa_idsiswa = '';
+    // siswaId & siswaLabel disediakan trait LovSiswa (mode single)
+    public string $siswaId = '';
 
     public $alasan = '';
 
@@ -57,12 +62,10 @@ class TarifComponent extends Component
             ->get();
 
         $kelas = Kelas::orderBy('nama')->get();
-        $siswa = Siswa::where('status', 'aktif')->orderBy('nama')->limit(500)->get();
 
         return view('livewire.tarif-component', [
             'tarifs' => $tarifs,
             'kelasOptions' => $kelas,
-            'siswaOptions' => $siswa,
         ]);
     }
 
@@ -75,8 +78,16 @@ class TarifComponent extends Component
         }
 
         if ($this->jenis !== 'individu') {
-            $this->siswa_idsiswa = '';
+            $this->siswaId = '';
+            $this->siswaLabel = '';
+            $this->reset('lovSearch', 'lovHasil');
         }
+    }
+
+    public function boot(): void
+    {
+        // Livewire 3: dipanggil pada SETIAP request (termasuk update) — otorisasi tidak pernah terlewati.
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
     }
 
     public function store(): void
@@ -90,9 +101,19 @@ class TarifComponent extends Component
             'berlaku_dari' => 'required|date',
             'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari',
             'kelas_idkelas' => 'nullable|required_if:jenis,kelas|exists:kelas,idkelas',
-            'siswa_idsiswa' => 'nullable|required_if:jenis,individu|exists:siswa,idsiswa',
+            'siswaId' => 'nullable|required_if:jenis,individu|integer|exists:siswa,idsiswa',
             'alasan' => 'nullable|string|max:500',
         ]);
+
+        // Validasi ulang registry (aktif) — defense in depth; menolak siswa nonaktif/ID palsu.
+        if ($validated['jenis'] === 'individu') {
+            $siswa = LovService::selected(Lov::KEY_SISWA, $validated['siswaId'] ?? null);
+            if ($siswa === null) {
+                $this->addError('siswaId', 'Siswa tidak ditemukan atau tidak aktif.');
+
+                return;
+            }
+        }
 
         DB::transaction(function () use ($validated) {
             $created = Tarif::create([
@@ -102,8 +123,8 @@ class TarifComponent extends Component
                 'berlaku_dari' => $validated['berlaku_dari'],
                 'berlaku_sampai' => $validated['berlaku_sampai'] ?? null,
                 'status' => 'aktif',
-                'kelas_idkelas' => $validated['kelas_idkelas'] ?? null,
-                'siswa_idsiswa' => $validated['siswa_idsiswa'] ?? null,
+                'kelas_idkelas' => $validated['kelas_idkelas'] ?: null,
+                'siswa_idsiswa' => $validated['siswaId'] ?: null,
                 'alasan' => $validated['alasan'] ?? null,
                 'dibuat_oleh' => auth()->id(),
             ]);
@@ -137,7 +158,10 @@ class TarifComponent extends Component
         $this->berlaku_dari = $row->berlaku_dari->format('Y-m-d');
         $this->berlaku_sampai = $row->berlaku_sampai ? $row->berlaku_sampai->format('Y-m-d') : '';
         $this->kelas_idkelas = $row->kelas_idkelas ? (string) $row->kelas_idkelas : '';
-        $this->siswa_idsiswa = $row->siswa_idsiswa ? (string) $row->siswa_idsiswa : '';
+        $this->siswaId = $row->siswa_idsiswa ? (string) $row->siswa_idsiswa : '';
+        // Label ditampilkan apa adanya dari relasi (siswa lama boleh nonaktif; yang baru wajib aktif).
+        $this->siswaLabel = $row->siswa_idsiswa ? (string) ($row->siswa?->nama ?? '') : '';
+        $this->reset('lovSearch', 'lovHasil');
         $this->alasan = $row->alasan ?? '';
         $this->status = $row->status;
         $this->dispatch('show-edit-tarif-modal');
@@ -154,10 +178,20 @@ class TarifComponent extends Component
             'berlaku_dari' => 'required|date',
             'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari',
             'kelas_idkelas' => 'nullable|required_if:jenis,kelas|exists:kelas,idkelas',
-            'siswa_idsiswa' => 'nullable|required_if:jenis,individu|exists:siswa,idsiswa',
+            'siswaId' => 'nullable|required_if:jenis,individu|integer|exists:siswa,idsiswa',
             'alasan' => 'nullable|string|max:500',
             'status' => 'required|in:aktif,nonaktif',
         ]);
+
+        // Validasi ulang registry (aktif) — defense in depth untuk individu.
+        if ($validated['jenis'] === 'individu') {
+            $siswa = LovService::selected(Lov::KEY_SISWA, $validated['siswaId'] ?? null);
+            if ($siswa === null) {
+                $this->addError('siswaId', 'Siswa tidak ditemukan atau tidak aktif.');
+
+                return;
+            }
+        }
 
         DB::transaction(function () use ($validated) {
             $row = Tarif::findOrFail($this->idtarif);
@@ -175,8 +209,8 @@ class TarifComponent extends Component
                 'nominal' => (int) $validated['nominal'],
                 'berlaku_dari' => $validated['berlaku_dari'],
                 'berlaku_sampai' => $validated['berlaku_sampai'] ?? null,
-                'kelas_idkelas' => $validated['kelas_idkelas'] ?? null,
-                'siswa_idsiswa' => $validated['siswa_idsiswa'] ?? null,
+                'kelas_idkelas' => $validated['kelas_idkelas'] ?: null,
+                'siswa_idsiswa' => $validated['siswaId'] ?: null,
                 'alasan' => $validated['alasan'] ?? null,
                 'status' => $validated['status'],
             ]);
@@ -242,7 +276,9 @@ class TarifComponent extends Component
         $this->berlaku_dari = now()->format('Y-m-d');
         $this->berlaku_sampai = '';
         $this->kelas_idkelas = '';
-        $this->siswa_idsiswa = '';
+        $this->siswaId = '';
+        $this->siswaLabel = '';
+        $this->reset('lovSearch', 'lovHasil');
         $this->alasan = '';
         $this->status = 'aktif';
         $this->dispatch('close-tarif-modal');

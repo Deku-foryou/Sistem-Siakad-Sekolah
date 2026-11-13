@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\LovSiswa;
 use App\Models\Kelas;
 use App\Models\Tagihan;
 use App\Services\Keuangan\TagihanService;
+use App\Services\LovService;
+use App\Support\Lov;
 use Illuminate\Support\Facades\DB;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
@@ -15,7 +18,7 @@ class DataTagihanComponent extends Component
     use LivewireAlert {
         alert as protected;
     }
-    use WithPagination;
+    use LovSiswa, WithPagination;
 
     public $filterStatus = '';
 
@@ -39,9 +42,29 @@ class DataTagihanComponent extends Component
 
     public $scopeId = '';
 
+    // siswaId & siswaLabel disediakan trait LovSiswa (mode single)
+    public string $siswaId = '';
+
     public $alasan = '';
 
     public $detailId = null;
+
+    public function boot(): void
+    {
+        // Livewire 3: dipanggil pada SETIAP request — otorisasi tidak pernah terlewati.
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+    }
+
+    public function updatedScope(): void
+    {
+        abort_unless(in_array(auth()->user()?->level, ['superadmin', 'admin'], true), 403);
+
+        // Perubahan cakupan membersihkan pilihan lama (kelas/siswa) agar tidak tertinggal state usang.
+        $this->scopeId = '';
+        $this->siswaId = '';
+        $this->siswaLabel = '';
+        $this->reset('lovSearch', 'lovHasil');
+    }
 
     public function mount(): void
     {
@@ -94,18 +117,31 @@ class DataTagihanComponent extends Component
             'nominal' => 'required|integer|min:1000',
             'jatuhTempo' => 'required|date|after_or_equal:today',
             'scope' => 'required|in:semua,kelas,siswa',
-            'scopeId' => $this->scope === 'semua' ? 'nullable' : 'required|integer',
+            'scopeId' => $this->scope === 'kelas' ? 'required|integer|exists:kelas,idkelas' : 'nullable|integer|exists:kelas,idkelas',
+            'siswaId' => $this->scope === 'siswa' ? 'required|integer' : 'nullable',
             'alasan' => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        // Validasi ulang registry (aktif) bila cakupan siswa — defense in depth.
+        if ($validated['scope'] === 'siswa') {
+            $siswa = LovService::selected(Lov::KEY_SISWA, $validated['siswaId'] ?? null);
+            if ($siswa === null) {
+                $this->addError('siswaId', 'Siswa tidak ditemukan atau tidak aktif.');
+
+                return;
+            }
+        }
+
+        $scopeIdFinal = $validated['scope'] === 'siswa' ? (int) $validated['siswaId'] : ($validated['scopeId'] ? (int) $validated['scopeId'] : null);
+
+        DB::transaction(function () use ($validated, $scopeIdFinal) {
             TagihanService::terbitInsidental(
                 $validated['nama'],
                 (int) $validated['nominal'],
                 $validated['jatuhTempo'],
                 $validated['periode'],
                 $validated['scope'],
-                $validated['scopeId'] ? (int) $validated['scopeId'] : null,
+                $scopeIdFinal,
                 auth()->user(),
                 $validated['jenis'],
             );
@@ -169,6 +205,9 @@ class DataTagihanComponent extends Component
         $this->reset(['nama', 'jenis', 'scopeId', 'alasan']);
         $this->jenis = 'spp';
         $this->scope = 'semua';
+        $this->siswaId = '';
+        $this->siswaLabel = '';
+        $this->reset('lovSearch', 'lovHasil');
         $this->periode = now()->format('Y-m');
         $this->jatuhTempo = now()->addDays(10)->format('Y-m-d');
         $this->dispatch('close-tagihan-modal');
