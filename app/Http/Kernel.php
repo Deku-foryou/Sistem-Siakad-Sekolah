@@ -71,5 +71,8 @@ class Kernel extends HttpKernel
         'check.level' => \App\Http\Middleware\CheckUserLevel::class,
         'force.password' => \App\Http\Middleware\ForcePasswordChange::class,
         'cek.akun' => \App\Http\Middleware\CekAkunAktif::class,
+        'api.role' => \App\Http\Middleware\EnsureApiRole::class,
+        'api.akun' => \App\Http\Middleware\EnsureApiAccountActive::class,
+        'api.password' => \App\Http\Middleware\EnsureApiPasswordChanged::class,
     ];
 }

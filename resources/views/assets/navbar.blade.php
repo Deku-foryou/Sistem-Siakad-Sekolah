@@ -40,6 +40,20 @@
     }
 </style>
 
+@php
+    // Avatar navbar: foto siswa memakai siswa.foto (disk public) bila tersedia;
+    // role lain tetap memakai ui-avatars seperti sebelumnya.
+    $navFotoUrl = null;
+    if (Auth::user()?->level === 'siswa') {
+        $navSiswa = Auth::user()->siswa;
+        if ($navSiswa && $navSiswa->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($navSiswa->foto)) {
+            $navFotoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($navSiswa->foto);
+        }
+    }
+    $navAvatarUrl = $navFotoUrl ?: 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=f15833&color=fff&rounded=true';
+    $navAvatarDropdownUrl = $navFotoUrl ?: 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=0e7d6a&color=fff&rounded=true';
+@endphp
+
 <header class="header border-0 border-bottom pt-3 pb-2"
     style="background: #fff; z-index: 99; border-bottom: 1px solid #f3f4f6 !important;">
     <div class="container-fluid px-4">
@@ -61,15 +75,13 @@
                 <button onclick="myFunction()"
                     class="btn btn-link p-0 d-flex align-items-center text-decoration-none shadow-none dropdown-toggle"
                     style="outline: none;" data-bs-toggle="tooltip" data-bs-placement="top" title="Buka menu" aria-label="Buka menu">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=f15833&color=fff&rounded=true"
-                        alt="Profile" style="display: block; width: 35px; height: 35px; border-radius: 50%;">
+                    <img src="{{ $navAvatarUrl }}" alt="Foto {{ Auth::user()->name }}" style="display: block; width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                 </button>
                 <div id="myDropdown" class="dropdown-content" style="margin-top: 10px;">
                     <div class="px-3 py-2">
                         <div class="fw-semibold text-muted mb-1" style="font-size: 11px;">Account</div>
                         <div class="d-flex align-items-center">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0e7d6a&color=fff&rounded=true"
-                                alt="" style="border-radius: 50%; width: 35px; height: 35px;">
+                            <img src="{{ $navAvatarDropdownUrl }}" alt="Foto {{ Auth::user()->name }}" style="border-radius: 50%; width: 35px; height: 35px; object-fit: cover;">
                             <div class="ms-2">
                                 <div class="fw-bold" style="font-size: 13px; color: #111827;">{{ Auth::user()->name }}
                                 </div>

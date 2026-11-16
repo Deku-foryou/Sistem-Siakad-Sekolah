@@ -183,4 +183,36 @@ class AbsensiPerjamService
 
         return $guruId === null ? null : (int) $guruId;
     }
+
+    /**
+     * Histori absensi per jam milik seorang siswa (read-only).
+     *
+     * Join snapshot jadwal_pertemuan + kelas + mapel + guru — sumber kanonis,
+     * sama yang dipakai portal (/histori-absensi). Identitas siswa selalu
+     * dari parameter; pemanggil wajib mengambilnya dari akun login.
+     * Tidak ada kemampuan mengubah absensi di jalur ini.
+     */
+    public function historiSiswa(int $siswaId, ?string $dari = null, ?string $sampai = null, ?string $status = null): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = AbsensiPerjam::query()
+            ->join('jadwal_pertemuan as jp', 'jp.idjadwal_pertemuan', '=', 'absensi_perjam.jadwal_pertemuan_idjadwal_pertemuan')
+            ->join('kelas as k', 'k.idkelas', '=', 'jp.kelas_idkelas')
+            ->join('mapel as m', 'm.idmapel', '=', 'jp.mapel_idmapel')
+            ->join('guru as g', 'g.idguru', '=', 'jp.guru_idguru')
+            ->where('absensi_perjam.siswa_idsiswa', $siswaId);
+
+        if ($status !== null && in_array($status, self::STATUS_VALID, true)) {
+            $query->where('absensi_perjam.status', $status);
+        }
+
+        if ($dari !== null && $dari !== '') {
+            $query->where('jp.tanggal', '>=', $dari);
+        }
+
+        if ($sampai !== null && $sampai !== '') {
+            $query->where('jp.tanggal', '<=', $sampai);
+        }
+
+        return $query;
+    }
 }

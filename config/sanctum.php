@@ -46,7 +46,11 @@ return [
     |
     */
 
-    'expiration' => null,
+    /*
+    | Masa berlaku token mobile: 30 hari = 43.200 menit (kebijakan API Fase 1).
+    | Setelah kedaluwarsa, Sanctum menolak token; pengguna login ulang.
+    */
+    'expiration' => 43200,
 
     /*
     |--------------------------------------------------------------------------

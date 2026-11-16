@@ -185,6 +185,48 @@ class RaporSiswaService
     }
 
     /**
+     * Nilai akhir (snapshot finalisasi) untuk semua rapor final milik siswa login.
+     *
+     * Tidak ada draft; hanya rapor yang sudah final. Optional filter semester/kelas,
+     * tetapi hanya kombinasi yang memang ada di daftar rapor siswa ini yang dipakai.
+     *
+     * @return Collection<int, array{semester: \App\Models\Semester, kelas: Kelas, finalisasi: FinalisasiRapor, nilai: Collection<int, array<string, mixed>>}>
+     */
+    public static function nilaiFinal(User $user, ?int $semesterId = null, ?int $kelasId = null): Collection
+    {
+        $siswa = self::pastikanSiswa($user);
+        $daftar = self::daftarRapor($user);
+
+        return $daftar
+            ->filter(fn (array $item) => ($semesterId === null || (int) $item['semester']->idsemester === $semesterId)
+                && ($kelasId === null || (int) $item['kelas']->idkelas === $kelasId))
+            ->values()
+            ->map(fn (array $item) => [
+                'semester' => $item['semester'],
+                'kelas' => $item['kelas'],
+                'finalisasi' => $item['finalisasi'],
+                'nilai' => NilaiAkhir::query()
+                    ->with('mapel')
+                    ->where('semester_idsemester', $item['semester']->idsemester)
+                    ->where('kelas_idkelas', $item['kelas']->idkelas)
+                    ->where('siswa_idsiswa', $siswa->idsiswa)
+                    ->orderBy('mapel_idmapel')
+                    ->get()
+                    ->map(fn (NilaiAkhir $n) => [
+                        'mapel_id' => $n->mapel_idmapel,
+                        'mapel_kode' => $n->mapel?->kode,
+                        'mapel_nama' => $n->mapel?->nama,
+                        'nilai_akhir' => (float) $n->nilai_akhir,
+                        'nilai_kktp' => $n->nilai_kktp !== null ? (float) $n->nilai_kktp : null,
+                        'keterangan' => RaporWaliKelasService::keterangan(
+                            (float) $n->nilai_akhir,
+                            $n->nilai_kktp !== null ? (float) $n->nilai_kktp : null
+                        ),
+                    ]),
+            ]);
+    }
+
+    /**
      * Rekap kehadiran gabungan (2B.5.7) untuk semester+kelas rapor tertentu.
      *
      * @return array{hadir: int, sakit: int, izin: int, alpha: int, total: int, per_tanggal: Collection<string, string>}

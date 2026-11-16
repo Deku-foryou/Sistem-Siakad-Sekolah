@@ -2,16 +2,16 @@
 
 namespace App\Providers;
 
+use App\Models\Appmenu;
+use App\Models\Appmenucat;
 use App\Models\Docs;
 use App\Models\Docscat;
-
-use App\Models\Appmenu;
 use App\Models\Usermenu;
-use App\Models\Appmenucat;
-use Illuminate\Pagination\Paginator;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -62,7 +62,6 @@ class AppServiceProvider extends ServiceProvider
             $view->with('sidebarDocs', $sidebarDocs);
         });
 
-
     }
 
     /**
@@ -70,6 +69,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Fase 1: limiter khusus login API — 5 percobaan/menit per kombinasi
+        // IP + identifier login yang dinormalisasi. Tidak menyimpan password.
+        RateLimiter::for('api-login', function (Request $request) {
+            $identifier = mb_strtolower(trim((string) $request->input('username')));
 
+            return Limit::perMinute(5)->by($request->ip().'|'.$identifier);
+        });
     }
 }
