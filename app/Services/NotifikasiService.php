@@ -162,6 +162,8 @@ class NotifikasiService
 
         if ($tab === 'unread') {
             $query->whereHas('penerima', fn ($q) => $q->where('user_iduser', $user->id)->whereNull('dibaca_pada'));
+        } elseif ($tab === 'read') {
+            $query->whereHas('penerima', fn ($q) => $q->where('user_iduser', $user->id)->whereNotNull('dibaca_pada'));
         }
 
         return $query->paginate($perPage);

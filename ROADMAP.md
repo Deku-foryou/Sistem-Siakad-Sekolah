@@ -2,11 +2,21 @@
 
 **Status per 10 November 2026.** Disusun dari laporan-laporan proyek (`LAPORAN_*.md`) dan `AGENTS.md`. Tidak ada tanggal historis yang dikarang; sumber setiap klaim disebutkan.
 
+> Pembaruan 17 November 2026: ditambahkan bagian **API Mobile (Fase 1–5)** di bawah **Selesai** (Fase 5 Teacher API baru diimplementasikan; Fase 1–4 sebelumnya sudah selesai tetapi belum tercantum). Tidak ada riwayat fase yang dihapus.
+
 Legenda: **Selesai** · **Sedang berjalan** · **Direncanakan** (butuh persetujuan) · **Membutuhkan keputusan pengguna**
 
 ---
 
 ## Selesai
+
+### API Mobile — Fase 1–5 (Fase 5 selesai 17 November 2026)
+- **Fase 1 — API Foundation & Mobile Authentication**: Sanctum, prefix `/api/v1`, middleware `api.role`/`api.akun`/`api.password`, login mobile (role siswa, guru, wali), seluruh error API JSON. Sumber: `LAPORAN_IMPLEMENTASI_API_FOUNDATION_FASE_1.md`.
+- **Fase 2 — Student Academic API**: beranda, jadwal, absensi harian/per jam, nilai, rapor (read-only, scope siswa). Sumber: `LAPORAN_IMPLEMENTASI_STUDENT_API_FASE_2.md`.
+- **Fase 3 — Announcement & Notification API**: pengumuman & notifikasi siswa + tandai dibaca (NotifikasiService/PengumumanService). Sumber: `LAPORAN_IMPLEMENTASI_ANNOUNCEMENT_NOTIFICATION_API_FASE_3.md`.
+- **Fase 4 — Finance API**: keuangan siswa/wali (ringkasan, tagihan, saldo, pembayaran, payment attempt). Keterbatasan pengujian didokumentasikan; Midtrans Sandbox E2E ditunda hingga deployment/klien; **keputusan Fase 4 tidak diubah**. Sumber: `LAPORAN_IMPLEMENTASI_FINANCE_API_FASE_4.md`, `LAPORAN_VERIFIKASI_FINANCE_API_FASE_4.md`, `LAPORAN_HARDENING_FINANCE_API_FASE_4_1.md`.
+- **Fase 5 — Teacher API**: 29 endpoint (`/api/v1/guru/*`): profil, beranda, kelas (mengajar/wali), penugasan, jadwal (kanonis jadwalkelas+jamhari), absensi harian (grid/upsert/H+1) & per jam (snapshot `jadwal_pertemuan`, H+1), penilaian (batch & tunggal via `penugasan_mengajar`, konfigurasi bobot 100% ditegakkan, finalisasi mengunci nilai), notifikasi guru. Ownership/IDOR ditegakkan backend; superadmin/admin **tidak** otomatis mendapat akses guru. Test khusus **65/167 PASS**; regression penuh **146/406 PASS**; tanpa perubahan schema/dependency. Keterbatasan: pengumuman guru belum ada (modul siswa-scoped), concurrency tidak diuji, UAT browser Flutter belum dilakukan. Sumber: `LAPORAN_IMPLEMENTASI_TEACHER_API_FASE_5.md`.
+- Semua endpoint mobile ditegakkan di backend; penyembunyian menu Flutter bukan dasar otorisasi.
 
 ### Tahap fondasi & Portal Siswa (2B.4.x)
 - Beranda Siswa, Jadwal Siswa, Histori Absensi Siswa (+ ekspor CSV), Profil Siswa, Rapor Siswa, Pengumuman Siswa.

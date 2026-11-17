@@ -259,7 +259,7 @@ class PengumumanService
      * berlaku_sampai null atau >= hari ini,
      * siswa memiliki snapshot (baris pengumuman_baca).
      */
-    public function daftarAktif(int $siswaId)
+    public function daftarAktif(int $siswaId, int $perPage = 15, ?bool $apiPagination = false, ?int $page = null)
     {
         return Pengumuman::query()
             ->with(['baca' => fn ($q) => $q->where('siswa_idsiswa', $siswaId)])
@@ -276,7 +276,7 @@ class PengumumanService
             })
             ->whereHas('baca', fn ($q) => $q->where('siswa_idsiswa', $siswaId))
             ->orderByDesc('waktu_terbit')
-            ->paginate(15, ['*'], 'aktif');
+            ->paginate($perPage, ['*'], $apiPagination ? 'page' : 'aktif', $page);
     }
 
     /**
@@ -288,7 +288,7 @@ class PengumumanService
      * Pengumuman yang belum mencapai berlaku_dari tidak muncul di kedua tab.
      * Siswa hanya dapat melihat pengumuman yang memiliki snapshot untuk dirinya.
      */
-    public function riwayat(int $siswaId)
+    public function riwayat(int $siswaId, int $perPage = 15, ?bool $apiPagination = false, ?int $page = null)
     {
         return Pengumuman::query()
             ->with(['baca' => fn ($q) => $q->where('siswa_idsiswa', $siswaId)])
@@ -309,7 +309,7 @@ class PengumumanService
             })
             ->whereHas('baca', fn ($q) => $q->where('siswa_idsiswa', $siswaId))
             ->orderByDesc('waktu_terbit')
-            ->paginate(15, ['*'], 'riwayat');
+            ->paginate($perPage, ['*'], $apiPagination ? 'page' : 'riwayat', $page);
     }
 
     /**

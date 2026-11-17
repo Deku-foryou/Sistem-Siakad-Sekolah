@@ -84,6 +84,41 @@ class Handler extends ExceptionHandler
             return $response;
         });
 
+        // Fase 5: HTTP exception 4xx polos (mis. abort(403) di service) juga harus JSON,
+        // bukan 500 SERVER_ERROR. 5xx sengaja dibiarkan ke fallback generic.
+        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $status = $e->getStatusCode();
+
+            if ($status >= 500) {
+                return null;
+            }
+
+            $code = match ($status) {
+                401 => 'UNAUTHENTICATED',
+                403 => 'FORBIDDEN',
+                404 => 'NOT_FOUND',
+                405 => 'METHOD_NOT_ALLOWED',
+                419 => 'PAGE_EXPIRED',
+                default => 'HTTP_'.$status,
+            };
+
+            $message = trim((string) $e->getMessage());
+
+            if ($message === '') {
+                $message = match ($status) {
+                    403 => 'Tidak memiliki kewenangan.',
+                    404 => 'Resource tidak ditemukan.',
+                    default => 'Permintaan tidak dapat diproses.',
+                };
+            }
+
+            return ApiResponse::fail($message, $status, [], $code);
+        });
+
         $this->renderable(function (Throwable $e, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
