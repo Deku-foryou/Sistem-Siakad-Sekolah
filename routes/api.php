@@ -29,6 +29,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             // Fase 2: API siswa (read-only akademik) — scope siswa login.
             Route::middleware('api.role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
                 Route::get('beranda', [SiswaController::class, 'beranda'])->name('beranda');
+                Route::get('profil', [SiswaController::class, 'profil'])->name('profil');
                 Route::get('jadwal', [SiswaController::class, 'jadwal'])->name('jadwal');
                 Route::get('jadwal/hari-ini', [SiswaController::class, 'jadwalHariIni'])->name('jadwal.hari-ini');
                 Route::get('absensi/harian', [SiswaController::class, 'absensiHarian'])->name('absensi.harian');
@@ -61,6 +62,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('pembayaran/{id}', [\App\Http\Controllers\Api\V1\KeuanganController::class, 'pembayaranDetail'])->whereNumber('id')->name('pembayaran.detail');
                 Route::post('pembayaran/attempts', [\App\Http\Controllers\Api\V1\KeuanganController::class, 'buatAttempt'])->name('pembayaran.attempts.buat');
                 Route::get('pembayaran/attempts/{id}', [\App\Http\Controllers\Api\V1\KeuanganController::class, 'attemptStatus'])->whereNumber('id')->name('pembayaran.attempts.status');
+                // Unduh dokumen privat: bukti pembayaran, kuitansi, dokumen refund (ownership diperiksa server-side)
+                Route::get('pembayaran/{id}/bukti', [\App\Http\Controllers\Api\V1\KeuanganFileController::class, 'bukti'])->whereNumber('id')->name('pembayaran.bukti');
+                Route::get('pembayaran/{id}/kuitansi', [\App\Http\Controllers\Api\V1\KeuanganFileController::class, 'kuitansi'])->whereNumber('id')->name('pembayaran.kuitansi');
+                Route::get('refund/dokumen/{id}', [\App\Http\Controllers\Api\V1\KeuanganFileController::class, 'dokumen'])->whereNumber('id')->name('refund.dokumen');
             });
 
             // Fase 5: API guru (akademik + absensi + penilaian + notifikasi) — scope guru login.
@@ -82,6 +87,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('jadwal/{id}', [\App\Http\Controllers\Api\V1\GuruJadwalController::class, 'show'])->whereNumber('id')->name('jadwal.show');
 
                 // D. Absensi harian (grid pengisian via /kelas/{kelasId}/absensi)
+                Route::get('absensi/rekap-kelas', [\App\Http\Controllers\Api\V1\GuruAbsensiController::class, 'rekapKelas'])->name('absensi.rekap-kelas');
                 Route::get('absensi/harian', [\App\Http\Controllers\Api\V1\GuruAbsensiController::class, 'harianIndex'])->name('absensi.harian');
                 Route::get('absensi/harian/{id}', [\App\Http\Controllers\Api\V1\GuruAbsensiController::class, 'harianShow'])->whereNumber('id')->name('absensi.harian.show');
                 Route::post('absensi/harian', [\App\Http\Controllers\Api\V1\GuruAbsensiController::class, 'harianStore'])->name('absensi.harian.store');
@@ -108,6 +114,37 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('notifikasi/{id}', [\App\Http\Controllers\Api\V1\GuruNotifikasiController::class, 'show'])->whereNumber('id')->name('notifikasi.show');
                 Route::patch('notifikasi/{id}/read', [\App\Http\Controllers\Api\V1\GuruNotifikasiController::class, 'read'])->whereNumber('id')->name('notifikasi.read');
                 Route::patch('notifikasi/read-all', [\App\Http\Controllers\Api\V1\GuruNotifikasiController::class, 'readAll'])->name('notifikasi.read-all');
+            });
+
+            // Fase 6/Master — API wali murid.
+            // Relasi pending/rejected/terminated/berakhir TIDAK memberikan akses akademik;
+            // akses keuangan anak memakai grup /keuangan dengan parameter siswa_id.
+            Route::middleware('api.role:wali')->prefix('wali')->name('wali.')->group(function () {
+                // A. Akun & relasi
+                Route::get('profil', [\App\Http\Controllers\Api\V1\WaliController::class, 'profil'])->name('profil');
+                Route::get('beranda', [\App\Http\Controllers\Api\V1\WaliController::class, 'beranda'])->name('beranda');
+                Route::get('anak', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'index'])->name('anak');
+                Route::get('anak/{siswaId}', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'show'])->whereNumber('siswaId')->name('anak.show');
+                Route::post('anak/{siswaId}/permintaan-putus', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'permintaanPutus'])->whereNumber('siswaId')->name('anak.permintaan-putus');
+
+                // B. Akademik anak (guard: relasi verified, tanggal belum berakhir)
+                Route::get('anak/{siswaId}/beranda', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'beranda'])->whereNumber('siswaId')->name('anak.beranda');
+                Route::get('anak/{siswaId}/jadwal', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'jadwal'])->whereNumber('siswaId')->name('anak.jadwal');
+                Route::get('anak/{siswaId}/jadwal/hari-ini', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'jadwalHariIni'])->whereNumber('siswaId')->name('anak.jadwal.hari-ini');
+                Route::get('anak/{siswaId}/absensi/harian', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'absensiHarian'])->whereNumber('siswaId')->name('anak.absensi.harian');
+                Route::get('anak/{siswaId}/absensi/periode', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'absensiPeriode'])->whereNumber('siswaId')->name('anak.absensi.periode');
+                Route::get('anak/{siswaId}/absensi/perjam', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'absensiPerjam'])->whereNumber('siswaId')->name('anak.absensi.perjam');
+                Route::get('anak/{siswaId}/nilai', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'nilai'])->whereNumber('siswaId')->name('anak.nilai');
+                Route::get('anak/{siswaId}/rapor', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'rapor'])->whereNumber('siswaId')->name('anak.rapor');
+                Route::get('anak/{siswaId}/rapor/{semesterId}/{kelasId}', [\App\Http\Controllers\Api\V1\WaliAnakController::class, 'raporDetail'])
+                    ->whereNumber(['semesterId', 'kelasId'])->name('anak.rapor.detail');
+
+                // C. Notifikasi wali
+                Route::get('notifikasi', [\App\Http\Controllers\Api\V1\WaliNotifikasiController::class, 'index'])->name('notifikasi');
+                Route::get('notifikasi/unread-count', [\App\Http\Controllers\Api\V1\WaliNotifikasiController::class, 'unreadCount'])->name('notifikasi.unread');
+                Route::get('notifikasi/{id}', [\App\Http\Controllers\Api\V1\WaliNotifikasiController::class, 'show'])->whereNumber('id')->name('notifikasi.show');
+                Route::patch('notifikasi/{id}/read', [\App\Http\Controllers\Api\V1\WaliNotifikasiController::class, 'read'])->whereNumber('id')->name('notifikasi.read');
+                Route::patch('notifikasi/read-all', [\App\Http\Controllers\Api\V1\WaliNotifikasiController::class, 'readAll'])->name('notifikasi.read-all');
             });
         });
 });

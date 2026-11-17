@@ -368,6 +368,17 @@ class StudentApiTest extends TestCase
 
     // ================================================================ Beranda
 
+    public function test_profil_memuat_identitas_dan_kelas(): void
+    {
+        $response = $this->jsonA('getJson', '/api/v1/siswa/profil');
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.nisn', $this->profilA->nisn)
+            ->assertJsonPath('data.status', 'aktif')
+            ->assertJsonStructure(['data' => ['id', 'nisn', 'nis', 'nama', 'jenis_kelamin', 'tahun_masuk', 'status', 'kelas', 'akun']]);
+    }
+
     public function test_beranda_memuat_konteks_jadwal_dan_tidak_memuat_modul_lain(): void
     {
         $response = $this->jsonA('get', '/api/v1/siswa/beranda');
@@ -568,5 +579,17 @@ class StudentApiTest extends TestCase
 
         $respA = $this->jsonA('get', '/api/v1/siswa/rapor');
         $this->assertCount(1, $respA->json('data.rapor'));
+    }
+
+    public function test_jadwal_filter_hari(): void
+    {
+        $hariIni = now()->dayOfWeekIso;
+        $resp = $this->jsonA('get', '/api/v1/siswa/jadwal?hari='.$hariIni);
+
+        $resp->assertOk()
+            ->assertJsonPath('data.hari', $hariIni)
+            ->assertJsonPath('data.nama_hari', \App\Support\Hari::nama($hariIni));
+
+        $this->assertNotEmpty($resp->json('data.jadwal'));
     }
 }

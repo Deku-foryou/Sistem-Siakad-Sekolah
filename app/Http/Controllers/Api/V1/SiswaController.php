@@ -41,6 +41,36 @@ class SiswaController extends \App\Http\Controllers\Controller
 
     // ----------------------------------------------------------------- A. Beranda
 
+    public function profil(Request $request): JsonResponse
+    {
+        $siswa = $this->pastikanSiswa($request);
+        if (! $siswa) {
+            return ApiResponse::fail('Akun ini belum terhubung ke data siswa. Hubungi administrator.', 403, [], 'SISWA_NOT_LINKED');
+        }
+
+        $konteks = KonteksAkademikService::ambil();
+        $kelasList = app(JadwalSiswaService::class)->kelasAktif($siswa->idsiswa, $konteks);
+
+        return ApiResponse::ok([
+            'id' => $siswa->idsiswa,
+            'nisn' => $siswa->nisn,
+            'nis' => $siswa->nis,
+            'nama' => $siswa->nama,
+            'jenis_kelamin' => $siswa->jenis_kelamin,
+            'tahun_masuk' => $siswa->tahun_masuk,
+            'status' => $siswa->status,
+            'kelas' => $kelasList->map(fn ($k) => [
+                'id' => $k->idkelas,
+                'nama' => $k->nama,
+                'tingkat' => $k->tingkat,
+            ])->values(),
+            'akun' => [
+                'username' => $request->user()->username ?: '-',
+                'wajib_ganti_password' => (bool) $request->user()->wajib_ganti_password,
+            ],
+        ], 'Berhasil');
+    }
+
     public function beranda(Request $request): JsonResponse
     {
         $siswa = $this->pastikanSiswa($request);
@@ -79,6 +109,9 @@ class SiswaController extends \App\Http\Controllers\Controller
         $hari = null;
         if ($tanggal !== null && $tanggal !== '') {
             $hari = (int) \Carbon\Carbon::parse($tanggal)->dayOfWeekIso;
+        } elseif ($request->input('hari')) {
+            // tanggal > hari (tanggal menang bila keduanya diisi)
+            $hari = (int) $request->input('hari');
         }
 
         $items = $jadwalSiswa->urutkan($jadwalSiswa->jadwal($konteks, $kelasIds, $hari));

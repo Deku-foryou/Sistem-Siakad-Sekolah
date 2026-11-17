@@ -233,7 +233,9 @@ class RaporSiswaService
      */
     public static function rekapKehadiran(int $kelasId, int $siswaId, int $semesterId): array
     {
-        abort_unless(auth()->user()?->level === 'siswa', 403);
+        // Fase Master: wali diizinkan lewat API (akses akademik di-guard WalimuridService
+        // sebelum service ini dipanggil); siswa tetap diizinkan; role lain tetap 403.
+        abort_unless(in_array(auth()->user()?->level, ['siswa', 'wali'], true), 403);
 
         $kosong = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'total' => 0, 'per_tanggal' => collect()];
         $semester = \App\Models\Semester::query()->with('tahunajaran')->find($semesterId);

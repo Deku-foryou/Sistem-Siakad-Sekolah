@@ -1103,4 +1103,40 @@ class GuruApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.belum_dibaca', 0);
     }
+
+    // ====================================================== Rekap absensi kelas
+
+    public function test_rekap_kelas_berhasil(): void
+    {
+        $response = $this->jsonA('getJson', '/api/v1/guru/absensi/rekap-kelas?kelas_id='.$this->kelasA->idkelas);
+
+        $response->assertOk()
+            ->assertJsonPath('data.kelas_id', $this->kelasA->idkelas)
+            ->assertJsonPath('data.ringkasan_kelas.total', 3)   // A1 hari ini + A1 3 hari lalu + A2 hari ini
+            ->assertJsonCount(2, 'data.siswa');
+
+        $a1 = collect($response->json('data.siswa'))->firstWhere('id', $this->idSiswaA1);
+        $this->assertSame(2, $a1['hadir']);
+    }
+
+    public function test_rekap_kelas_guru_lain_404(): void
+    {
+        $this->jsonA('getJson', '/api/v1/guru/absensi/rekap-kelas?kelas_id='.$this->kelasB->idkelas)
+            ->assertStatus(404)
+            ->assertJsonPath('code', 'KELAS_NOT_FOUND');
+    }
+
+    public function test_rekap_kelas_wajib_kelas_id(): void
+    {
+        $this->jsonA('getJson', '/api/v1/guru/absensi/rekap-kelas')
+            ->assertStatus(422);
+    }
+
+    public function test_rekap_kelas_filter_tanggal(): void
+    {
+        $response = $this->jsonA('getJson', '/api/v1/guru/absensi/rekap-kelas?kelas_id='.$this->kelasA->idkelas.'&dari='.now()->subDay()->format('Y-m-d').'&sampai='.now()->subDay()->format('Y-m-d'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.ringkasan_kelas.total', 0);
+    }
 }

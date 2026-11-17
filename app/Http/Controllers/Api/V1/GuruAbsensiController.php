@@ -19,6 +19,7 @@ use App\Services\AbsensiPerjamService;
 use App\Services\GuruApiService;
 use App\Services\JadwalPertemuanService;
 use App\Services\KonteksAkademikService;
+use App\Services\RekapAbsensiService;
 use App\Support\ApiResponse;
 use DomainException;
 use Illuminate\Http\JsonResponse;
@@ -57,6 +58,112 @@ class GuruAbsensiController extends \App\Http\Controllers\Controller
     }
 
     // ====================================================== Absensi harian
+
+    /**
+     * GET /api/v1/guru/absensi/rekap-kelas?kelas_id=&dari=&sampai= — rekap kehadiran per siswa.
+     * Hanya kelas yang diajar (sesuai kebijakan absensi web); dibatasi konteks aktif.
+     */
+    public function rekapKelas(Request $request): JsonResponse
+    {
+        $guru = $this->pastikanGuru($request);
+        if (! $guru) {
+            return $this->gagalGuru();
+        }
+
+        $validasi = $request->validate([
+            'kelas_id' => ['required', 'integer', 'min:1'],
+            'dari' => ['nullable', 'date_format:Y-m-d'],
+            'sampai' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        $dari = $validasi['dari'] ?? null;
+        $sampai = $validasi['sampai'] ?? null;
+
+        if ($dari !== null && $sampai !== null && $dari > $sampai) {
+            return ApiResponse::fail('Tanggal awal tidak boleh melebihi tanggal akhir.', 422, [], 'VALIDATION_ERROR');
+        }
+
+        $kelasId = (int) $validasi['kelas_id'];
+        $konteks = KonteksAkademikService::ambil();
+
+        if (! $konteks->valid() || ! $konteks->semester) {
+            return ApiResponse::fail('Konteks akademik belum valid. Aktifkan tahun ajaran dan semester terlebih dahulu.', 422, [], 'KONTEKS_TIDAK_VALID');
+        }
+
+        if (! in_array($kelasId, GuruApiService::kelasIdsDiajar($guru, $konteks), true)) {
+            return ApiResponse::fail('Kelas tidak ditemukan.', 404, [], 'KELAS_NOT_FOUND');
+        }
+
+        // Rekap semester & TA aktif (sama seperti histori), bisa difilter tanggal.
+        $base = AbsensiHarian::query()
+            ->where('kelas_idkelas', $kelasId)
+            ->where('semester_idsemester', $konteks->semester->idsemester)
+            ->where('tahunajaran_idtahunajaran', $konteks->tahunAjaran->idtahunajaran);
+
+        if ($dari) {
+            $base->whereDate('tanggal', '>=', $dari);
+        }
+        if ($sampai) {
+            $base->whereDate('tanggal', '<=', $sampai);
+        }
+
+        $perSiswa = (clone $base)
+            ->selectRaw('siswa_idsiswa, status, COUNT(*) as jumlah')
+            ->groupBy('siswa_idsiswa', 'status')
+            ->get()
+            ->groupBy('siswa_idsiswa');
+
+        $rekap = app(RekapAbsensiService::class);
+
+        $siswaList = Kelassiswa::query()
+            ->where('kelas_idkelas', $kelasId)
+            ->where('status', 'aktif')
+            ->with('siswa:idsiswa,nisn,nis,nama')
+            ->orderBy('siswa_idsiswa')
+            ->get();
+
+        $totalKelas = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'total' => 0];
+
+        $items = $siswaList->map(function ($ks) use ($perSiswa, $rekap, &$totalKelas) {
+            $baris = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0, 'total' => 0];
+            foreach ($perSiswa->get($ks->siswa_idsiswa, collect()) as $row) {
+                if (array_key_exists($row->status, $baris)) {
+                    $baris[$row->status] = (int) $row->jumlah;
+                    $baris['total'] += (int) $row->jumlah;
+                }
+            }
+            foreach (['hadir', 'sakit', 'izin', 'alpha', 'total'] as $key) {
+                $totalKelas[$key] += $baris[$key];
+            }
+
+            return [
+                'id' => $ks->siswa?->idsiswa,
+                'nisn' => $ks->siswa?->nisn,
+                'nis' => $ks->siswa?->nis,
+                'nama' => $ks->siswa?->nama,
+                'hadir' => $baris['hadir'],
+                'sakit' => $baris['sakit'],
+                'izin' => $baris['izin'],
+                'alpha' => $baris['alpha'],
+                'total' => $baris['total'],
+                'persen_hadir' => $rekap->persen($baris['hadir'], $baris['total']),
+            ];
+        })->values();
+
+        return ApiResponse::ok([
+            'kelas_id' => $kelasId,
+            'filter' => ['dari' => $dari, 'sampai' => $sampai],
+            'ringkasan_kelas' => [
+                'hadir' => $totalKelas['hadir'],
+                'sakit' => $totalKelas['sakit'],
+                'izin' => $totalKelas['izin'],
+                'alpha' => $totalKelas['alpha'],
+                'total' => $totalKelas['total'],
+                'persen_hadir' => $rekap->persen($totalKelas['hadir'], $totalKelas['total']),
+            ],
+            'siswa' => $items,
+        ], 'Berhasil');
+    }
 
     /**
      * GET /api/v1/guru/absensi/harian — riwayat absensi harian (paginated, ter-scope kelas yang boleh diakses).

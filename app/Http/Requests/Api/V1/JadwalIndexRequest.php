@@ -16,6 +16,7 @@ class JadwalIndexRequest extends FormRequest
     {
         return [
             'tanggal' => ['nullable', 'date_format:Y-m-d'],
+            'hari' => ['nullable', 'integer', 'min:1', 'max:7'],
         ];
     }
 }
