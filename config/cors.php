@@ -17,14 +17,21 @@ return [
 
     /*
     | Fase 1: API hanya untuk client Flutter (native; tidak tunduk pada CORS).
-    | Browser cross-origin hanya diizinkan untuk origin eksplisit di ENV
-    | CORS_ALLOWED_ORIGINS (daftar dipisah koma). Tidak ada wildcard '*'.
+    | Browser cross-origin hanya diizinkan untuk origin eksplisit yang dicantumkan
+    | di sini (daftar origin, tanpa wildcard '*'). Tidak ada ketergantungan pada
+    | ENV: daftar bersifat tetap (kecuali ditambahkan secara sadar).
+    |
+    | Spread: salah satu dari kedua origin Flutter Web lokal ini
+    | (localhost:8080 atau 127.0.0.1:8080).
     */
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter(explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))),
+    'allowed_origins' => [
+        'http://localhost:8080',
+        'http://127.0.0.1:8080',
+    ],
 
     'allowed_origins_patterns' => [],
 
