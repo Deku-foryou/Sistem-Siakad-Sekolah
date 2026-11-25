@@ -196,6 +196,22 @@ Wali: tambahkan `?siswa_id=<idAnak>` pada K1–K6 (contoh `/keuangan/ringkasan?s
 W6–W14 hanya untuk relasi `verified` tanpa `tanggal_berhenti` → selain itu `403 AKSES_DITOLAK`.
 Pengumuman wali: **tidak tersedia** (modul pengumuman siswa-scoped; bukan keputusan API).
 
+### 4.6 Devices & FCM Token (2 endpoints)
+
+Lihat LAPORAN_FIREBASE_INTEGRASI.md untuk arsitektur keseluruhan. Ringkasan endpoint FCM v1 (Autentikasi Sanctum + role siswa/guru/wali):
+
+| Method | Path | Fungsi | Response |
+|---|---|---|---|
+| POST | `/api/v1/devices/fcm-token` | Daftarkan/perbarui token FCM perangkat (payload: `fcm_token` (wajib, maks 500), `platform` (android/ios, wajib), `app_version` (opsional)) | `{success, message, data: {id, platform, app_version, last_seen_at, revoked_at}}` |
+| DELETE | `/api/v1/devices/fcm-token` | Cabut token FCM (payload: `fcm_token` wajib) — hanya token user saat ini yang tercantum (IDOR melindungi token user lain) | `{success, message, data: {revoked: 0|1}}` |
+
+Aturan:
+- Identitas user dari Sanctum token login — **tidak menerima user_iduser dari client**.
+- Token hanya terkait dengan satu akun pada satu waktu (unik). Satu akun bisa punya beberapa perangkat.
+- Validasi 422 (platform invalid / token kosong / app_version terlalu panjang). Token tidak pernah ditampilkan di response (di-ringkas).
+- Rate limiting default bisa diterapkan oleh Laravel 12 + Sanctum default group.
+- Dokumen di `LAPORAN_FIREBASE_INTEGRASI.md` & `storage/app/fcm_service_account.json` (manual) — jangan masuk credential ke repo.
+
 ---
 
 ## 5. Konvensi request & response

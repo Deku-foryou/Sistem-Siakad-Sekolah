@@ -72,6 +72,8 @@ class AuthController extends \App\Http\Controllers\Controller
     public function logoutAll(Request $request): JsonResponse
     {
         $request->user()->tokens()->delete();
+        // FCM tokens digantikan oleh status auth user (401 → app unregister).
+        \App\Services\FcmDeviceTokenService::unregisterAll($request->user());
 
         return ApiResponse::ok(null, 'Seluruh perangkat telah logout. Silakan login kembali.');
     }
@@ -109,8 +111,9 @@ class AuthController extends \App\Http\Controllers\Controller
             $locked->wajib_ganti_password = false;
             $locked->save();
 
-            // Cabut SELURUH token mobile; pengguna wajib login ulang.
+            // Cabut SELURUH token mobile (sanctum + FCM); pengguna wajib login ulang.
             $locked->tokens()->delete();
+            \App\Services\FcmDeviceTokenService::unregisterAll($locked);
         });
 
         Log::info('api ganti password', ['user_id' => $user->id]);

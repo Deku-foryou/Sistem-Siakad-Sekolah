@@ -49,6 +49,9 @@ class Notifikasi extends Model
 
     protected $casts = [
         'waktu_dibuat' => 'datetime',
+        'fcm_dispatched_at' => 'datetime',
+        'fcm_claimed_at' => 'datetime',
+        'fcm_claim_token' => 'string',
     ];
 
     public function penerima()
@@ -59,5 +62,10 @@ class Notifikasi extends Model
     public function pembuat()
     {
         return $this->belongsTo(User::class, 'dibuat_oleh', 'id');
+    }
+
+    public function fcmDeliveries()
+    {
+        return $this->hasMany(NotifikasiFcmDelivery::class, 'notifikasi_idnotifikasi', 'idnotifikasi');
     }
 }

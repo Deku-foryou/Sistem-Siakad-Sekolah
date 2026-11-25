@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\FcmTokenController;
 use App\Http\Controllers\Api\V1\NotifikasiSiswaController;
 use App\Http\Controllers\Api\V1\PengumumanSiswaController;
 use App\Http\Controllers\Api\V1\SiswaController;
@@ -25,6 +26,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('auth/logout-all', [AuthController::class, 'logoutAll'])->name('auth.logout-all');
             Route::get('auth/me', [AuthController::class, 'me'])->name('auth.me');
             Route::post('auth/password', [AuthController::class, 'updatePassword'])->name('auth.password');
+
+            // FCM Device Token — Mala, Sanctum, identitas dari token login.
+            Route::post('devices/fcm-token', [FcmTokenController::class, 'store'])->name('devices.fcm-token.store');
+            Route::delete('devices/fcm-token', [FcmTokenController::class, 'destroy'])->name('devices.fcm-token.destroy');
 
             // Fase 2: API siswa (read-only akademik) — scope siswa login.
             Route::middleware('api.role:siswa')->prefix('siswa')->name('siswa.')->group(function () {

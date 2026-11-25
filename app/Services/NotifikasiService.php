@@ -103,7 +103,7 @@ class NotifikasiService
             return null;
         }
 
-        return DB::transaction(function () use ($validIds, $pembuat, $judul, $isi, $jenis, $prioritas, $sumberTabel, $sumberId, $link) {
+        $notifikasi = DB::transaction(function () use ($validIds, $pembuat, $judul, $isi, $jenis, $prioritas, $sumberTabel, $sumberId, $link) {
             $notifikasi = Notifikasi::create([
                 'judul' => $judul,
                 'isi' => $isi,
@@ -127,6 +127,15 @@ class NotifikasiService
 
             return $notifikasi->fresh('penerima');
         });
+
+        // Push FCM setelah transaksi commit (juga aman bila metode ini dipanggil
+        // dari transaksi outer) — snapshot penerima dari NotifikasiPenerima.
+        DB::afterCommit(function () use ($notifikasi) {
+            \App\Jobs\SendFcmNotificationJob::dispatch($notifikasi->idnotifikasi)
+                ->onQueue('fcm_push');
+        });
+
+        return $notifikasi;
     }
 
     /**
